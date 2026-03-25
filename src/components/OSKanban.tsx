@@ -113,16 +113,16 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
         setDragOverColumn(null);
     };
 
-    // Unique responsáveis
+    // Unique responsáveis (exclui "Legado (CSV)")
     const uniqueResponsaveis = useMemo(() => {
         const set = new Set<string>();
         ordens.forEach(o => {
             if (o.delegacia?.entradas) {
                 o.delegacia.entradas.forEach(e => {
-                    if (e.responsavel) set.add(e.responsavel);
+                    if (e.responsavel && e.responsavel !== 'Legado (CSV)') set.add(e.responsavel);
                 });
             }
-            if (o.entregueParaNome) set.add(o.entregueParaNome);
+            if (o.entregueParaNome && o.entregueParaNome !== 'Legado (CSV)') set.add(o.entregueParaNome);
         });
         return Array.from(set).sort();
     }, [ordens]);
