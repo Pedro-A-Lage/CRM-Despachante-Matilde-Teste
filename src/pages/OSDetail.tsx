@@ -2478,8 +2478,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
     const handleSave = async () => {
         if (saving) return; // Bug #3 fix: guard against double-submit
 
-        // Bug #2 fix: normalize 'reagendar' pseudo-status → 'agendar' before persisting
-        const effectiveStatus: StatusVistoria = status === 'reagendar' ? 'agendar' : status;
+        const effectiveStatus: StatusVistoria = status;
 
         if (effectiveStatus === 'reprovada' && !motivo.trim() && vistoria.status !== 'reprovada') {
             alert('Informe o motivo da reprovação');
@@ -2836,10 +2835,9 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 return (
                                     <button key={s} onClick={() => {
                                         if (s === 'reagendar') {
-                                            setStatus('agendar');
-                                            setDataAgendamento('');
-                                            setHoraAgendamento('');
-                                            setProtocolo('');
+                                            setStatus('reagendar');
+                                            setDirty(true);
+                                            return;
                                         } else {
                                             setStatus(s);
                                         }
