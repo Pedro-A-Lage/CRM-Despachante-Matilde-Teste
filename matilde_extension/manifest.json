@@ -1,0 +1,80 @@
+{
+    "manifest_version": 3,
+    "name": "Matilde CRM - Integração Detran MG",
+    "version": "1.0.0",
+    "description": "Captura automaticamente a folha de cadastro do Detran MG e envia para o Matilde CRM.",
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "scripting",
+        "downloads",
+        "storage",
+        "cookies"
+    ],
+    "host_permissions": [
+        "*://transito.mg.gov.br/*",
+        "*://*.transito.mg.gov.br/*",
+        "*://detran.mg.gov.br/*",
+        "*://*.detran.mg.gov.br/*",
+        "*://cidadao.mg.gov.br/*",
+        "*://*.cidadao.mg.gov.br/*",
+        "http://localhost:*/*",
+        "http://127.0.0.1:*/*",
+        "*://matildecrm.com/*",
+        "*://despachantematilde.com/*",
+        "*://*.despachantematilde.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://transito.mg.gov.br/*",
+                "http://transito.mg.gov.br/*",
+                "*://*.transito.mg.gov.br/*",
+                "https://detran.mg.gov.br/*",
+                "http://detran.mg.gov.br/*",
+                "*://*.detran.mg.gov.br/*",
+                "https://cidadao.mg.gov.br/*",
+                "*://*.cidadao.mg.gov.br/*"
+            ],
+            "js": [
+                "content.js"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "http://localhost:*/*",
+                "http://127.0.0.1:*/*",
+                "*://matildecrm.com/*",
+                "*://despachantematilde.com/*",
+                "*://*.despachantematilde.com/*"
+            ],
+            "js": [
+                "crm-content.js"
+            ],
+            "run_at": "document_start"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "inject-error-interceptor.js",
+                "inject-pdf-interceptor.js"
+            ],
+            "matches": [
+                "*://transito.mg.gov.br/*",
+                "*://*.transito.mg.gov.br/*",
+                "*://detran.mg.gov.br/*",
+                "*://*.detran.mg.gov.br/*",
+                "*://cidadao.mg.gov.br/*",
+                "*://*.cidadao.mg.gov.br/*"
+            ]
+        }
+    ],
+    "action": {
+        "default_title": "Matilde CRM Extensão"
+    }
+}
