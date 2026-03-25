@@ -1034,7 +1034,7 @@ export default function OSDetail() {
                                 <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>{cliente.cpfCnpj}</span>
                                 {cliente.telefones && cliente.telefones.length > 0 && cliente.telefones[0] ? (
                                     <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        {cliente.telefones.filter(t => t.trim()).join(' | ')}
+                                        {cliente.telefones.filter((t: string) => t.trim()).join(' | ')}
                                     </span>
                                 ) : (
                                     <span style={{ fontSize: 10, color: 'var(--color-warning)', fontWeight: 600, fontStyle: 'italic' }}>
