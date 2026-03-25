@@ -44,9 +44,9 @@ const navGroups: NavGroup[] = [
         defaultOpen: true,
         items: [
             { to: '/ordens', icon: FileText, label: 'Ordens de Serviço' },
-            { to: '/calendario-vistorias', icon: Calendar, label: 'Agendamentos' },
-            { to: '/protocolos', icon: ClipboardList, label: 'Protocolo Diário' },
             { to: '/servicos', icon: ExternalLink, label: 'Serviços Detran' },
+            { to: '/protocolos', icon: ClipboardList, label: 'Protocolo Diário' },
+            { to: '/calendario-vistorias', icon: Calendar, label: 'Agendamentos' },
         ],
     },
     {
