@@ -1,0 +1,12 @@
+{
+  "name": "matilde-playwright-analyze",
+  "version": "1.0.0",
+  "description": "Script de análise CDP para captura de PDFs do Detran MG",
+  "main": "analyze.js",
+  "scripts": {
+    "analyze": "node analyze.js"
+  },
+  "dependencies": {
+    "playwright": "^1.42.0"
+  }
+}

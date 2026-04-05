@@ -1,0 +1,125 @@
+# Descrição Detalhada — Reestruturação da Página Configurações
+
+## Resumo Geral
+A página `/configuracoes` foi completamente reestruturada: saiu de um layout com cards individuais por serviço para um sistema de **abas + tabela + modal de edição**, suportado por uma nova tabela `service_config` no banco de dados.
+
+---
+
+## 1. Banco de Dados
+
+### 1.1 Nova tabela `service_config` (migration `20260325000001`)
+Criar a tabela no Supabase com os seguintes campos:
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | TEXT (UUID) | Chave primária |
+| `tipo_servico` | TEXT UNIQUE | Identificador do serviço (ex: `transferencia`, `segundo_via`) |
+| `nome_exibicao` | TEXT | Nome amigável exibido na UI |
+| `ativo` | BOOLEAN | Se o serviço está ativo |
+| `documentos_pf` | JSONB | Array de documentos para Pessoa Física |
+| `documentos_pj` | JSONB | Array de documentos para Pessoa Jurídica |
+| `documentos_extras` | JSONB | Array de objetos `{condicao, documentos}` (ex: "Se financiado → CRV do banco") |
+| `dae_tipo` | TEXT | Tipo de DAE: `principal`, `alteracao`, ou `null` |
+| `gera_vistoria` | TEXT | Quando gera vistoria: `sempre`, `se_troca`, `nunca` |
+| `gera_placa` | TEXT | Quando gera placa: `sempre`, `se_troca`, `nunca` |
+| `criado_em` | TIMESTAMPTZ | Auto-preenchido |
+| `atualizado_em` | TIMESTAMPTZ | Auto-atualizado via trigger |
+
+**Também inclui:**
+- RLS habilitado com policy "Allow all access"
+- Trigger `update_service_config_updated_at` para atualizar `atualizado_em`
+- Seed com os 9 serviços (transferência, 2ª via, alteração dados, mudança município, mudança estado, baixa, 1º emplacamento, vistoria lacrada, baixa impedimento)
+- `ON CONFLICT` para ser idempotente
+
+### 1.2 Migration `20260325000002` — fix_finance_issues
+- Adiciona coluna `desconto` na tabela `ordens_de_servico`
+- Adiciona foreign keys `fk_finance_charges_os_id` e `fk_payments_os_id`
+- Cria índices de performance (`idx_finance_charges_os_id`, `idx_payments_os_id`, `idx_ordens_status`, `idx_ordens_cliente_id`)
+- Remove coluna legada `financeiro`
+
+### 1.3 Migrations `20260330000000` e `20260330000001` — fix enum pagamento
+- Adiciona `cartao_debito` e `cartao_credito` ao enum `payment_metodo`
+- Migra registros existentes de `cartao` → `cartao_debito`
+- **Importante:** rodar em 2 etapas separadas (ADD VALUE não pode ser usado na mesma transação do UPDATE)
+
+---
+
+## 2. Backend / Serviço (configService.ts)
+
+Criar o arquivo `src/lib/configService.ts` com:
+- `getAllServiceConfigs()` — busca todos os configs do Supabase, com cache em memória
+- `getServiceConfig(tipo)` — busca config de um serviço específico
+- `upsertServiceConfig(config)` — cria ou atualiza configuração
+- `deleteServiceConfig(id)` — remove configuração
+- `invalidateConfigCache()` — limpa cache (chamado pelo realtime)
+
+---
+
+## 3. Frontend — Página Configurações (`src/pages/Configuracoes.tsx`)
+
+### 3.1 Sistema de Abas
+Substituir o layout antigo por 2 abas:
+- **⚙ Serviços DETRAN** — tabela de serviços com edição via modal
+- **💰 Custos Fixos** — seção para gerenciar custos da tabela `price_table`
+
+### 3.2 Aba "Serviços DETRAN"
+- **Tabela** com colunas: Nome do Serviço, Docs PF (badge com contagem), Docs PJ (badge com contagem), DAE, Vistoria, Placa, Status (ativo/inativo), Ações (editar)
+- **Botão "+ Novo Serviço"** no toolbar
+- Clique em editar → abre `ServiceEditModal`
+
+### 3.3 Aba "Custos Fixos" (componente `CustosFixosSection`)
+- Lista custos da `price_table` com edição inline de valor
+- Permite adicionar/remover custos
+- Valores editáveis com máscara monetária
+
+### 3.4 Realtime
+- Canal `config-changes` escuta alterações em `service_config`, `service_prices` e `price_table`
+- Ao receber evento, invalida cache e recarrega dados
+
+---
+
+## 4. Componente `ServiceEditModal` (`src/components/ServiceEditModal.tsx`)
+
+Modal com 2 abas internas:
+- **Aba "Configurações"**: nome de exibição, tipo DAE (select), gera vistoria (select), gera placa (select), toggle ativo/inativo
+- **Aba "Documentos"**: 3 listas editáveis usando `DocListEditor`:
+  - Documentos PF
+  - Documentos PJ
+  - Documentos Extras (com campo de condição)
+
+Botões: Salvar | Cancelar | Excluir (se editando existente)
+
+---
+
+## 5. Componente `DocListEditor` (`src/components/DocListEditor.tsx`)
+
+Componente reutilizável para editar listas de documentos:
+- Input para adicionar novo documento
+- Lista com botão de remover em cada item
+- Drag & drop para reordenar (opcional)
+- Usado dentro do `ServiceEditModal` para PF, PJ e Extras
+
+---
+
+## 6. Refatorações / Limpeza
+
+- **Removido** `ServiceCard` — componente legado de card por serviço
+- **Removido** `NewServicePanel` — painel antigo de criação de serviço
+- **Removido** estado `isNewService` — redundante com o novo fluxo modal
+- **Removido** constantes `DAE_OPTIONS` e `VISTORIA_PLACA_OPTIONS` — hardcoded, agora vem do banco
+
+---
+
+## 7. Ordem de Execução Recomendada
+
+1. Rodar migration `20260325000001_service_config.sql` no Supabase
+2. Rodar migration `20260325000002_fix_finance_issues.sql`
+3. Rodar migration `20260330000000_fix_payment_metodo_enum.sql` (ALTER TYPE)
+4. Rodar migration `20260330000001_migrate_cartao_to_debito.sql` (UPDATE)
+5. Criar `src/lib/configService.ts`
+6. Criar `src/components/DocListEditor.tsx`
+7. Criar `src/components/ServiceEditModal.tsx`
+8. Substituir conteúdo de `src/pages/Configuracoes.tsx`
+9. Remover componentes legados (`ServiceCard`, `NewServicePanel`)
+10. Remover constantes não utilizadas
+11. Testar: criar serviço, editar documentos, salvar recebimento com débito/crédito

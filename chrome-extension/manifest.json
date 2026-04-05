@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "Matilde CRM - Extensão Detran/Cidadão MG",
+  "version": "2.2",
+  "description": "Automação de consultas e captura de PDFs para o Matilde CRM.",
+  "permissions": [
+    "storage",
+    "downloads",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://detran.mg.gov.br/*",
+    "*://*.detran.mg.gov.br/*",
+    "*://transito.mg.gov.br/*",
+    "*://*.transito.mg.gov.br/*",
+    "*://*.cidadao.mg.gov.br/*",
+    "http://localhost/*",
+    "http://localhost:3000/*",
+    "http://localhost:5173/*",
+    "http://localhost:5174/*",
+    "*://*.matildecrm.com/*",
+    "*://*.despachantematilde.com/*",
+    "*://*.despachantematilde.com.br/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://detran.mg.gov.br/*",
+        "*://*.detran.mg.gov.br/*",
+        "*://transito.mg.gov.br/*",
+        "*://*.transito.mg.gov.br/*"
+      ],
+      "js": ["content_detran.js", "content_vistoria.js"]
+    },
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://localhost:3000/*",
+        "http://localhost:5173/*",
+        "http://localhost:5174/*",
+        "*://*.matildecrm.com/*",
+        "*://*.despachantematilde.com/*",
+        "*://*.despachantematilde.com.br/*"
+      ],
+      "js": ["crm_bridge.js"]
+    }
+  ]
+}
