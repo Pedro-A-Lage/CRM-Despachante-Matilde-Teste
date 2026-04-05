@@ -1111,19 +1111,19 @@ export default function OSDetail() {
                     {/* Tab Content */}
                     <div className="card">
                         {activeTab === 'checklist' && (
-                            <ChecklistTab os={os} cliente={cliente} onRefresh={refresh} checklistComplete={checklistComplete} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} readOnly={!podeEditarChecklist} />
+                            <ChecklistTab os={os} cliente={cliente} onRefresh={refresh} checklistComplete={checklistComplete} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
                         )}
                         {activeTab === 'vistoria' && (
-                            <VistoriaTab os={os} onRefresh={refresh} daePaga={checklistComplete} veiculo={veiculo} cliente={cliente} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} readOnly={!podeEditarVistoria} />
+                            <VistoriaTab os={os} onRefresh={refresh} daePaga={checklistComplete} veiculo={veiculo} cliente={cliente} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
                         )}
                         {activeTab === 'delegacia' && (
-                            <DelegaciaTab os={os} veiculo={veiculo} onAdd={addEntradaDelegacia} onEdit={editEntradaDelegacia} onRemove={removeEntradaDelegacia} needsSifap={needsSifap} onRefresh={refresh} readOnly={!podeEditarDelegacia} />
+                            <DelegaciaTab os={os} veiculo={veiculo} onAdd={addEntradaDelegacia} onEdit={editEntradaDelegacia} onRemove={removeEntradaDelegacia} needsSifap={needsSifap} onRefresh={refresh} />
                         )}
                         {activeTab === 'doc_pronto' && (
                             <DocProntoTab os={os} onRefresh={refresh} onOpenViewer={openDocumentViewer} bloqueadoPorDebito={temDebitosPendentes} valorPendente={valorPendente} />
                         )}
                         {activeTab === 'comunicacao' && (
-                            <ComunicacaoTab os={os} onAdd={addComunicacao} onRemove={async (id) => {
+                            <ComunicacaoTab os={os} onAdd={addComunicacao} onRemove={async (id: string) => {
                                 const comm = os.comunicacoes.find(c => c.id === id);
                                 const canDelete = usuario?.role === 'admin' || (comm?.usuario && comm.usuario === usuario?.nome);
                                 if (!canDelete) {
@@ -1257,7 +1257,7 @@ export default function OSDetail() {
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         fontWeight: 800, fontSize: 14, letterSpacing: 0.5,
                                     }}>
-                                        {cliente.nome.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()}
+                                        {cliente.nome.split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()}
                                     </div>
                                     <Link to={`/clientes/${cliente.id}`} style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-text-primary)', textDecoration: 'none', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
                                         {cliente.nome}
@@ -4018,7 +4018,7 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                             </span>
                         </div>
                         {i < steps.length - 1 && (
-                            <div style={{ flex: 1, height: 2, margin: '0 10px', borderRadius: 1, background: steps[i + 1].done || step.done ? 'var(--color-success)' : 'var(--border-color)', opacity: steps[i + 1].done ? 1 : 0.4 }} />
+                            <div style={{ flex: 1, height: 2, margin: '0 10px', borderRadius: 1, background: steps[i + 1]!.done || step.done ? 'var(--color-success)' : 'var(--border-color)', opacity: steps[i + 1]!.done ? 1 : 0.4 }} />
                         )}
                     </div>
                 ))}
@@ -4303,6 +4303,61 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                         )}
                     </div>
                 </div>
+            </div>
+        </div>
+    );
+}
+
+function ComunicacaoTab({ os, onAdd, onRemove }: {
+    os: OrdemDeServico;
+    onAdd: (com: Comunicacao) => Promise<void>;
+    onRemove: (id: string) => Promise<void>;
+}) {
+    const [canal, setCanal] = useState('WhatsApp');
+    const [mensagem, setMensagem] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const handleAdd = async () => {
+        if (!mensagem.trim()) return;
+        setSaving(true);
+        try {
+            const com: Comunicacao = {
+                id: crypto.randomUUID(),
+                data: new Date().toISOString(),
+                canal,
+                mensagem: mensagem.trim(),
+            };
+            await onAdd(com);
+            setMensagem('');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div style={{ padding: '16px 0' }}>
+            <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <select value={canal} onChange={e => setCanal(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)', fontSize: 13 }}>
+                    {['WhatsApp', 'Telefone', 'E-mail', 'Presencial'].map(c => <option key={c}>{c}</option>)}
+                </select>
+                <input value={mensagem} onChange={e => setMensagem(e.target.value)} placeholder="Registrar comunicação..." style={{ flex: 1, minWidth: 200, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)', fontSize: 13 }} />
+                <button onClick={handleAdd} disabled={saving || !mensagem.trim()} style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--color-primary)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13 }}>
+                    {saving ? 'Salvando...' : 'Adicionar'}
+                </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {[...(os.comunicacoes || [])].reverse().map(com => (
+                    <div key={com.id} style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--color-bg-secondary)', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                        <div>
+                            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginRight: 8 }}>{com.canal}</span>
+                            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{new Date(com.data).toLocaleString('pt-BR')}</span>
+                            {com.usuario && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 8 }}>— {com.usuario}</span>}
+                            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-primary)' }}>{com.mensagem}</p>
+                        </div>
+                        <button onClick={() => onRemove(com.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger, #ef4444)', fontSize: 18, lineHeight: 1, padding: 0 }} title="Apagar">×</button>
+                    </div>
+                ))}
+                {(os.comunicacoes || []).length === 0 && <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>Nenhuma comunicação registrada.</p>}
             </div>
         </div>
     );

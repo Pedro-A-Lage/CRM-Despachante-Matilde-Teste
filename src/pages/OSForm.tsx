@@ -537,7 +537,7 @@ export default function OSForm({ drawerMode = false, onCreated, onCancel, initia
 
                 const itemOriginal = checklist.find(i => hasDocument(i.nome));
                 if (itemOriginal) {
-                    itemOriginal.status = 'recebido';
+                    (itemOriginal as ChecklistItem).status = 'recebido';
                     itemOriginal.observacao = 'Importado automaticamente do site do Detran';
                 }
             }

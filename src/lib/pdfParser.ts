@@ -17,6 +17,7 @@ export type TipoDocumento = 'atpve' | 'folha_cadastro' | 'laudo_vistoria' | 'crl
 export interface DadosPessoa {
     nome?: string;
     cpfCnpj?: string;
+    tipoCpfCnpj?: 'CPF' | 'CNPJ';
     email?: string;
     municipio?: string;
     uf?: string;

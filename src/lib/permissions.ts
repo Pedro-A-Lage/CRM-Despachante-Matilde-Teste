@@ -37,18 +37,18 @@ export function temPermissao(usuario: Usuario | null, categoria: keyof Permissoe
 
 // Get all effective permissions for a user (merged: role defaults + user overrides)
 export function getPermissoesEfetivas(usuario: Usuario): PermissoesUsuario {
-    if (usuario.role === 'admin') return DEFAULTS.admin;
+    if (usuario.role === 'admin') return DEFAULTS.admin!;
 
     const roleDefaults = DEFAULTS[usuario.role] || DEFAULTS.funcionario;
     const userOverrides = usuario.permissoes || {};
 
     return {
-        paginas: { ...roleDefaults.paginas, ...userOverrides.paginas },
-        os: { ...roleDefaults.os, ...userOverrides.os },
-        dados: { ...roleDefaults.dados, ...userOverrides.dados },
+        paginas: { ...roleDefaults!.paginas, ...userOverrides.paginas },
+        os: { ...roleDefaults!.os, ...userOverrides.os },
+        dados: { ...roleDefaults!.dados, ...userOverrides.dados },
     };
 }
 
 export function getDefaultPermissoes(role: string): PermissoesUsuario {
-    return DEFAULTS[role] || DEFAULTS.funcionario;
+    return (DEFAULTS[role] || DEFAULTS.funcionario)!;
 }

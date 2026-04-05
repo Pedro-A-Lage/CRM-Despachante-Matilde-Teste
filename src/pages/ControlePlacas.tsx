@@ -610,7 +610,7 @@ export default function ControlePlacas() {
         ]);
         setEmpresas(emps);
         if (ativas.length > 0) {
-          const firstId = ativas[0].id;
+          const firstId = ativas[0]!.id;
           setSelectedFabricaId(firstId);
           await loadPedidos(firstId);
         }

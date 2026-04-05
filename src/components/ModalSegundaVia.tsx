@@ -419,7 +419,7 @@ export default function ModalSegundaVia({ isOpen, onClose, onSuccess, dadosInici
                     {etapa === 'upload' && (
                         <>
                             <p style={{ margin: '0 0 16px', color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                                {modo === 'criar'
+                                {modo === 'coletar'
                                     ? <>Anexe o CRLV-e (PDF) para criar automaticamente o <strong>cliente</strong>, <strong>veículo</strong> e <strong>ordem de serviço</strong>.</>
                                     : <>Anexe o CRLV-e (PDF) para preencher automaticamente o site do Detran.</>
                                 }

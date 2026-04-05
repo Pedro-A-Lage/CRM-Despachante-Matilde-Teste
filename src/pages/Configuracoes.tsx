@@ -328,7 +328,7 @@ function PrecosServicoSection({
   const grouped: Record<string, ServicePrice[]> = {};
   for (const p of precos) {
     if (!grouped[p.tipo_servico]) grouped[p.tipo_servico] = [];
-    grouped[p.tipo_servico].push(p);
+    grouped[p.tipo_servico]!.push(p);
   }
 
   const salvarPreco = async (priceId: string, valorStr: string) => {
