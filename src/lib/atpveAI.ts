@@ -232,19 +232,34 @@ export interface DadosDecalque {
   };
 }
 
-const PROMPT_DECALQUE = `Você é um especialista em documentos veiculares brasileiros. Analise este DECALQUE DE CHASSI / FOLHA DE CADASTRO (Documento de Cadastro do Detran/MG) e extraia SOMENTE os campos listados abaixo.
+const PROMPT_DECALQUE = `Você é um especialista em documentos do Detran/MG. Analise este "DECALQUE CHASSI" / "DOCUMENTO DE CADASTRO" (Folha de Cadastro do Detran/MG) e extraia EXATAMENTE os campos abaixo.
 
-Foque na PRIMEIRA PÁGINA do documento. Ignore qualquer conteúdo de DAE ou boleto.
+CONTEXTO IMPORTANTE
+═══════════════════
+O documento tem sempre o mesmo layout, dividido em blocos:
+1. Cabeçalho — com o título "DECALQUE CHASSI" e a linha "IDENTIFICAÇÃO DO VEÍCULO E MOTIVO DO PREENCHIMENTO: <MOTIVO>" (este motivo é o serviço).
+2. Bloco "DADOS DO PROPRIETÁRIO" (proprietário ATUAL = comprador na transferência).
+3. Bloco "ENDEREÇO DO PROPRIETÁRIO".
+4. Bloco "ENDEREÇO DE CORRESPONDÊNCIA" — IGNORE, é só correspondência. Use sempre o "ENDEREÇO DO PROPRIETÁRIO" para o comprador.
+5. Bloco "DADOS DO PROPRIETÁRIO ANTERIOR" (vendedor — pode estar em branco se não houver).
+6. Blocos "CARACTERÍSTICAS DO VEÍCULO" e "CARACTERÍSTICAS DO VEÍCULO DE CARGA".
+7. Bloco "RESTRIÇÕES À VENDA".
 
-IMPORTANTE: o cabeçalho da folha indica o SERVIÇO solicitado (ex.: "TRANSFERÊNCIA DE PROPRIEDADE", "ALTERAÇÃO DE DADOS CADASTRAIS / INCLUSÃO DE GRAVAME / RETIRADA DE GRAVAME", "ALTERAÇÃO DE CARACTERÍSTICA", "BAIXA DE VEÍCULO", "PRIMEIRO EMPLACAMENTO"). Identifique-o no campo "tipoServicoFolha" usando EXATAMENTE um destes valores:
-- "transferencia"
-- "alteracao_dados"
-- "mudanca_caracteristica"
-- "baixa"
-- "primeiro_emplacamento"
-- "" (vazio se não conseguir identificar com certeza)
+Algumas folhas trazem MENOS campos preenchidos que outras (ex.: baixa não tem comprador, primeiro emplacamento não tem proprietário anterior, alteração de características pode não ter valor de recibo). Se um campo não existir ou estiver em branco, retorne string vazia "" — NUNCA invente.
 
-Retorne APENAS um objeto JSON válido, sem markdown, sem explicações:
+DETECÇÃO DO TIPO DE SERVIÇO
+═══════════════════════════
+Leia a linha "MOTIVO DO PREENCHIMENTO" no topo e mapeie para EXATAMENTE um destes valores em "tipoServicoFolha":
+- "TRANSFERÊNCIA DE PROPRIEDADE" / "TRANSFERENCIA" → "transferencia"
+- "ALTERAÇÃO DE DADOS" / "INCLUSÃO DE GRAVAME" / "RETIRADA DE GRAVAME" / "INCLUSÃO DE RESTRIÇÃO" → "alteracao_dados"
+- "ALTERAÇÃO DE CARACTERÍSTICA" / "MUDANÇA DE CARACTERÍSTICA" → "mudanca_caracteristica"
+- "BAIXA" / "BAIXA DE VEÍCULO" → "baixa"
+- "PRIMEIRO EMPLACAMENTO" / "EMPLACAMENTO INICIAL" → "primeiro_emplacamento"
+- Qualquer outro caso ou ambíguo → ""
+
+FORMATO DE SAÍDA
+════════════════
+Retorne APENAS um objeto JSON válido, sem markdown, sem comentários, sem texto antes/depois:
 {
   "tipoServicoFolha": "",
   "placa": "",
@@ -281,16 +296,43 @@ Retorne APENAS um objeto JSON válido, sem markdown, sem explicações:
   }
 }
 
-REGRAS:
-- "placa": maiúsculo, sem espaços (ex: "TYQ3C89")
-- "chassi": exatamente como aparece no documento
-- "renavam": apenas dígitos
-- "valorRecibo": valor em reais (ex: "14500.00"), sem "R$" ou pontos de milhar
-- "dataAquisicao": formato "DD/MM/YYYY"
-- "tipoCpfCnpj": use "CPF" se 11 dígitos, "CNPJ" se 14 dígitos
-- "cpfCnpj": apenas dígitos, sem pontuação
-- "cep": apenas dígitos, sem hífen
-- Campos não encontrados: retornar string vazia ""
+REGRAS DE NORMALIZAÇÃO
+══════════════════════
+- "placa": maiúsculas, SEM espaços nem hífen (ex.: "BML0109").
+- "chassi": exatamente como aparece, maiúsculas, sem espaços (17 caracteres no padrão).
+- "renavam": apenas dígitos.
+- "valorRecibo": número em reais com PONTO decimal e SEM separador de milhar nem "R$". Ex.: "R$ 140.000,00" → "140000.00". Se em branco, "".
+- "dataAquisicao": formato "DD/MM/YYYY". Se em branco, "".
+- "municipioEmplacamento": exatamente como aparece (ex.: "ITAMBE DO MATO DENTRO").
+- "comprador" = bloco DADOS DO PROPRIETÁRIO + ENDEREÇO DO PROPRIETÁRIO (NÃO o de correspondência).
+- "comprador.nome": nome completo, exatamente como impresso.
+- "comprador.cpfCnpj": apenas dígitos (sem pontos, traços ou barras).
+- "comprador.tipoCpfCnpj": "CPF" se tiver 11 dígitos, "CNPJ" se 14.
+- "comprador.rg": número do "N. DOC.IDENTIDADE" — apenas dígitos/letras como aparece, sem prefixo.
+- "comprador.orgaoExpedidor": ex.: "SSP", "PC", "DETRAN".
+- "comprador.uf": SIGLA UF do órgão expedidor (2 letras). Se não houver, "".
+- "comprador.endereco": logradouro SEM número e SEM bairro (ex.: "RUA ITABIRA").
+- "comprador.numero": apenas o número do imóvel (ex.: "43"). Se "S/N", devolva "S/N".
+- "comprador.cep": apenas dígitos (8 dígitos), sem hífen.
+- "comprador.bairro": nome do bairro.
+- "comprador.municipio": nome do município (ex.: "ITAMBE DO MATO DENTRO").
+- "vendedor" = bloco DADOS DO PROPRIETÁRIO ANTERIOR. Pode estar inteiramente em branco — nesse caso devolva todas as strings vazias.
+- "vendedor.cpfCnpj": apenas dígitos.
+- "vendedor.tipoCpfCnpj": "CPF" se 11 dígitos, "CNPJ" se 14, "" se vazio.
+- "veiculo.tipo": texto após o código (ex.: "025 - UTILITARIO" → "UTILITARIO"). Sem o código numérico.
+- "veiculo.marcaModelo": exatamente como aparece (ex.: "I/LR R.R SPT 3.0 TD HSE").
+- "veiculo.anoFabricacao": 4 dígitos.
+- "veiculo.anoModelo": 4 dígitos.
+- "veiculo.cor": SOMENTE o nome da cor, sem o código (ex.: "11 - PRETA" → "PRETA"). Se for "-" ou vazio, devolva "".
+- "veiculo.combustivel": ex.: "DIESEL", "GASOLINA", "FLEX", "ALCOOL".
+
+REGRAS GERAIS
+═════════════
+- Se um campo não existir no documento OU estiver em branco, devolva "" — NUNCA chute, NUNCA copie de outro bloco.
+- NÃO confunda "ENDEREÇO DO PROPRIETÁRIO" com "ENDEREÇO DE CORRESPONDÊNCIA".
+- NÃO confunda "DATA DA AQUISIÇÃO" (que vai em dataAquisicao) com "DATA DE RECEBIMENTO" do cabeçalho.
+- NÃO inclua R$, pontos de milhar nem vírgula no valorRecibo.
+- Devolva APENAS o JSON, nada mais.
 `;
 
 export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> {
