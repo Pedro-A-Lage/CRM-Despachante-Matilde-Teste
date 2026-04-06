@@ -922,8 +922,9 @@ function ExtensionListener() {
                                     // FIX #3: fallback estrito — só atualiza se houver EXATAMENTE 1 OS aberta para o veículo
                                     const candidatas = ordens.filter((o: any) => o.veiculoId === veiculoMatch.id && o.status !== 'entregue');
                                     if (candidatas.length === 1) {
-                                        os = candidatas[0];
-                                        resolvedOsId = candidatas[0].id;
+                                        const unica = candidatas[0]!;
+                                        os = unica;
+                                        resolvedOsId = unica.id;
                                         console.log('[Matilde] OS encontrada por placa/chassi (única):', resolvedOsId);
                                     } else if (candidatas.length > 1) {
                                         console.warn('[Matilde] Múltiplas OS abertas para o veículo — fallback abortado para evitar atualizar a errada.', candidatas.map((c: any) => c.id));
