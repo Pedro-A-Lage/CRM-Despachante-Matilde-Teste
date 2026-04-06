@@ -26,7 +26,7 @@ import { useEffect, useState } from 'react';
 import type { TipoServico } from './types';
 import { temPermissao } from './lib/permissions';
 import NovaOSModal from './components/NovaOSModal';
-import { NovaOSModalContext, useNovaOSModalState } from './hooks/useNovaOSModal';
+import { NovaOSModalContext, useNovaOSModalState, useNovaOSModal } from './hooks/useNovaOSModal';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { usuario, carregando } = useAuth();
@@ -43,8 +43,7 @@ function PermissionRoute({ children, permissao }: { children: React.ReactNode; p
 
 function ExtensionListener() {
     const navigate = useNavigate();
-    const novaOSModal = useNovaOSModalState();
-    const { isOpen: novaOSOpen, dadosIniciais: novaOSDados, open: openNovaOS, close: closeNovaOS } = novaOSModal;
+    const { open: openNovaOS } = useNovaOSModal();
     const [iaStatus, setIaStatus] = useState<string | null>(null); // mensagem de status da IA
 
     // Helper: busca veículo existente antes de criar (evita duplicatas)
@@ -1355,7 +1354,6 @@ function ExtensionListener() {
     }
 
     return (
-        <NovaOSModalContext.Provider value={novaOSModal}>
         <>
             {/* Banner flutuante: IA processando */}
             {iaStatus && (
@@ -1387,20 +1385,16 @@ function ExtensionListener() {
                     {iaStatus}
                 </div>
             )}
-            <NovaOSModal
-                isOpen={novaOSOpen}
-                onClose={closeNovaOS}
-                onCreated={(osId) => { closeNovaOS(); navigate(`/ordens/${osId}`); }}
-                dadosIniciais={novaOSDados}
-            />
         </>
-        </NovaOSModalContext.Provider>
     );
 }
 
-export default function App() {
+function AppInner() {
+    const navigate = useNavigate();
+    const novaOSModal = useNovaOSModalState();
+    const { isOpen: novaOSOpen, dadosIniciais: novaOSDados, close: closeNovaOS } = novaOSModal;
     return (
-        <BrowserRouter>
+        <NovaOSModalContext.Provider value={novaOSModal}>
             <AuthProvider>
                 <ConfirmProvider>
                     <Routes>
@@ -1445,6 +1439,20 @@ export default function App() {
                     </Routes>
                 </ConfirmProvider>
             </AuthProvider>
+            <NovaOSModal
+                isOpen={novaOSOpen}
+                onClose={closeNovaOS}
+                onCreated={(osId) => { closeNovaOS(); navigate(`/ordens/${osId}`); }}
+                dadosIniciais={novaOSDados}
+            />
+        </NovaOSModalContext.Provider>
+    );
+}
+
+export default function App() {
+    return (
+        <BrowserRouter>
+            <AppInner />
         </BrowserRouter>
     );
 }
