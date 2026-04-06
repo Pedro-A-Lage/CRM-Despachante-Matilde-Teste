@@ -60,11 +60,15 @@ interface ATPVeModalProps {
      * 'revisar' = OS já criada, modal para conferência/edição
      */
     modo?: 'coletar' | 'revisar';
+    /** Força o tipo de serviço da OS criada (sobrescreve detecção). */
+    tipoServicoOverride?: TipoServico;
+    /** Título exibido no header do modal (sobrescreve o padrão). */
+    tituloOverride?: string;
 }
 
 type Etapa = 'upload' | 'analisando' | 'preview' | 'salvando' | 'sucesso' | 'erro';
 
-export default function ATPVeModal({ isOpen, onClose, onSuccess, dadosIniciais, modo = 'coletar' }: ATPVeModalProps) {
+export default function ATPVeModal({ isOpen, onClose, onSuccess, dadosIniciais, modo = 'coletar', tipoServicoOverride, tituloOverride }: ATPVeModalProps) {
     const [etapa, setEtapa] = useState<Etapa>('upload');
     const [dados, setDados] = useState<DadosExtraidos | null>(null);
     const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -373,7 +377,7 @@ export default function ATPVeModal({ isOpen, onClose, onSuccess, dadosIniciais, 
                 pdfUrl = await uploadFileToSupabase(pdfFile, pdfPath);
             }
 
-            const tipoServico: TipoServico = (dados.tipoServicoDetectado as TipoServico) || 'transferencia';
+            const tipoServico: TipoServico = tipoServicoOverride || (dados.tipoServicoDetectado as TipoServico) || 'transferencia';
             const checklistBase = await gerarChecklistDinamico(tipoServico, 'PF');
             const checklist = pdfUrl
                 ? checklistBase.map(item =>
@@ -1074,52 +1078,20 @@ export default function ATPVeModal({ isOpen, onClose, onSuccess, dadosIniciais, 
                             </button>
                         )}
                         {modo === 'revisar' ? (
-                            <button style={btnPrimary} onClick={handleSalvarAlteracoes}>
-                                Salvar Alterações
+                            <button
+                                style={{ ...btnPrimary, opacity: (etapa as Etapa) === 'salvando' ? 0.6 : 1, cursor: (etapa as Etapa) === 'salvando' ? 'not-allowed' : 'pointer' }}
+                                onClick={handleSalvarAlteracoes}
+                                disabled={(etapa as Etapa) === 'salvando'}
+                            >
+                                {(etapa as Etapa) === 'salvando' ? 'Salvando...' : 'Salvar Alterações'}
                             </button>
                         ) : (
                             <button
-                                style={{ ...btnPrimary, display: 'inline-flex', alignItems: 'center', gap: 8 }}
-                                onClick={() => {
-                                    window.postMessage({
-                                        source: 'MATILDE_CRM',
-                                        action: 'DEFINIR_SERVICO',
-                                        payload: { servico: 'transferencia' },
-                                    }, '*');
-                                    if (dados) {
-                                        window.dispatchEvent(new CustomEvent('MATILDE_PREENCHER_DETRAN', {
-                                            detail: {
-                                                servico: 'transferencia',
-                                                placa: dados.placa || '',
-                                                chassi: dados.chassi || '',
-                                                renavam: dados.renavam || '',
-                                                valorRecibo: dados.valorRecibo || '',
-                                                dataAquisicao: (() => { const d = dados.dataAquisicao || ''; const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? m[3]+'/'+m[2]+'/'+m[1] : d; })(),
-                                                cpfCnpj: dados.comprador?.cpfCnpj || '',
-                                                tipoCpfCnpj: dados.comprador?.tipoCpfCnpj || 'CPF',
-                                                nomeAdquirente: dados.comprador?.nome || '',
-                                                numeroCRV: dados.numeroCRV || '',
-                                                codigoSegurancaCRV: dados.codigoSegurancaCRV || '',
-                                                docIdentidade: identidade.numero || '',
-                                                orgaoExpedidor: identidade.orgaoExpedidor || '',
-                                                ufExpedidor: identidade.uf || '',
-                                                cep: dados.comprador?.cep || '',
-                                                endereco: dados.comprador?.endereco || '',
-                                                numero: dados.comprador?.numero || '',
-                                                bairro: dados.comprador?.bairro || '',
-                                                municipioAdquirente: dados.comprador?.municipio || '',
-                                                nomeVendedor: dados.vendedor?.nome || '',
-                                                cpfCnpjVendedor: dados.vendedor?.cpfCnpj || '',
-                                                tipoCpfCnpjVendedor: dados.vendedor?.tipoCpfCnpj || 'CPF',
-                                                ufOrigem: dados.vendedor?.uf || '',
-                                            },
-                                        }));
-                                    }
-                                    window.open('https://www.detran.mg.gov.br/veiculos/transferencias/taxa-para-transferir-propriedade-de-veiculo-comprador/index/2', '_blank');
-                                    resetModal(); onClose();
-                                }}
+                                style={{ ...btnPrimary, display: 'inline-flex', alignItems: 'center', gap: 8, opacity: (etapa as Etapa) === 'salvando' ? 0.6 : 1, cursor: (etapa as Etapa) === 'salvando' ? 'not-allowed' : 'pointer' }}
+                                onClick={handleConfirmar}
+                                disabled={(etapa as Etapa) === 'salvando'}
                             >
-                                Ir ao Detran <ExternalLink size={15} />
+                                {(etapa as Etapa) === 'salvando' ? 'Criando...' : 'Criar OS'}
                             </button>
                         )}
                     </div>

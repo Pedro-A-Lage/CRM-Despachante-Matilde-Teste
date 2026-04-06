@@ -1076,8 +1076,8 @@ export default function OSDetail() {
                     <ObservacaoPendenciaBar os={os} onRefresh={refresh} />
 
                     {/* Tabs */}
-                    <div className="tabs" style={{ display: 'flex', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', flex: 1, gap: 0, overflow: 'hidden' }}>
+                    <div className="tabs" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 4 }}>
+                        <div style={{ display: 'flex', flex: '1 1 auto', gap: 0, flexWrap: 'wrap', rowGap: 4, minWidth: 0 }}>
                             {tabs.map((tab) => {
                                 const isFinanceiroComDebito = tab.id === 'financeiro' && temDebitosPendentes;
                                 return (

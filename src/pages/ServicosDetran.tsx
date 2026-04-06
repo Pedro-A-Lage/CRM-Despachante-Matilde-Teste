@@ -89,12 +89,14 @@ export default function ServicosDetran() {
             setShowSegundaViaModal(true);
             return;
         }
-        // Ativa captura automática de Primeiro Emplacamento antes de abrir o Detran
-        if (service.id === 'primeiro_emplacamento') {
+        // Primeiro emplacamento já tem fluxo próprio na extensão (CAPTURE_PRIMEIRO_EMPLACAMENTO)
+        // que define seu próprio servicoAtivo. Não enviamos DEFINIR_SERVICO daqui para evitar
+        // colisão com o handler de Decalque/DAE (que escuta apenas 4 tipos).
+        if (service.id !== 'primeiro_emplacamento') {
             window.postMessage({
                 source: 'MATILDE_CRM',
                 action: 'DEFINIR_SERVICO',
-                payload: { servico: 'primeiro_emplacamento' },
+                payload: { servico: service.id },
             }, '*');
         }
         window.open(service.url, '_blank');

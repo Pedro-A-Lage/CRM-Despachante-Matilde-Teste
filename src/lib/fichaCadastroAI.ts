@@ -54,9 +54,35 @@ export interface DadosFichaCadastro {
     };
 }
 
-const PROMPT_FICHA_CADASTRO = `Você é um especialista em documentos veiculares brasileiros. Analise esta FICHA DE CADASTRO / DAE (Documento de Arrecadação Estadual) emitida pelo Detran MG e extraia os dados.
+const PROMPT_FICHA_CADASTRO = `Você é um especialista em documentos do Detran/MG. Analise este "DECALQUE CHASSI" / "DOCUMENTO DE CADASTRO" / FICHA DE CADASTRO emitido pelo Detran/MG (pode vir junto com o DAE — ignore o DAE) e extraia EXATAMENTE os campos abaixo.
 
-Retorne APENAS um objeto JSON válido, sem markdown, sem explicações:
+CONTEXTO IMPORTANTE
+═══════════════════
+O documento tem sempre o mesmo layout, dividido em blocos:
+1. Cabeçalho — título "DECALQUE CHASSI" e a linha "IDENTIFICAÇÃO DO VEÍCULO E MOTIVO DO PREENCHIMENTO: <MOTIVO>" (este motivo é o serviço).
+2. Bloco "DADOS DO PROPRIETÁRIO" (proprietário ATUAL).
+3. Bloco "ENDEREÇO DO PROPRIETÁRIO".
+4. Bloco "ENDEREÇO DE CORRESPONDÊNCIA" — IGNORE, é só correspondência. Use sempre o "ENDEREÇO DO PROPRIETÁRIO".
+5. Bloco "DADOS DO PROPRIETÁRIO ANTERIOR" (vendedor — pode estar em branco se não houver).
+6. Blocos "CARACTERÍSTICAS DO VEÍCULO" e "CARACTERÍSTICAS DO VEÍCULO DE CARGA".
+7. Bloco "RESTRIÇÕES À VENDA".
+
+Algumas folhas trazem MENOS campos preenchidos que outras (ex.: baixa não tem comprador, primeiro emplacamento não tem proprietário anterior, alteração de características pode não ter valor de recibo). Se um campo não existir ou estiver em branco, retorne string vazia "" — NUNCA invente, NUNCA chute, NUNCA copie de outro bloco.
+
+DETECÇÃO DO TIPO DE SERVIÇO
+═══════════════════════════
+Leia a linha "MOTIVO DO PREENCHIMENTO" no topo e mapeie para EXATAMENTE um destes valores em "tipoServico":
+- "TRANSFERÊNCIA DE PROPRIEDADE" / "TRANSFERENCIA" → "transferencia"
+- "ALTERAÇÃO DE DADOS" / "INCLUSÃO DE GRAVAME" / "RETIRADA DE GRAVAME" / "INCLUSÃO DE RESTRIÇÃO" → "alteracao_dados"
+- "ALTERAÇÃO DE CARACTERÍSTICA" / "MUDANÇA DE CARACTERÍSTICA" → "mudanca_caracteristica"
+- "BAIXA" / "BAIXA DE VEÍCULO" → "baixa"
+- "PRIMEIRO EMPLACAMENTO" / "EMPLACAMENTO INICIAL" → "primeiro_emplacamento"
+- "SEGUNDA VIA" / "2ª VIA DO CRV" / "EMISSÃO DA 2ª VIA" → "segunda_via"
+- Qualquer outro caso ou ambíguo → ""
+
+FORMATO DE SAÍDA
+════════════════
+Retorne APENAS um objeto JSON válido, sem markdown, sem comentários, sem texto antes/depois:
 {
   "tipoServico": "",
   "placa": "",
@@ -94,62 +120,52 @@ Retorne APENAS um objeto JSON válido, sem markdown, sem explicações:
   }
 }
 
-═══════════════════════════════════════════════════════
-TIPO DE SERVIÇO
-═══════════════════════════════════════════════════════
+REGRAS DE NORMALIZAÇÃO
+══════════════════════
+- "placa": maiúsculas, SEM espaços nem hífen. Pode estar vazia em primeiro emplacamento.
+- "chassi": exatamente como aparece, maiúsculas, sem espaços (17 caracteres no padrão).
+- "renavam": apenas dígitos.
+- "marcaModelo": exatamente como aparece (ex.: "I/LR R.R SPT 3.0 TD HSE").
+- "anoFabricacao" / "anoModelo": 4 dígitos.
+- "cor": SOMENTE o nome da cor, SEM o código (ex.: "11 - PRETA" → "PRETA"). Se "-" ou vazio, "".
+- "categoria": SOMENTE o nome (ex.: "1 - PARTIC" → "PARTIC", "PARTICULAR", "OFICIAL", "ALUGUEL").
+- "combustivel": ex.: "DIESEL", "GASOLINA", "FLEX", "ALCOOL".
+- "tipoVeiculo": SOMENTE o nome (ex.: "025 - UTILITARIO" → "UTILITARIO", "AUTOMOVEL", "MOTOCICLETA", "CAMINHONETE").
+- "municipioEmplacamento": exatamente como aparece (ex.: "ITAMBE DO MATO DENTRO").
+- "valorRecibo": número em reais com PONTO decimal e SEM separador de milhar nem "R$". Ex.: "R$ 140.000,00" → "140000.00". Se em branco, "".
+- "dataAquisicao": formato "DD/MM/YYYY". NUNCA confundir com a "DATA DE RECEBIMENTO" do cabeçalho.
 
-Identifique o tipo de serviço pela descrição da taxa:
-- "SEGUNDA VIA DO REGISTRO DE VEICULO" → "segunda_via"
-- "TRANSFERÊNCIA" ou "TAXA DE TRANSFERÊNCIA" → "transferencia"
-- "PRIMEIRO EMPLACAMENTO" → "primeiro_emplacamento"
-- "ALTERAÇÃO DE DADOS" → "alteracao_dados"
-- Outro → descreva brevemente
-
-═══════════════════════════════════════════════════════
-DADOS DO VEÍCULO
-═══════════════════════════════════════════════════════
-
-- "placa": maiúsculo, sem espaços (pode estar vazio em primeiro emplacamento)
-- "chassi": 17 caracteres alfanuméricos
-- "renavam": apenas dígitos
-- "marcaModelo": marca/modelo/versão
-- "anoFabricacao": 4 dígitos
-- "anoModelo": 4 dígitos
-- "cor": cor predominante (se "-" ou vazio, deixe "")
-- "categoria": PARTICULAR, OFICIAL, etc.
-- "combustivel": tipo de combustível
-- "tipoVeiculo": AUTOMOVEL, MOTOCICLETA, CAMINHONETE, etc.
-- "municipioEmplacamento": município onde será emplacado
-- "valorRecibo": valor do recibo/venda (ex: "114.000,00")
-- "dataAquisicao": data de aquisição no formato DD/MM/AAAA
-
-═══════════════════════════════════════════════════════
 DADOS DO PROPRIETÁRIO
-═══════════════════════════════════════════════════════
+═════════════════════
+Use o bloco "DADOS DO PROPRIETÁRIO" + "ENDEREÇO DO PROPRIETÁRIO" (NÃO use "ENDEREÇO DE CORRESPONDÊNCIA").
+- "proprietario.nome": nome completo, exatamente como impresso.
+- "proprietario.cpfCnpj": apenas dígitos (sem pontos, traços ou barras).
+- "proprietario.tipoCpfCnpj": "CPF" se 11 dígitos, "CNPJ" se 14.
+- "proprietario.docIdentidade": "N. DOC.IDENTIDADE" — apenas dígitos/letras como aparece.
+- "proprietario.orgaoExpedidor": ex.: "SSP", "PC", "DETRAN".
+- "proprietario.ufOrgaoExpedidor": "SIGLA UF" do órgão expedidor (2 letras).
+- "proprietario.endereco": logradouro SEM número e SEM bairro (ex.: "RUA ITABIRA").
+- "proprietario.numero": apenas o número do imóvel (ex.: "43"). Se "S/N", devolva "S/N".
+- "proprietario.bairro": nome do bairro.
+- "proprietario.municipio": nome do município (ex.: "ITAMBE DO MATO DENTRO").
+- "proprietario.uf": UF do município do proprietário (2 letras). Se a folha não trouxer, deduza pelo município se for óbvio (ex.: "ITAMBE DO MATO DENTRO" é MG); caso contrário, "".
+- "proprietario.cep": apenas dígitos (8 dígitos), sem hífen.
 
-- "proprietario.nome": nome completo
-- "proprietario.cpfCnpj": CPF ou CNPJ com pontuação
-- "proprietario.tipoCpfCnpj": "CPF" se 11 dígitos, "CNPJ" se 14
-- "proprietario.docIdentidade": número do RG / documento de identidade
-- "proprietario.orgaoExpedidor": órgão expedidor (SSP, PC, etc.)
-- "proprietario.ufOrgaoExpedidor": UF do órgão expedidor (2 letras)
-- "proprietario.endereco": logradouro SEM número
-- "proprietario.numero": número do imóvel
-- "proprietario.bairro": bairro
-- "proprietario.municipio": município
-- "proprietario.uf": UF (2 letras)
-- "proprietario.cep": CEP
-
-═══════════════════════════════════════════════════════
 PROPRIETÁRIO ANTERIOR (VENDEDOR)
-═══════════════════════════════════════════════════════
+════════════════════════════════
+Use o bloco "DADOS DO PROPRIETÁRIO ANTERIOR". Pode estar inteiramente em branco — nesse caso devolva todas as strings vazias.
+- "proprietarioAnterior.nome": nome do vendedor.
+- "proprietarioAnterior.cpfCnpj": apenas dígitos.
+- "proprietarioAnterior.municipio": município do vendedor (pode estar vazio).
+- "proprietarioAnterior.uf": UF do vendedor (2 letras, pode estar vazio).
 
-- "proprietarioAnterior.nome": nome do vendedor/revendedor
-- "proprietarioAnterior.cpfCnpj": CPF ou CNPJ do vendedor
-- "proprietarioAnterior.municipio": município do vendedor
-- "proprietarioAnterior.uf": UF do vendedor
-
-Se um campo não existir no documento, deixe a string vazia "". Não invente dados.`;
+REGRAS GERAIS
+═════════════
+- Se um campo não existir OU estiver em branco, devolva "" — NUNCA chute, NUNCA copie de outro bloco.
+- NÃO confunda "ENDEREÇO DO PROPRIETÁRIO" com "ENDEREÇO DE CORRESPONDÊNCIA".
+- NÃO confunda "DATA DA AQUISIÇÃO" com "DATA DE RECEBIMENTO".
+- NÃO inclua R$, pontos de milhar nem vírgula no valorRecibo.
+- Devolva APENAS o JSON, nada mais.`;
 
 async function chamarGeminiComRetry(pdfBase64: string, prompt: string, maxTentativas = 3): Promise<string> {
     for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
@@ -199,7 +215,9 @@ export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaC
     const tipoVeiculo = (tipoVeiculoRaw.includes('moto') || tipoVeiculoRaw.includes('ciclomot')) ? 'moto' : 'carro';
 
     return {
-        tipoServico: limpar(parsed.tipoServico) || 'segunda_via',
+        // IA pode devolver "" quando o motivo for ambíguo. Não force fallback —
+        // o chamador (App.tsx) decide o tipo via servicoAtivo do storage.
+        tipoServico: limpar(parsed.tipoServico),
         placa: limpar(parsed.placa),
         chassi: limpar(parsed.chassi),
         renavam: limpar(parsed.renavam),
