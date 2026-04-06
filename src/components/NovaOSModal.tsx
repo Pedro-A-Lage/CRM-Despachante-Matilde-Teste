@@ -116,10 +116,11 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
       let arquivoParaUpload: File | null = arquivo;
       if (!arquivoParaUpload && dadosForm.fileBase64) {
         try {
-          const arr = dadosForm.fileBase64.split(',') as string[];
-          const mimeMatch = (arr[0] as string).match(/:(.*?);/);
-          const mime = mimeMatch ? (mimeMatch[1] as string) : 'application/pdf';
-          const b64: string = arr.length > 1 ? (arr[1] as string) : (arr[0] as string);
+          const sepIdx = dadosForm.fileBase64.indexOf(',');
+          const head = sepIdx >= 0 ? dadosForm.fileBase64.slice(0, sepIdx) : '';
+          const b64 = sepIdx >= 0 ? dadosForm.fileBase64.slice(sepIdx + 1) : dadosForm.fileBase64;
+          const mimeMatch = head.match(/:(.*?);/);
+          const mime = mimeMatch && mimeMatch[1] ? mimeMatch[1] : 'application/pdf';
           const bstr = atob(b64);
           const u8arr = new Uint8Array(bstr.length);
           for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
