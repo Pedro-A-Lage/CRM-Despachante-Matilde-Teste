@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ExternalLink, RefreshCw, FileBadge, FileText, AlertCircle, XCircle, Settings, Wrench, Upload } from 'lucide-react';
+import { ExternalLink, FileBadge, FileText, XCircle, Settings, Wrench, Upload } from 'lucide-react';
 import type { TipoServico } from '../types';
-import ATPVeModal from '../components/ATPVeModal';
-import ModalSegundaVia from '../components/ModalSegundaVia';
 
 interface DetranService {
     id: TipoServico;
@@ -20,7 +17,7 @@ const SERVICES: DetranService[] = [
     {
         id: 'transferencia',
         title: 'Transferência de Veículo',
-        description: 'Anexe o ATPV-e para criar cliente, veículo e OS automaticamente.',
+        description: 'Acesse o portal, execute a transferência e o CRM criará a OS automaticamente com o PDF capturado.',
         url: 'https://transito.mg.gov.br/veiculos/transferencias/taxa-para-transferir-propriedade-de-veiculo-comprador/index/2',
         icon: Upload,
         color: 'var(--color-info)',
@@ -38,7 +35,7 @@ const SERVICES: DetranService[] = [
     {
         id: 'segunda_via',
         title: '2ª Via de Recibo (CRV)',
-        description: 'Anexe o CRLV-e para criar cliente, veículo e OS automaticamente.',
+        description: 'Acesse o portal, solicite a 2ª via e o CRM criará a OS automaticamente com o PDF capturado.',
         url: 'https://transito.mg.gov.br/veiculos/documentos-de-veiculos/emitir-a-2-via-do-crv',
         icon: FileText,
         color: 'var(--color-cyan)',
@@ -75,21 +72,10 @@ const SERVICES: DetranService[] = [
 
 export default function ServicosDetran() {
     const [hoveredService, setHoveredService] = useState<string | null>(null);
-    const [showATPVeModal, setShowATPVeModal] = useState(false);
-    const [showSegundaViaModal, setShowSegundaViaModal] = useState(false);
-    const navigate = useNavigate();
 
     const openDetran = (service: DetranService) => {
-        // Para transferência, abre o modal de ATPV-e primeiro
-        if (service.id === 'transferencia') {
-            setShowATPVeModal(true);
-            return;
-        }
-        if (service.id === 'segunda_via') {
-            setShowSegundaViaModal(true);
-            return;
-        }
-        // Notifica extensão qual serviço está sendo iniciado
+        // Notifica a extensão qual serviço está sendo iniciado, depois abre o Detran.
+        // A extensão captura o PDF ao final → IA analisa → CRM cria a OS automaticamente.
         window.postMessage({
             source: 'MATILDE_CRM_PAGE',
             action: 'DEFINIR_SERVICO',
@@ -219,25 +205,6 @@ export default function ServicosDetran() {
                 ))}
             </div>
 
-            {/* Modal de ATPV-e */}
-            <ATPVeModal
-                isOpen={showATPVeModal}
-                onClose={() => setShowATPVeModal(false)}
-                onSuccess={(osId) => {
-                    setShowATPVeModal(false);
-                    navigate(`/ordens/${osId}`);
-                }}
-            />
-
-            {/* Modal de CRLV-e (2ª Via) */}
-            <ModalSegundaVia
-                isOpen={showSegundaViaModal}
-                onClose={() => setShowSegundaViaModal(false)}
-                onSuccess={(osId) => {
-                    setShowSegundaViaModal(false);
-                    navigate(`/ordens/${osId}`);
-                }}
-            />
         </div>
     );
 }
