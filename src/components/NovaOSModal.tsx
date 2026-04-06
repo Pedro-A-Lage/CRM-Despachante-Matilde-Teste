@@ -9,8 +9,8 @@ import {
 import { useServiceLabels } from '../hooks/useServiceLabels';
 import type { DadosIniciaisOS } from '../hooks/useNovaOSModal';
 import { extrairDadosFichaCadastro, type DadosFichaCadastro } from '../lib/fichaCadastroAI';
-import { getClientes, saveCliente, saveVeiculo, saveOrdem, generateId } from '../lib/database';
-import { gerarChecklistDinamico } from '../lib/configService';
+import { getClientes, saveCliente, saveVeiculo, saveOrdem, updateOrdem, generateId } from '../lib/database';
+import { gerarChecklistDinamico, getServiceConfig } from '../lib/configService';
 import { finalizarOS } from '../lib/osService';
 import { useNavigate } from 'react-router-dom';
 import type { Cliente } from '../types';
@@ -112,9 +112,37 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
         checklist,
       });
 
-      // 5. Finalizar OS (gerar cobranças e valorServico)
+      // 5. Upload do PDF (arquivo local OU base64 vindo da extensão)
+      let arquivoParaUpload: File | null = arquivo;
+      if (!arquivoParaUpload && dadosForm.fileBase64) {
+        try {
+          const arr = dadosForm.fileBase64.split(',');
+          const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+          const bstr = atob(arr[1] || arr[0]);
+          const u8arr = new Uint8Array(bstr.length);
+          for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+          arquivoParaUpload = new File([u8arr], dadosForm.fileName || `ficha_${Date.now()}.pdf`, { type: mime });
+        } catch (e) {
+          console.warn('Erro ao converter fileBase64 para File:', e);
+        }
+      }
+      if (arquivoParaUpload) {
+        try {
+          const { uploadFileToSupabase } = await import('../lib/fileStorage');
+          const path = `ordens/${ordem.id}/pdf_detran_${Date.now()}.pdf`;
+          const pdfDetranUrl = await uploadFileToSupabase(arquivoParaUpload, path);
+          await updateOrdem(ordem.id, { pdfDetranUrl, pdfDetranName: arquivoParaUpload.name });
+        } catch (uploadErr) {
+          console.warn('Upload do PDF não bloqueante:', uploadErr);
+        }
+      }
+
+      // 6. Finalizar OS (gerar cobranças e valorServico)
+      // trocaPlaca é derivado do service_config (gera_placa='sempre' → true)
       try {
-        await finalizarOS(ordem.id, dadosForm.tipoServico!, dadosForm.tipoVeiculo as any || 'carro', false);
+        const svcConfig = await getServiceConfig(dadosForm.tipoServico!);
+        const trocaPlaca = svcConfig?.gera_placa === 'sempre';
+        await finalizarOS(ordem.id, dadosForm.tipoServico!, dadosForm.tipoVeiculo as any || 'carro', trocaPlaca);
       } catch (finErr) {
         console.warn('finalizarOS falhou (não bloqueante):', finErr);
       }
