@@ -4,7 +4,9 @@ import { X, Upload, Camera, Edit3, Loader } from 'lucide-react';
 import {
   overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle,
   btnPrimary, btnSecondary,
+  inputStyle, selectStyle, labelStyle, fieldWrapStyle, secaoStyle, secaoHeaderStyle,
 } from './ModalBase';
+import { useServiceLabels } from '../hooks/useServiceLabels';
 import type { DadosIniciaisOS } from '../hooks/useNovaOSModal';
 import { extrairDadosFichaCadastro, type DadosFichaCadastro } from '../lib/fichaCadastroAI';
 import { getClientes } from '../lib/database';
@@ -76,9 +78,16 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
             />
           )}
           {etapa === 'revisao' && (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-              Formulário de revisão — Task 5
-            </div>
+            <EtapaRevisao
+              dados={dadosForm}
+              onChange={setDadosForm}
+              clienteExistente={clienteExistente}
+              onVoltar={() => setEtapa('upload')}
+              onConfirmar={() => setEtapa('salvando')}
+            />
+          )}
+          {(etapa === 'salvando' || etapa === 'sucesso') && (
+            <div style={{ padding: '3rem', textAlign: 'center' }}>Salvando... (Task 6)</div>
           )}
         </div>
       </div>
@@ -271,6 +280,168 @@ function EtapaAnalisando({ arquivo, dadosIniciaisExtensao, onConcluido, onErro }
   );
 }
 
-// Suppress unused import warning for footerStyle, btnPrimary, dadosForm, clienteExistente — used in later tasks
+// ─── Etapa 3: Revisão ───────────────────────────────────────
+interface EtapaRevisaoProps {
+  dados: DadosIniciaisOS;
+  onChange: (dados: DadosIniciaisOS) => void;
+  clienteExistente?: Cliente;
+  onVoltar: () => void;
+  onConfirmar: () => void;
+}
+
+function EtapaRevisao({ dados, onChange, clienteExistente, onVoltar, onConfirmar }: EtapaRevisaoProps) {
+  const serviceLabels = useServiceLabels();
+  const set = (key: keyof DadosIniciaisOS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    onChange({ ...dados, [key]: e.target.value });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '1.5rem' }}>
+
+      {/* Seção Serviço */}
+      <div style={secaoStyle}>
+        <div style={secaoHeaderStyle}>Serviço</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Tipo de Serviço *</label>
+            <select style={selectStyle} value={dados.tipoServico || ''} onChange={set('tipoServico')}>
+              <option value="">Selecione...</option>
+              {Object.entries(serviceLabels).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Tipo de Veículo</label>
+            <select style={selectStyle} value={dados.tipoVeiculo || 'carro'} onChange={set('tipoVeiculo')}>
+              <option value="carro">Carro</option>
+              <option value="moto">Moto</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Seção Cliente */}
+      <div style={secaoStyle}>
+        <div style={secaoHeaderStyle}>
+          Cliente
+          {clienteExistente && (
+            <span style={{ marginLeft: 8, fontSize: 12, background: 'var(--color-info-bg)', color: 'var(--color-info)', padding: '2px 8px', borderRadius: 20 }}>
+              Cliente existente
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+          <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Nome *</label>
+            <input style={inputStyle} value={dados.nomeCliente || ''} onChange={set('nomeCliente')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>CPF/CNPJ *</label>
+            <input style={inputStyle} value={dados.cpfCnpj || ''} onChange={set('cpfCnpj')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Tipo</label>
+            <select style={selectStyle} value={dados.tipoCpfCnpj || 'CPF'} onChange={set('tipoCpfCnpj')}>
+              <option value="CPF">CPF</option>
+              <option value="CNPJ">CNPJ</option>
+            </select>
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>RG</label>
+            <input style={inputStyle} value={dados.rg || ''} onChange={set('rg')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Órgão Expedidor</label>
+            <input style={inputStyle} value={dados.orgaoExpedidor || ''} onChange={set('orgaoExpedidor')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Telefone</label>
+            <input style={inputStyle} value={dados.telefone || ''} onChange={set('telefone')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>CEP</label>
+            <input style={inputStyle} value={dados.cep || ''} onChange={set('cep')} />
+          </div>
+          <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Endereço</label>
+            <input style={inputStyle} value={dados.endereco || ''} onChange={set('endereco')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Número</label>
+            <input style={inputStyle} value={dados.numero || ''} onChange={set('numero')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Bairro</label>
+            <input style={inputStyle} value={dados.bairro || ''} onChange={set('bairro')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Município</label>
+            <input style={inputStyle} value={dados.municipio || ''} onChange={set('municipio')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>UF</label>
+            <input style={inputStyle} value={dados.uf || ''} onChange={set('uf')} />
+          </div>
+        </div>
+      </div>
+
+      {/* Seção Veículo */}
+      <div style={secaoStyle}>
+        <div style={secaoHeaderStyle}>Veículo</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Placa</label>
+            <input style={inputStyle} value={dados.placa || ''} onChange={set('placa')} placeholder="Deixe vazio p/ primeiro emplacamento" />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Chassi</label>
+            <input style={inputStyle} value={dados.chassi || ''} onChange={set('chassi')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Renavam</label>
+            <input style={inputStyle} value={dados.renavam || ''} onChange={set('renavam')} />
+          </div>
+          <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+            <label style={labelStyle}>Marca/Modelo</label>
+            <input style={inputStyle} value={dados.marcaModelo || ''} onChange={set('marcaModelo')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Ano Fabricação</label>
+            <input style={inputStyle} value={dados.anoFabricacao || ''} onChange={set('anoFabricacao')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Ano Modelo</label>
+            <input style={inputStyle} value={dados.anoModelo || ''} onChange={set('anoModelo')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Cor</label>
+            <input style={inputStyle} value={dados.cor || ''} onChange={set('cor')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Combustível</label>
+            <input style={inputStyle} value={dados.combustivel || ''} onChange={set('combustivel')} />
+          </div>
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle}>Data de Aquisição</label>
+            <input style={inputStyle} type="date" value={dados.dataAquisicao || ''} onChange={set('dataAquisicao')} />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingTop: 8 }}>
+        <button style={btnSecondary} onClick={onVoltar}>Voltar</button>
+        <button
+          style={{ ...btnPrimary, opacity: (!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente) ? 0.5 : 1 }}
+          disabled={!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente}
+          onClick={onConfirmar}
+        >
+          Confirmar e Criar OS
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Suppress unused import warning for footerStyle — used in later tasks
 void footerStyle;
-void btnPrimary;
