@@ -2211,7 +2211,7 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(128,128,128,0.04)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                     <div style={{ width: 9, height: 9, borderRadius: '50%', background: sc.color, flexShrink: 0, boxShadow: `0 0 4px ${sc.color}44` }} />
-                                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</span>
+                                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', wordBreak: 'break-word' }}>{item.nome}</span>
                                     <div style={{ display: 'flex', gap: 1, padding: '1px', borderRadius: 6, background: 'rgba(128,128,128,0.06)', alignItems: 'center', flexShrink: 0 }}>
                                         {[
                                             { id: 'pendente', icon: Clock, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.15)', label: 'Pendente' },
