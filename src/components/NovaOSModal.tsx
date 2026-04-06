@@ -117,8 +117,8 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
       if (!arquivoParaUpload && dadosForm.fileBase64) {
         try {
           const arr = dadosForm.fileBase64.split(',');
-          const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/pdf';
-          const bstr = atob(arr[1] || arr[0]);
+          const mime = arr[0].match(/:(.*?);/)?.[1] ?? 'application/pdf';
+          const bstr = atob(arr[1] ?? arr[0]);
           const u8arr = new Uint8Array(bstr.length);
           for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
           arquivoParaUpload = new File([u8arr], dadosForm.fileName || `ficha_${Date.now()}.pdf`, { type: mime });

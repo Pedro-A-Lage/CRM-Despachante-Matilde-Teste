@@ -2181,7 +2181,7 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
                 <button onClick={handleSave} disabled={!dirty}
                     style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,
-                        padding: '5px 12px', borderRadius: 7, border: 'none',
+                        padding: '5px 12px', borderRadius: 7,
                         fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed',
                         background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-card)',
                         color: dirty ? '#fff' : 'var(--color-text-tertiary)',
@@ -2358,7 +2358,7 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
                                 </span>
                             )}
                             <button onClick={handleSave} disabled={!dirty}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, border: 'none', fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-body)', color: dirty ? '#fff' : 'var(--color-text-tertiary)', border: dirty ? 'none' : '1px solid var(--border-color)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-body)', color: dirty ? '#fff' : 'var(--color-text-tertiary)', border: dirty ? 'none' : '1px solid var(--border-color)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
                                 {dirty ? <Save size={12} /> : <CheckCircle size={12} />}
                                 {dirty ? 'Salvar' : 'Salvo'}
                             </button>
