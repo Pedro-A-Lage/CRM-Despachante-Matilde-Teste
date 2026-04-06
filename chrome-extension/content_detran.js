@@ -861,13 +861,100 @@ function capturarDadosPag3() {
 let _formInterceptorAdded = false;
 
 async function tentarCapturarPrimeirEmplacamentoPag3() {
-    if (_primeiroEmplacamentoCapturado) return;
-
     const ctx = await new Promise(resolve =>
         chrome.storage.local.get(['matilde_servico_ativo'], resolve)
     );
     if (ctx.matilde_servico_ativo !== 'primeiro_emplacamento') return;
     if (!window.location.href.includes('confirmar-dados')) return;
+
+    // SEMPRE tenta registrar o interceptor do botão OK, independente de _primeiroEmplacamentoCapturado
+    // (o modal pode abrir DEPOIS de _primeiroEmplacamentoCapturado ser true)
+    if (!_formInterceptorAdded) {
+        const btnOk = document.querySelector('.btn-ok-modal-2');
+        // Busca o form na página inteira (o botão está num modal Bootstrap, fora do <form>)
+        const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae') ||
+                     document.querySelector('form[method="post"]') ||
+                     document.querySelector('form');
+        if (btnOk) {
+            _formInterceptorAdded = true;
+            console.log('[Matilde][Content] Pág 3: registrando interceptor no botão OK. form:', form?.action || '(nenhum)');
+            btnOk.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('[Matilde][Content] Pág 3: clique OK interceptado, capturando PDF...');
+                _mostrarToastPag4('carregando');
+
+                try {
+                    if (!form) throw new Error('Form não encontrado na página');
+                    const formData = new FormData(form);
+                    const response = await fetch(form.action || window.location.href, {
+                        method: 'POST',
+                        body: new URLSearchParams(formData),
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        credentials: 'include',
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('pdf') && !contentType.includes('octet-stream')) {
+                        console.warn('[Matilde][Content] Resposta não é PDF:', contentType, '— submetendo normalmente.');
+                        _mostrarToastPag4('erro', 'Resposta não é PDF');
+                        HTMLFormElement.prototype.submit.call(form);
+                        return;
+                    }
+
+                    const arrayBuffer = await response.arrayBuffer();
+                    const uint8 = new Uint8Array(arrayBuffer);
+                    let binary = '';
+                    const CHUNK = 8192;
+                    for (let i = 0; i < uint8.length; i += CHUNK) {
+                        binary += String.fromCharCode(...uint8.subarray(i, i + CHUNK));
+                    }
+                    const fileBase64 = 'data:application/pdf;base64,' + btoa(binary);
+
+                    console.log('[Matilde][Content] Pág 3: PDF capturado com sucesso!');
+                    _mostrarToastPag4('sucesso');
+
+                    const ctxOs = await new Promise(resolve =>
+                        chrome.storage.local.get(['matilde_osId'], resolve)
+                    );
+
+                    const dadosAtual = capturarDadosPag3();
+                    chrome.runtime.sendMessage({
+                        action: 'CAPTURE_DAE_PDF',
+                        payload: {
+                            base64: fileBase64,
+                            placa: '',
+                            chassi: dadosAtual.chassi || '',
+                            servicoAtivo: 'primeiro_emplacamento',
+                            osId: ctxOs.matilde_osId || null,
+                            fileName: 'ficha_cadastro_dae.pdf',
+                        },
+                    }, (resp) => {
+                        if (chrome.runtime.lastError) {
+                            console.error('[Matilde][Content] Erro ao enviar PDF:', chrome.runtime.lastError.message);
+                        } else {
+                            console.log('[Matilde][Content] PDF enviado ao CRM.', resp);
+                        }
+                    });
+
+                    chrome.storage.local.remove(['matilde_servico_ativo']);
+                    HTMLFormElement.prototype.submit.call(form);
+
+                } catch (err) {
+                    console.error('[Matilde][Content] Falha ao capturar PDF pág 3:', err.message);
+                    _mostrarToastPag4('erro', err.message);
+                    if (form) HTMLFormElement.prototype.submit.call(form);
+                }
+            }, { capture: true });
+            console.log('[Matilde][Content] Pág 3: interceptor registrado.');
+        }
+    }
+
+    // Captura e envia dados (apenas uma vez)
+    if (_primeiroEmplacamentoCapturado) return;
 
     logDtsDaPagina();
     const dados = capturarDadosPag3();
@@ -892,103 +979,13 @@ async function tentarCapturarPrimeirEmplacamentoPag3() {
         box-shadow: 0 8px 24px rgba(124,58,237,0.4);
         animation: matilde-fadein 0.3s ease-out;
     `;
-    toast.innerHTML = `<span style="font-size:20px">✅</span><span>Matilde capturou os dados — abrindo no CRM...</span>`;
+    toast.innerHTML = `<span style="font-size:20px">✅</span><span>Matilde capturou os dados — aguardando PDF...</span>`;
     const style = document.createElement('style');
     style.textContent = `@keyframes matilde-fadein { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }`;
     document.head.appendChild(style);
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 
-    if (!_formInterceptorAdded) {
-        _formInterceptorAdded = true;
-        const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae') ||
-                     document.querySelector('form[method="post"]');
-        const btnOk = document.querySelector('.btn-ok-modal-2');
-        if (form && btnOk) {
-            btnOk.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log('[Matilde][Content] Pág 3: clique OK interceptado, capturando PDF...');
-                _mostrarToastPag4('carregando');
-
-                try {
-                    const formData = new FormData(form);
-                    const response = await fetch(form.action || window.location.href, {
-                        method: 'POST',
-                        body: new URLSearchParams(formData),
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        credentials: 'include',
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    const contentType = response.headers.get('content-type') || '';
-                    if (!contentType.includes('pdf') && !contentType.includes('octet-stream')) {
-                        // Não é PDF — deixa o form submeter normalmente
-                        console.warn('[Matilde][Content] Resposta não é PDF:', contentType, '— submetendo normalmente.');
-                        _mostrarToastPag4('erro', 'Resposta não é PDF');
-                        form.submit();
-                        return;
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    const uint8 = new Uint8Array(arrayBuffer);
-                    let binary = '';
-                    const CHUNK = 8192;
-                    for (let i = 0; i < uint8.length; i += CHUNK) {
-                        binary += String.fromCharCode(...uint8.subarray(i, i + CHUNK));
-                    }
-                    const fileBase64 = 'data:application/pdf;base64,' + btoa(binary);
-
-                    console.log('[Matilde][Content] Pág 3: PDF capturado com sucesso!');
-                    _mostrarToastPag4('sucesso');
-
-                    const ctxOs = await new Promise(resolve =>
-                        chrome.storage.local.get(['matilde_osId'], resolve)
-                    );
-
-                    chrome.runtime.sendMessage({
-                        action: 'CAPTURE_DAE_PDF',
-                        payload: {
-                            base64: fileBase64,
-                            placa: '',
-                            chassi: dados.chassi || '',
-                            servicoAtivo: 'primeiro_emplacamento',
-                            osId: ctxOs.matilde_osId || null,
-                            fileName: 'ficha_cadastro_dae.pdf',
-                        },
-                    }, (resp) => {
-                        if (chrome.runtime.lastError) {
-                            console.error('[Matilde][Content] Erro ao enviar PDF:', chrome.runtime.lastError.message);
-                        } else {
-                            console.log('[Matilde][Content] PDF enviado ao CRM.', resp);
-                        }
-                    });
-
-                    // Limpa serviço ativo e navega normalmente
-                    chrome.storage.local.remove(['matilde_servico_ativo']);
-                    HTMLFormElement.prototype.submit.call(form);
-
-                } catch (err) {
-                    console.error('[Matilde][Content] Falha ao capturar PDF:', err.message);
-                    _mostrarToastPag4('erro', err.message);
-                    // Fallback: submete o form normalmente
-                    HTMLFormElement.prototype.submit.call(form);
-                }
-            }, { capture: true });
-            console.log('[Matilde][Content] Pág 3: listener de clique OK para PDF registrado.');
-        }
-    }
-
-    chrome.runtime.sendMessage({
-        action: 'CAPTURE_PRIMEIRO_EMPLACAMENTO',
-        payload: { dados },
-    }, (_resp) => {
-        if (chrome.runtime.lastError) {
-            console.error('[Matilde][Content] Erro CAPTURE_PRIMEIRO_EMPLACAMENTO:', chrome.runtime.lastError.message);
-            _primeiroEmplacamentoCapturado = false;
-        }
-    });
 }
 
 let _pag4Capturada = false;
