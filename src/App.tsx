@@ -897,8 +897,8 @@ function ExtensionListener() {
             }
             // ── VISTORIA — Dados da confirmação de agendamento voltaram do Detran ──
             else if (event.data?.source === 'MATILDE_EXTENSION' && event.data?.type === 'CAPTURED_VISTORIA') {
-                const { protocolo, dataAgendamento, horaAgendamento, local, osId, placa, chassi } = event.data.payload;
-                console.log('[Matilde] CAPTURED_VISTORIA recebido:', { protocolo, dataAgendamento, horaAgendamento, local, osId, placa, chassi });
+                const { protocolo, dataAgendamento, horaAgendamento, local, osId, placa, chassi, comprovanteBase64 } = event.data.payload;
+                console.log('[Matilde] CAPTURED_VISTORIA recebido:', { protocolo, dataAgendamento, horaAgendamento, local, osId, placa, chassi, temPdf: !!comprovanteBase64 });
 
                 if (protocolo) {
                     (async () => {
@@ -919,11 +919,16 @@ function ExtensionListener() {
                                 });
                                 if (veiculoMatch) {
                                     const ordens = await getOrdens();
-                                    const osMatch = ordens.find((o: any) => o.veiculoId === veiculoMatch.id && o.status !== 'entregue');
-                                    if (osMatch) {
-                                        os = osMatch;
-                                        resolvedOsId = osMatch.id;
-                                        console.log('[Matilde] OS encontrada por placa/chassi:', resolvedOsId);
+                                    // FIX #3: fallback estrito — só atualiza se houver EXATAMENTE 1 OS aberta para o veículo
+                                    const candidatas = ordens.filter((o: any) => o.veiculoId === veiculoMatch.id && o.status !== 'entregue');
+                                    if (candidatas.length === 1) {
+                                        os = candidatas[0];
+                                        resolvedOsId = candidatas[0].id;
+                                        console.log('[Matilde] OS encontrada por placa/chassi (única):', resolvedOsId);
+                                    } else if (candidatas.length > 1) {
+                                        console.warn('[Matilde] Múltiplas OS abertas para o veículo — fallback abortado para evitar atualizar a errada.', candidatas.map((c: any) => c.id));
+                                        alert(`Vistoria agendada (Protocolo: ${protocolo}), mas existem ${candidatas.length} OS abertas para esse veículo.\n\nNão foi possível decidir qual atualizar automaticamente. Atualize manualmente na aba Vistoria da OS correta.`);
+                                        return;
                                     }
                                 }
                             }
@@ -934,11 +939,50 @@ function ExtensionListener() {
                                 return;
                             }
 
+                            // FIX #5: aviso antes de sobrescrever um agendamento existente diferente
+                            const protocoloAnterior = os.vistoria?.protocolo;
+                            if (protocoloAnterior && protocoloAnterior !== protocolo && os.vistoria?.status === 'agendada') {
+                                const confirmar = window.confirm(
+                                    `Esta OS já tem uma vistoria agendada:\n` +
+                                    `• Protocolo anterior: ${protocoloAnterior}\n` +
+                                    `• Data: ${os.vistoria?.dataAgendamento || '-'} ${os.vistoria?.horaAgendamento || ''}\n\n` +
+                                    `Deseja substituir pelo novo agendamento?\n` +
+                                    `• Protocolo novo: ${protocolo}\n` +
+                                    `• Data: ${dataAgendamento} ${horaAgendamento}`
+                                );
+                                if (!confirmar) {
+                                    console.log('[Matilde] Usuário cancelou substituição da vistoria.');
+                                    return;
+                                }
+                            }
+
                             // Converter data DD/MM/YYYY → YYYY-MM-DD
                             let dataISO = '';
                             if (dataAgendamento) {
                                 const partes = dataAgendamento.match(/(\d{2})\/(\d{2})\/(\d{4})/);
                                 if (partes) dataISO = `${partes[3]}-${partes[2]}-${partes[1]}`;
+                            }
+
+                            // FIX #2: se a extensão capturou o comprovante PDF, faz upload e grava em vistoria.vistoriaUrl
+                            let vistoriaUrl: string | undefined = os.vistoria?.vistoriaUrl;
+                            let vistoriaNomeArquivo: string | undefined = os.vistoria?.vistoriaNomeArquivo;
+                            let vistoriaAnexadaEm: string | undefined = os.vistoria?.vistoriaAnexadaEm;
+                            if (comprovanteBase64) {
+                                try {
+                                    const arr = comprovanteBase64.split(',');
+                                    const bstr = atob(arr[1] || arr[0]);
+                                    const u8arr = new Uint8Array(bstr.length);
+                                    for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+                                    const safeName = `vistoria_comprovante_${protocolo}.pdf`;
+                                    const file = new File([u8arr], safeName, { type: 'application/pdf' });
+                                    const { uploadFileToSupabase } = await import('./lib/fileStorage');
+                                    vistoriaUrl = await uploadFileToSupabase(file, `ordens/${resolvedOsId}/${safeName}`);
+                                    vistoriaNomeArquivo = safeName;
+                                    vistoriaAnexadaEm = new Date().toISOString();
+                                    console.log('[Matilde] Comprovante de vistoria anexado:', vistoriaUrl);
+                                } catch (uploadErr) {
+                                    console.warn('[Matilde] Falha ao fazer upload do comprovante de vistoria:', uploadErr);
+                                }
                             }
 
                             await updateOrdem(resolvedOsId, {
@@ -949,6 +993,9 @@ function ExtensionListener() {
                                     local: local || os.vistoria?.local || '',
                                     dataAgendamento: dataISO || os.vistoria?.dataAgendamento || '',
                                     horaAgendamento: horaAgendamento || os.vistoria?.horaAgendamento || '',
+                                    vistoriaUrl,
+                                    vistoriaNomeArquivo,
+                                    vistoriaAnexadaEm,
                                 },
                             });
 

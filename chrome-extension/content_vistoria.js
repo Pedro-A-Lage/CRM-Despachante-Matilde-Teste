@@ -99,6 +99,8 @@ console.log('[Matilde][Vistoria] Script de preenchimento de vistoria carregado.'
     //  PÁGINA 1 — Dados do veículo + proprietário
     // ══════════════════════════════════════════════════
     function preencherPagina1() {
+        // FIX #1: marca agendamento como pendente assim que entramos no fluxo
+        window.__matilde_vistoria_pendente = true;
         var params = new URLSearchParams(window.location.search);
         var dados = {
             placa: params.get('placa') || '',
@@ -245,7 +247,30 @@ console.log('[Matilde][Vistoria] Script de preenchimento de vistoria carregado.'
         // Não preenchemos automaticamente — apenas notificamos
         console.log('[Matilde][Vistoria] Página 3 (data/hora) detectada. Seleção manual necessária.');
         mostrarToast('Selecione a data e horário da vistoria');
+
+        // FIX #1: avisar o usuário se ele tentar fechar a aba antes de chegar
+        // na página de confirmação. Sem isso, o agendamento existe no Detran
+        // mas o CRM nunca recebe os dados.
+        instalarBeforeUnloadGuard();
         return 0;
+    }
+
+    // ══════════════════════════════════════════════════
+    //  Guard de saída — só remove quando capturarmos a confirmação
+    // ══════════════════════════════════════════════════
+    var _beforeUnloadInstalado = false;
+    function instalarBeforeUnloadGuard() {
+        if (_beforeUnloadInstalado) return;
+        _beforeUnloadInstalado = true;
+        window.addEventListener('beforeunload', function(e) {
+            // Só avisa se ainda há osId no storage (= agendamento não confirmado no CRM)
+            // chrome.storage é assíncrono, então usamos uma flag em memória populada no executar()
+            if (window.__matilde_vistoria_pendente) {
+                e.preventDefault();
+                e.returnValue = 'O agendamento de vistoria ainda não foi confirmado no CRM. Tem certeza que quer sair?';
+                return e.returnValue;
+            }
+        });
     }
 
     // ══════════════════════════════════════════════════
@@ -288,44 +313,98 @@ console.log('[Matilde][Vistoria] Script de preenchimento de vistoria carregado.'
             return 0;
         }
 
-        // Buscar osId do storage
-        chrome.storage.local.get(['matilde_osId'], function(ctx) {
-            var osId = ctx.matilde_osId || null;
-            console.log('[Matilde][Vistoria] osId do storage:', osId);
-
-            if (!osId) {
-                console.warn('[Matilde][Vistoria] AVISO: osId não encontrado no storage! A OS não será atualizada.');
-            }
-
-            var payload = {
-                protocolo: dados.protocolo,
-                dataAgendamento: dados.data,
-                horaAgendamento: dados.hora,
-                local: dados.empresa,
-                cnpjEmpresa: dados.cnpjEmpresa,
-                telefoneEmpresa: dados.telefoneEmpresa || dados.celularEmpresa,
-                emailEmpresa: dados.emailEmpresa,
-                placa: dados.placa,
-                chassi: dados.chassi,
-                municipio: dados.municipio,
-                osId: osId,
-            };
-
-            console.log('[Matilde][Vistoria] Enviando CAPTURE_VISTORIA ao background:', JSON.stringify(payload));
-
-            chrome.runtime.sendMessage({
-                action: 'CAPTURE_VISTORIA',
-                payload: payload,
-            }, function(resp) {
-                if (chrome.runtime.lastError) {
-                    console.error('[Matilde][Vistoria] Erro ao enviar:', chrome.runtime.lastError.message);
-                } else {
-                    console.log('[Matilde][Vistoria] Dados enviados com sucesso:', resp);
-                    // Só limpar storage após envio bem-sucedido
-                    chrome.storage.local.remove(['matilde_osId', 'matilde_servico_ativo']);
+        // FIX #2: tenta capturar PDF do comprovante (link "imprimir" / "comprovante" / qualquer <a> PDF)
+        function localizarLinkPdfComprovante() {
+            // Prioridade 1: links data:application/pdf;base64
+            var dataLinks = document.querySelectorAll('a[href^="data:application/pdf"]');
+            if (dataLinks.length > 0) return { tipo: 'data', href: dataLinks[0].getAttribute('href') };
+            // Prioridade 2: links .pdf
+            var pdfLinks = document.querySelectorAll('a[href$=".pdf"], a[href*=".pdf?"]');
+            if (pdfLinks.length > 0) return { tipo: 'url', href: pdfLinks[0].href };
+            // Prioridade 3: link com texto "imprimir", "comprovante", "baixar"
+            var todos = document.querySelectorAll('a, button');
+            for (var i = 0; i < todos.length; i++) {
+                var t = (todos[i].textContent || '').trim().toLowerCase();
+                if (t.indexOf('imprimir') >= 0 || t.indexOf('comprovante') >= 0 || t.indexOf('baixar pdf') >= 0) {
+                    var h = todos[i].getAttribute('href') || todos[i].getAttribute('data-href');
+                    if (h) return { tipo: h.indexOf('data:') === 0 ? 'data' : 'url', href: h };
                 }
+            }
+            return null;
+        }
+
+        function fetchComoBase64(url) {
+            return fetch(url, { credentials: 'include' })
+                .then(function(r) { return r.arrayBuffer(); })
+                .then(function(buf) {
+                    var bytes = new Uint8Array(buf);
+                    var binary = '';
+                    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+                    return 'data:application/pdf;base64,' + btoa(binary);
+                });
+        }
+
+        var linkComprovante = localizarLinkPdfComprovante();
+
+        function enviarPayload(comprovanteBase64) {
+            // Buscar osId do storage
+            chrome.storage.local.get(['matilde_osId'], function(ctx) {
+                var osId = ctx.matilde_osId || null;
+                console.log('[Matilde][Vistoria] osId do storage:', osId);
+
+                if (!osId) {
+                    console.warn('[Matilde][Vistoria] AVISO: osId não encontrado no storage! A OS não será atualizada.');
+                }
+
+                var payload = {
+                    protocolo: dados.protocolo,
+                    dataAgendamento: dados.data,
+                    horaAgendamento: dados.hora,
+                    local: dados.empresa,
+                    cnpjEmpresa: dados.cnpjEmpresa,
+                    telefoneEmpresa: dados.telefoneEmpresa || dados.celularEmpresa,
+                    emailEmpresa: dados.emailEmpresa,
+                    placa: dados.placa,
+                    chassi: dados.chassi,
+                    municipio: dados.municipio,
+                    osId: osId,
+                    comprovanteBase64: comprovanteBase64 || null,
+                };
+
+                console.log('[Matilde][Vistoria] Enviando CAPTURE_VISTORIA ao background. Tem PDF?', !!comprovanteBase64);
+
+                chrome.runtime.sendMessage({
+                    action: 'CAPTURE_VISTORIA',
+                    payload: payload,
+                }, function(resp) {
+                    if (chrome.runtime.lastError) {
+                        console.error('[Matilde][Vistoria] Erro ao enviar:', chrome.runtime.lastError.message);
+                    } else {
+                        console.log('[Matilde][Vistoria] Dados enviados com sucesso:', resp);
+                        // Captura confirmada → libera o beforeunload guard e limpa storage
+                        window.__matilde_vistoria_pendente = false;
+                        chrome.storage.local.remove(['matilde_osId', 'matilde_servico_ativo']);
+                    }
+                });
             });
-        });
+        }
+
+        if (linkComprovante) {
+            console.log('[Matilde][Vistoria] Link de comprovante encontrado:', linkComprovante.tipo);
+            if (linkComprovante.tipo === 'data') {
+                enviarPayload(linkComprovante.href);
+            } else {
+                fetchComoBase64(linkComprovante.href)
+                    .then(enviarPayload)
+                    .catch(function(err) {
+                        console.warn('[Matilde][Vistoria] Falha ao baixar PDF do comprovante:', err);
+                        enviarPayload(null);
+                    });
+            }
+        } else {
+            console.log('[Matilde][Vistoria] Nenhum link de comprovante encontrado na página.');
+            enviarPayload(null);
+        }
 
         mostrarToast('Vistoria agendada! Protocolo: ' + dados.protocolo + ' | ' + dados.data + ' ' + dados.hora + ' | ' + dados.empresa);
         return 1;
