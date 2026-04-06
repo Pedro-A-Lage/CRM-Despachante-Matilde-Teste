@@ -557,8 +557,13 @@ function ExtensionListener() {
                 }
             }
             else if (event.data?.source === 'MATILDE_EXTENSION' && event.data?.type === 'CAPTURED_DAE_PDF') {
-                const { fileBase64, fileName, placa, chassi } = event.data.payload;
-                console.log('[Matilde] CAPTURED_DAE_PDF recebido:', { placa, chassi, hasFile: !!fileBase64 });
+                const { fileBase64, fileName, placa, chassi, servicoAtivo } = event.data.payload;
+                // Extensão captura o mesmo modal Decalque/DAE para 'transferencia' e 'alteracao_dados'.
+                // Usa servicoAtivo (vindo do storage da extensão) para distinguir o tipoServico real.
+                const tipoServicoCapturado: 'transferencia' | 'alteracao_dados' =
+                    servicoAtivo === 'alteracao_dados' ? 'alteracao_dados' : 'transferencia';
+                const labelServico = tipoServicoCapturado === 'alteracao_dados' ? 'Alteração de Dados' : 'Transferência';
+                console.log('[Matilde] CAPTURED_DAE_PDF recebido:', { placa, chassi, hasFile: !!fileBase64, tipoServicoCapturado });
                 if (!fileBase64) return;
 
                 // PDF chegou → IA analisa → cria OS automaticamente → abre modal em revisar
@@ -575,7 +580,7 @@ function ExtensionListener() {
                         setIaStatus('Matilde analisando Decalque/DAE...');
                         const { extrairDecalqueChassi } = await import('./lib/atpveAI');
                         const decalque = await extrairDecalqueChassi(file);
-                        setIaStatus('Criando OS de Transferência...');
+                        setIaStatus(`Criando OS de ${labelServico}...`);
                         console.log('[Matilde] Decalque extraído:', decalque);
 
                         const { saveCliente, saveVeiculo, saveOrdem, getClientes, addAuditEntry, getVeiculoByPlacaOuChassi } = await import('./lib/database');
@@ -600,7 +605,7 @@ function ExtensionListener() {
                             const novoCliente = await saveCliente({
                                 tipo: cpfCnpj.replace(/\D/g, '').length <= 11 ? 'PF' : 'PJ',
                                 nome, cpfCnpj, telefones: [], email: '',
-                                observacoes: 'Cadastrado automaticamente via Transferência (ATPVe)',
+                                observacoes: `Cadastrado automaticamente via ${labelServico} (Decalque/DAE)`,
                                 documentos: [],
                             });
                             clienteId = novoCliente.id;
@@ -619,12 +624,12 @@ function ExtensionListener() {
                         });
 
                         const tipoPessoa = cpfCnpj.replace(/\D/g, '').length <= 11 ? 'PF' : 'PJ';
-                        const checklistBase = await gerarChecklistDinamico('transferencia', tipoPessoa);
+                        const checklistBase = await gerarChecklistDinamico(tipoServicoCapturado, tipoPessoa);
                         const novaOrdem = await saveOrdem({
-                            clienteId, veiculoId: veiculo.id, tipoServico: 'transferencia',
+                            clienteId, veiculoId: veiculo.id, tipoServico: tipoServicoCapturado,
                             trocaPlaca: false, status: 'aguardando_documentacao', checklist: checklistBase,
                             auditLog: [{ id: crypto.randomUUID(), dataHora: new Date().toISOString(), usuario: 'Sistema',
-                                acao: 'OS criada automaticamente via Decalque/DAE (Transferência)',
+                                acao: `OS criada automaticamente via Decalque/DAE (${labelServico})`,
                                 detalhes: `Placa: ${decalque.placa} | Comprador: ${nome}` }],
                         });
 
@@ -645,7 +650,7 @@ function ExtensionListener() {
                         }
                         await saveOrdem({ ...novaOrdem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
                         await addAuditEntry(novaOrdem.id, 'upload', `Decalque/DAE anexado: ${safeName}`);
-                        try { await finalizarOS(novaOrdem.id, 'transferencia', 'carro', false); } catch {}
+                        try { await finalizarOS(novaOrdem.id, tipoServicoCapturado, 'carro', false); } catch {}
 
                         const dadosIniciais: DadosIniciaisModal = {
                             osId: novaOrdem.id, clienteId, veiculoId: veiculo.id,
