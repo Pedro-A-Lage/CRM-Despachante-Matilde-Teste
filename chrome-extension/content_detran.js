@@ -1156,8 +1156,6 @@ function capturarDadosSegundaViaPag2() {
 }
 
 async function tentarCapturarSegundaViaPag2() {
-    if (_segundaViaCapturada) return;
-
     const ctx = await new Promise(resolve =>
         chrome.storage.local.get(['matilde_servico_ativo'], resolve)
     );
@@ -1166,39 +1164,18 @@ async function tentarCapturarSegundaViaPag2() {
     const url = window.location.href.toLowerCase();
     if (!url.includes('emitir-a-2-via-do-crv/completar-dados') && !url.includes('2-via-do-crv/completar-dados')) return;
 
-    const dados = capturarDadosSegundaViaPag2();
-    if (!dados.placa && !dados.chassi) return;
-
-    _segundaViaCapturada = true;
-    console.log('[Matilde][Content] 2ª Via pág 2 capturada:', dados);
-
-    // Toast
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed; bottom: 24px; right: 24px; z-index: 999999;
-        display: flex; align-items: center; gap: 10px;
-        padding: 14px 20px; border-radius: 14px;
-        background: #0891b2; color: #fff;
-        font-size: 14px; font-weight: 700;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        box-shadow: 0 8px 24px rgba(8,145,178,0.4);
-        animation: matilde-fadein 0.3s ease-out;
-    `;
-    toast.innerHTML = `<span style="font-size:20px">✅</span><span>Matilde capturou os dados da 2ª Via</span>`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-
-    // Interceptar clique no botão Ok do modal de confirmação → capturar PDF
+    // SEMPRE tenta registrar o interceptor (ANTES do flag de dados)
     if (!_segundaViaFormInterceptorAdded) {
-        _segundaViaFormInterceptorAdded = true;
-        const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae') ||
-                     document.querySelector('form[method="post"]');
         const btnOk = document.querySelector('.btn-ok-modal-2');
-
-        if (form && btnOk) {
+        if (btnOk) {
+            _segundaViaFormInterceptorAdded = true;
             btnOk.addEventListener('click', async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
+                const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae') ||
+                             document.querySelector('form[method="post"]') ||
+                             document.querySelector('form');
                 console.log('[Matilde][Content] 2ª Via: clique OK interceptado, capturando PDF...');
                 _mostrarToastPag4('carregando');
 
@@ -1262,6 +1239,30 @@ async function tentarCapturarSegundaViaPag2() {
             console.log('[Matilde][Content] 2ª Via: listener OK registrado.');
         }
     }
+
+    // Captura dados apenas uma vez
+    if (_segundaViaCapturada) return;
+    const dados = capturarDadosSegundaViaPag2();
+    if (!dados.placa && !dados.chassi) return;
+
+    _segundaViaCapturada = true;
+    console.log('[Matilde][Content] 2ª Via pág 2 capturada:', dados);
+
+    // Toast
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; right: 24px; z-index: 999999;
+        display: flex; align-items: center; gap: 10px;
+        padding: 14px 20px; border-radius: 14px;
+        background: #0891b2; color: #fff;
+        font-size: 14px; font-weight: 700;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        box-shadow: 0 8px 24px rgba(8,145,178,0.4);
+        animation: matilde-fadein 0.3s ease-out;
+    `;
+    toast.innerHTML = `<span style="font-size:20px">✅</span><span>Matilde capturou os dados da 2ª Via</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 
     // Envia dados iniciais (sem PDF) — CRM ignora, só processa quando vier o PDF
     chrome.runtime.sendMessage({
