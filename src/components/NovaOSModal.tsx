@@ -1,11 +1,14 @@
 // src/components/NovaOSModal.tsx
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { X, Upload, Camera, Edit3, Loader } from 'lucide-react';
 import {
   overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle,
   btnPrimary, btnSecondary,
 } from './ModalBase';
 import type { DadosIniciaisOS } from '../hooks/useNovaOSModal';
+import { extrairDadosFichaCadastro, type DadosFichaCadastro } from '../lib/fichaCadastroAI';
+import { getClientes } from '../lib/database';
+import type { Cliente } from '../types';
 
 type Etapa = 'upload' | 'analisando' | 'revisao' | 'salvando' | 'sucesso';
 
@@ -23,6 +26,8 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
   );
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [erro, setErro] = useState('');
+  const [dadosForm, setDadosForm] = useState<DadosIniciaisOS>(dadosIniciais ?? {});
+  const [clienteExistente, setClienteExistente] = useState<Cliente | undefined>();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -62,7 +67,11 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
             <EtapaAnalisando
               arquivo={arquivo}
               dadosIniciaisExtensao={dadosIniciais}
-              onConcluido={(_dados) => { /* Task 4 */ }}
+              onConcluido={(dados, cliente) => {
+                setDadosForm(dados);
+                setClienteExistente(cliente);
+                setEtapa('revisao');
+              }}
               onErro={(msg) => { setErro(msg); setEtapa('upload'); }}
             />
           )}
@@ -169,24 +178,99 @@ function EtapaUpload({ onArquivoSelecionado, onManual, erro, fileInputRef, camer
   );
 }
 
-// ─── Etapa 2: placeholder (Task 4) ─────────────────────────
+// ─── Etapa 2: Análise IA ────────────────────────────────────
 interface EtapaAnalisandoProps {
   arquivo: File | null;
-  dadosIniciaisExtensao: DadosIniciaisOS | undefined;
-  onConcluido: (dados: DadosIniciaisOS) => void;
+  dadosIniciaisExtensao?: DadosIniciaisOS;
+  onConcluido: (dados: DadosIniciaisOS, clienteExistente?: Cliente) => void;
   onErro: (msg: string) => void;
 }
 
-function EtapaAnalisando(_props: EtapaAnalisandoProps) {
+function EtapaAnalisando({ arquivo, dadosIniciaisExtensao, onConcluido, onErro }: EtapaAnalisandoProps) {
+  const [status, setStatus] = useState('Analisando folha de cadastro...');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function analisar() {
+      try {
+        let dadosExtraidos: DadosIniciaisOS = dadosIniciaisExtensao ?? {};
+
+        if (arquivo) {
+          setStatus('IA lendo folha de cadastro...');
+          const resultado: DadosFichaCadastro = await extrairDadosFichaCadastro(arquivo);
+          dadosExtraidos = {
+            tipoServico: resultado.tipoServico || undefined,
+            placa: resultado.placa || undefined,
+            chassi: resultado.chassi || undefined,
+            renavam: resultado.renavam || undefined,
+            marcaModelo: resultado.marcaModelo || undefined,
+            anoFabricacao: resultado.anoFabricacao || undefined,
+            anoModelo: resultado.anoModelo || undefined,
+            cor: resultado.cor || undefined,
+            combustivel: resultado.combustivel || undefined,
+            categoria: resultado.categoria || undefined,
+            dataAquisicao: resultado.dataAquisicao || undefined,
+            // tipoVeiculo já é 'carro' | 'moto' normalizado por extrairDadosFichaCadastro
+            tipoVeiculo: resultado.tipoVeiculo as 'carro' | 'moto' || undefined,
+            nomeCliente: resultado.proprietario?.nome || undefined,
+            cpfCnpj: resultado.proprietario?.cpfCnpj || undefined,
+            tipoCpfCnpj: resultado.proprietario?.tipoCpfCnpj || 'CPF',
+            rg: resultado.proprietario?.docIdentidade || undefined,
+            orgaoExpedidor: resultado.proprietario?.orgaoExpedidor || undefined,
+            ufDocumento: resultado.proprietario?.ufOrgaoExpedidor || undefined,
+            endereco: resultado.proprietario?.endereco || undefined,
+            numero: resultado.proprietario?.numero || undefined,
+            bairro: resultado.proprietario?.bairro || undefined,
+            municipio: resultado.proprietario?.municipio || undefined,
+            uf: resultado.proprietario?.uf || undefined,
+            cep: resultado.proprietario?.cep || undefined,
+          };
+        }
+
+        // Busca CPF no banco
+        let clienteExistente: Cliente | undefined;
+        if (dadosExtraidos.cpfCnpj) {
+          setStatus('Buscando cliente no banco...');
+          const clientes = await getClientes();
+          const cpfNorm = dadosExtraidos.cpfCnpj.replace(/\D/g, '');
+          clienteExistente = clientes.find(c =>
+            c.cpfCnpj.replace(/\D/g, '') === cpfNorm
+          );
+          // Mescla dados do banco com dados da IA (IA não é sobrescrita pelo banco)
+          if (clienteExistente) {
+            dadosExtraidos = {
+              nomeCliente: dadosExtraidos.nomeCliente || clienteExistente.nome,
+              telefone: dadosExtraidos.telefone || clienteExistente.telefones?.[0],
+              endereco: dadosExtraidos.endereco || clienteExistente.endereco,
+              cep: dadosExtraidos.cep || clienteExistente.cep,
+              bairro: dadosExtraidos.bairro || clienteExistente.bairro,
+              municipio: dadosExtraidos.municipio || clienteExistente.municipio,
+              uf: dadosExtraidos.uf || clienteExistente.uf,
+              ...dadosExtraidos,
+            };
+          }
+        }
+
+        if (!cancelled) onConcluido(dadosExtraidos, clienteExistente);
+      } catch (err: any) {
+        if (!cancelled) onErro(err?.message || 'Erro ao analisar o arquivo');
+      }
+    }
+
+    analisar();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '3rem' }}>
       <Loader size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-primary)' }} />
-      <p style={{ margin: 0, fontWeight: 600 }}>Analisando folha de cadastro...</p>
+      <p style={{ margin: 0, fontWeight: 600 }}>{status}</p>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
 
-// Suppress unused import warning for footerStyle and btnPrimary — used in later tasks
+// Suppress unused import warning for footerStyle, btnPrimary, dadosForm, clienteExistente — used in later tasks
 void footerStyle;
 void btnPrimary;
