@@ -53,6 +53,16 @@ function dbToCliente(row: any): Cliente {
         pastaDriveId: row.pasta_drive_id,
         pastaDriveUrl: row.pasta_drive_url,
         pastaSupabasePath: row.pasta_supabase_path,
+        rg: row.rg ?? undefined,
+        orgaoExpedidor: row.orgao_expedidor ?? undefined,
+        ufDocumento: row.uf_documento ?? undefined,
+        endereco: row.endereco ?? undefined,
+        numero: row.numero ?? undefined,
+        complemento: row.complemento ?? undefined,
+        cep: row.cep ?? undefined,
+        bairro: row.bairro ?? undefined,
+        municipio: row.municipio ?? undefined,
+        uf: row.uf ?? undefined,
         criadoEm: row.criado_em,
         atualizadoEm: row.atualizado_em,
     };
@@ -63,7 +73,7 @@ function clienteToDb(c: Partial<Cliente>): Record<string, any> {
     if (c.id !== undefined) map.id = c.id;
     if (c.tipo !== undefined) map.tipo = c.tipo;
     if (c.nome !== undefined) map.nome = c.nome;
-    if (c.cpfCnpj !== undefined) map.cpf_cnpj = c.cpfCnpj;
+    if (c.cpfCnpj !== undefined) map.cpf_cnpj = c.cpfCnpj.replace(/\D/g, '');
     if (c.telefones !== undefined) map.telefones = c.telefones;
     if (c.email !== undefined) map.email = c.email;
     if (c.observacoes !== undefined) map.observacoes = c.observacoes;
@@ -71,6 +81,16 @@ function clienteToDb(c: Partial<Cliente>): Record<string, any> {
     if (c.pastaDriveId !== undefined) map.pasta_drive_id = c.pastaDriveId;
     if (c.pastaDriveUrl !== undefined) map.pasta_drive_url = c.pastaDriveUrl;
     if (c.pastaSupabasePath !== undefined) map.pasta_supabase_path = c.pastaSupabasePath;
+    if (c.rg !== undefined) map.rg = c.rg ?? null;
+    if (c.orgaoExpedidor !== undefined) map.orgao_expedidor = c.orgaoExpedidor ?? null;
+    if (c.ufDocumento !== undefined) map.uf_documento = c.ufDocumento ?? null;
+    if (c.endereco !== undefined) map.endereco = c.endereco ?? null;
+    if (c.numero !== undefined) map.numero = c.numero ?? null;
+    if (c.complemento !== undefined) map.complemento = c.complemento ?? null;
+    if (c.cep !== undefined) map.cep = c.cep ?? null;
+    if (c.bairro !== undefined) map.bairro = c.bairro ?? null;
+    if (c.municipio !== undefined) map.municipio = c.municipio ?? null;
+    if (c.uf !== undefined) map.uf = c.uf ?? null;
     if (c.criadoEm !== undefined) map.criado_em = c.criadoEm;
     if (c.atualizadoEm !== undefined) map.atualizado_em = c.atualizadoEm;
     return map;
@@ -92,6 +112,10 @@ function dbToVeiculo(row: any): Veiculo {
         pastaSupabasePath: row.pasta_supabase_path,
         criadoEm: row.criado_em,
         atualizadoEm: row.atualizado_em,
+        anoFabricacao: row.ano_fabricacao ?? undefined,
+        anoModelo: row.ano_modelo ?? undefined,
+        cor: row.cor ?? undefined,
+        combustivel: row.combustivel ?? undefined,
     };
 }
 
@@ -111,6 +135,10 @@ function veiculoToDb(v: Partial<Veiculo>): Record<string, any> {
     if (v.pastaSupabasePath !== undefined) map.pasta_supabase_path = v.pastaSupabasePath;
     if (v.criadoEm !== undefined) map.criado_em = v.criadoEm;
     if (v.atualizadoEm !== undefined) map.atualizado_em = v.atualizadoEm;
+    if (v.anoFabricacao !== undefined) map.ano_fabricacao = v.anoFabricacao ?? null;
+    if (v.anoModelo !== undefined) map.ano_modelo = v.anoModelo ?? null;
+    if (v.cor !== undefined) map.cor = v.cor ?? null;
+    if (v.combustivel !== undefined) map.combustivel = v.combustivel ?? null;
     return map;
 }
 
