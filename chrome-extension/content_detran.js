@@ -166,7 +166,7 @@ async function tentarCapturarDecalque() {
         chrome.storage.local.get(['matilde_servico_ativo', 'matilde_placa', 'matilde_chassi'], resolve)
     );
 
-    const servicosElegiveis = ['transferencia', 'alteracao_dados'];
+    const servicosElegiveis = ['transferencia', 'alteracao_dados', 'mudanca_caracteristica', 'baixa'];
     if (!servicosElegiveis.includes(ctx.matilde_servico_ativo)) return;
 
     const linkPdf = document.getElementById('link-pdf-dae');

@@ -558,11 +558,19 @@ function ExtensionListener() {
             }
             else if (event.data?.source === 'MATILDE_EXTENSION' && event.data?.type === 'CAPTURED_DAE_PDF') {
                 const { fileBase64, fileName, placa, chassi, servicoAtivo } = event.data.payload;
-                // Extensão captura o mesmo modal Decalque/DAE para 'transferencia' e 'alteracao_dados'.
+                // Extensão captura o mesmo modal Decalque/DAE para múltiplos serviços.
                 // Usa servicoAtivo (vindo do storage da extensão) para distinguir o tipoServico real.
-                const tipoServicoCapturado: 'transferencia' | 'alteracao_dados' =
-                    servicoAtivo === 'alteracao_dados' ? 'alteracao_dados' : 'transferencia';
-                const labelServico = tipoServicoCapturado === 'alteracao_dados' ? 'Alteração de Dados' : 'Transferência';
+                const tiposValidosDae = ['transferencia', 'alteracao_dados', 'mudanca_caracteristica', 'baixa'] as const;
+                type TipoServicoDae = typeof tiposValidosDae[number];
+                const tipoServicoCapturado: TipoServicoDae =
+                    (tiposValidosDae as readonly string[]).includes(servicoAtivo) ? servicoAtivo : 'transferencia';
+                const labelPorTipo: Record<TipoServicoDae, string> = {
+                    transferencia: 'Transferência',
+                    alteracao_dados: 'Alteração de Dados',
+                    mudanca_caracteristica: 'Alteração de Características',
+                    baixa: 'Baixa de Veículo',
+                };
+                const labelServico = labelPorTipo[tipoServicoCapturado];
                 console.log('[Matilde] CAPTURED_DAE_PDF recebido:', { placa, chassi, hasFile: !!fileBase64, tipoServicoCapturado });
                 if (!fileBase64) return;
 
