@@ -133,7 +133,7 @@ REGRAS DE NORMALIZAÇÃO
 - "tipoVeiculo": SOMENTE o nome (ex.: "025 - UTILITARIO" → "UTILITARIO", "AUTOMOVEL", "MOTOCICLETA", "CAMINHONETE").
 - "municipioEmplacamento": exatamente como aparece (ex.: "ITAMBE DO MATO DENTRO").
 - "valorRecibo": número em reais com PONTO decimal e SEM separador de milhar nem "R$". Ex.: "R$ 140.000,00" → "140000.00". Se em branco, "".
-- "dataAquisicao": formato "DD/MM/YYYY". NUNCA confundir com a "DATA DE RECEBIMENTO" do cabeçalho.
+- "dataAquisicao": procure o campo com label exato "DATA DA AQUISIÇÃO" (ou "DATA DA AQUISICAO") na linha de identificação do veículo, ao lado de "VALOR DO RECIBO". Devolva no formato "DD/MM/YYYY". NUNCA confundir com a "DATA DE RECEBIMENTO" do cabeçalho (que vem depois de "CÓDIGO DO MUNICIPIO" e fica em branco para preencher à mão).
 
 DADOS DO PROPRIETÁRIO
 ═════════════════════
@@ -163,7 +163,7 @@ REGRAS GERAIS
 ═════════════
 - Se um campo não existir OU estiver em branco, devolva "" — NUNCA chute, NUNCA copie de outro bloco.
 - NÃO confunda "ENDEREÇO DO PROPRIETÁRIO" com "ENDEREÇO DE CORRESPONDÊNCIA".
-- NÃO confunda "DATA DA AQUISIÇÃO" com "DATA DE RECEBIMENTO".
+- NÃO confunda "DATA DA AQUISIÇÃO" (campo preenchido, ex.: "04/04/2026") com "DATA DE RECEBIMENTO" (campo em branco no cabeçalho, destinado ao órgão de trânsito).
 - NÃO inclua R$, pontos de milhar nem vírgula no valorRecibo.
 - Devolva APENAS o JSON, nada mais.`;
 
