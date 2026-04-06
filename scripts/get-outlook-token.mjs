@@ -11,8 +11,8 @@
 import http from 'http';
 import url from 'url';
 
-const CLIENT_ID = 'PREENCHER_CLIENT_ID_DO_AZURE';
-const CLIENT_SECRET = 'PREENCHER_CLIENT_SECRET_DO_AZURE';
+const CLIENT_ID = process.env.OUTLOOK_CLIENT_ID || 'PREENCHER_CLIENT_ID_DO_AZURE';
+const CLIENT_SECRET = process.env.OUTLOOK_CLIENT_SECRET || 'PREENCHER_CLIENT_SECRET_DO_AZURE';
 const TENANT = 'common'; // 'common' funciona para conta pessoal @hotmail.com / @outlook.com
 const REDIRECT_URI = 'http://localhost:3000/oauth2callback';
 const PORT = 3000;
