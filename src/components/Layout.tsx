@@ -384,7 +384,7 @@ export default function Layout({ children }: LayoutProps) {
                                     }}>
                                         {usuario.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
-                                    <div style={{ textAlign: 'left', minWidth: 0 }}>
+                                    <div className="profile-text-block" style={{ textAlign: 'left', minWidth: 0 }}>
                                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
                                             {usuario.nome}
                                         </div>

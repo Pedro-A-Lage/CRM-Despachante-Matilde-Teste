@@ -248,7 +248,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
             </div>
 
             <div className="card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: 'var(--space-5)' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-5)', alignItems: 'flex-start' }}>
+                <div className="os-header-grid" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-5)', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
                         <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 8 }}>Solicitar Boleto da Placa</h4>
                         <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', marginBottom: 'var(--space-4)' }}>
@@ -342,7 +342,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                         </div>
                     </div>
 
-                    <div style={{ width: 250, borderLeft: '1px solid var(--border-color)', paddingLeft: 'var(--space-5)' }}>
+                    <div className="os-header-aside" style={{ width: 250, borderLeft: '1px solid var(--border-color)', paddingLeft: 'var(--space-5)' }}>
                         <h5 style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-gray-400)', marginBottom: 12 }}>Documento Necessário</h5>
                         {os.pdfDetranUrl ? (
                             <div style={{ background: 'var(--bg-tertiary)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
@@ -885,7 +885,7 @@ export default function OSDetail() {
                             <button className="btn btn-ghost" onClick={() => setIsFullEditVeiculoOpen(false)}><X size={20} /></button>
                         </div>
                         <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                            <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div className="grid os-form-row-2" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div className="form-group">
                                     <label className="form-label">Placa</label>
                                     <input type="text" className="form-input" value={fullEditVeiculo.placa || ''} onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, placa: e.target.value.toUpperCase() })} />
@@ -1024,7 +1024,7 @@ export default function OSDetail() {
                         <select
                             className="form-select"
                             style={{
-                                width: 170, fontSize: 11, padding: '6px 10px', borderRadius: 8,
+                                width: 170, maxWidth: '100%', fontSize: 11, padding: '6px 10px', borderRadius: 8,
                                 fontWeight: 750, fontFamily: 'var(--font-family)', textTransform: 'uppercase',
                                 background: 'var(--bg-body)', border: '1px solid var(--border-color)',
                                 appearance: 'none', cursor: 'pointer', transition: 'all 0.2s',
@@ -1064,7 +1064,7 @@ export default function OSDetail() {
             </div>
 
             {/* ===== TWO COLUMN LAYOUT ===== */}
-            <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', width: '100%' }}>
+            <div className="os-main-row" style={{ display: 'flex', gap: 14, alignItems: 'flex-start', width: '100%', flexWrap: 'wrap' }}>
 
                 {/* ===== LEFT COLUMN (main content) ===== */}
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -1235,7 +1235,7 @@ export default function OSDetail() {
                 </div>
 
                 {/* ===== RIGHT SIDEBAR ===== */}
-                <div style={{ width: 300, maxWidth: 300, flexShrink: 0, position: 'sticky', top: 80, alignSelf: 'flex-start', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="os-vehicle-sticky" style={{ width: 300, maxWidth: 300, flexShrink: 0, position: 'sticky', top: 80, alignSelf: 'flex-start', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
                     {/* ══ RESUMO DO CLIENTE ══ */}
                     <div style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '14px', overflow: 'hidden' }}>
@@ -2857,7 +2857,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
             )}
 
             {/* ===== 2-COLUMN LAYOUT ===== */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="os-info-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
 
                 {/* COLUNA ESQUERDA: Agendamento + Pagamentos */}
                 <CKColCard style={{ minWidth: 0 }}>
@@ -2869,7 +2869,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 value={local} onChange={(e) => { setLocal(e.target.value); setDirty(true); }}
                                 style={VVAL} />
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                        <div className="os-form-row-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                             <div>
                                 <label style={VLBL}>Data</label>
                                 <input type="date" className="form-input" value={dataAgendamento}
@@ -4025,7 +4025,7 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
             </div>
 
             {/* Two-column compact grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) minmax(280px, 2fr)', gap: 10, alignItems: 'start' }}>
+            <div className="os-info-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) minmax(280px, 2fr)', gap: 10, alignItems: 'start' }}>
 
                 {/* Left: CRLV + Validation */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -2761,3 +2761,127 @@ td {
     height: 40px !important;
   }
 }
+
+/* ============================================
+   MOBILE RESPONSIVE OVERHAUL (Phase 1 + 2)
+   Mobile-first additive rules. Desktop unchanged.
+   ============================================ */
+
+/* --- Sidebar drawer improvements (≤1024px) --- */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: min(86vw, 300px);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .sidebar-logo img {
+    height: 56px;
+    width: auto;
+    max-width: 160px;
+  }
+
+  /* Header padding tighter on mobile */
+  .main-header {
+    padding: 0 var(--space-4) !important;
+  }
+
+  .main-header h1 {
+    font-size: clamp(1rem, 4.5vw, 1.25rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60vw;
+  }
+
+  /* Touch targets ≥44px on icon-only buttons inside header */
+  .main-header button {
+    min-height: 40px;
+  }
+
+  /* Prevent any horizontal page overflow */
+  html, body, #root, .main-content {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+}
+
+/* --- OSDetail responsive helpers --- */
+@media (max-width: 1024px) {
+  /* Header card: 1fr auto -> stack */
+  .os-header-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .os-header-aside {
+    width: 100% !important;
+    border-left: none !important;
+    border-top: 1px solid var(--border-color);
+    padding-left: 0 !important;
+    padding-top: var(--space-4) !important;
+  }
+
+  /* Inline status select that was 170px fixed */
+  .os-status-select {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Sticky vehicle summary card 300px -> full width, not sticky */
+  .os-vehicle-sticky {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+  }
+
+  /* Two-column grids inside OSDetail -> single column */
+  .os-info-grid,
+  .os-2col-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Form rows with 2 inputs side by side -> stack */
+  .os-form-row-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --- Buttons: prevent overflow on tiny phones --- */
+@media (max-width: 480px) {
+  .btn {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+
+  /* Modals fill the screen on tiny phones */
+  .modal {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    max-height: 100vh;
+    border-radius: 0 !important;
+  }
+
+  .main-header h1 {
+    font-size: 14px;
+    max-width: 50vw;
+  }
+}
+
+/* Hide user name/role text in header profile on small phones */
+@media (max-width: 600px) {
+  .main-header .profile-text-block {
+    display: none !important;
+  }
+}
+
+/* --- Tables horizontal scroll wrapper helper --- */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
