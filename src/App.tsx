@@ -6,7 +6,6 @@ import ClienteDetail from './pages/ClienteDetail';
 import VeiculosList from './pages/VeiculosList';
 import VeiculoForm from './pages/VeiculoForm';
 import OSList from './pages/OSList';
-import OSForm from './pages/OSForm';
 import OSDetail from './pages/OSDetail';
 import ProtocoloDiario from './pages/ProtocoloDiario';
 import Emails from './pages/Emails';
@@ -26,9 +25,6 @@ import TrocarSenhaModal from './components/TrocarSenhaModal';
 import { useEffect, useState } from 'react';
 import type { TipoServico } from './types';
 import { temPermissao } from './lib/permissions';
-import ATPVeModal, { type DadosIniciaisModal } from './components/ATPVeModal';
-import PrimeiroEmplacamentoModal, { type DadosIniciaisPrimeiroEmplacamento } from './components/PrimeiroEmplacamentoModal';
-import ModalSegundaVia, { type DadosIniciaisSegundaVia } from './components/ModalSegundaVia';
 import NovaOSModal from './components/NovaOSModal';
 import { NovaOSModalContext, useNovaOSModalState } from './hooks/useNovaOSModal';
 
@@ -49,16 +45,6 @@ function ExtensionListener() {
     const navigate = useNavigate();
     const novaOSModal = useNovaOSModalState();
     const { isOpen: novaOSOpen, dadosIniciais: novaOSDados, open: openNovaOS, close: closeNovaOS } = novaOSModal;
-    const [decalqueModalOpen, setDecalqueModalOpen] = useState(false);
-    const [decalqueDadosIniciais, setDecalqueDadosIniciais] = useState<DadosIniciaisModal | undefined>(undefined);
-    const [decalqueModo, setDecalqueModo] = useState<'coletar' | 'revisar'>('coletar');
-    const [primeiroEmplacamentoModalOpen, setPrimeiroEmplacamentoModalOpen] = useState(false);
-    const [primeiroEmplacamentoDadosIniciais, setPrimeiroEmplacamentoDadosIniciais] = useState<DadosIniciaisPrimeiroEmplacamento | undefined>(undefined);
-    const [primeiroEmplacamentoModo, setPrimeiroEmplacamentoModo] = useState<'coletar' | 'revisar'>('coletar');
-    const [pdfPrimeiroEmplacamentoPendente, setPdfPrimeiroEmplacamentoPendente] = useState<{ fileBase64: string; fileName: string } | null>(null);
-    const [segundaViaModalOpen, setSegundaViaModalOpen] = useState(false);
-    const [segundaViaDadosIniciais, setSegundaViaDadosIniciais] = useState<DadosIniciaisSegundaVia | undefined>(undefined);
-    const [segundaViaModo, setSegundaViaModo] = useState<'coletar' | 'revisar'>('coletar');
     const [iaStatus, setIaStatus] = useState<string | null>(null); // mensagem de status da IA
 
     // Helper: busca veículo existente antes de criar (evita duplicatas)
@@ -635,7 +621,7 @@ function ExtensionListener() {
                         await addAuditEntry(novaOrdem.id, 'upload', `Decalque/DAE anexado: ${safeName}`);
                         try { await finalizarOS(novaOrdem.id, tipoServicoCapturado, 'carro', false); } catch {}
 
-                        const dadosIniciais: DadosIniciaisModal = {
+                        const dadosIniciais = {
                             osId: novaOrdem.id, clienteId, veiculoId: veiculo.id,
                             placa: decalque.placa || placa || '', chassi: decalque.chassi || chassi || '',
                             renavam: decalque.renavam || '', valorRecibo: decalque.valorRecibo || '',
@@ -827,7 +813,7 @@ function ExtensionListener() {
                         console.log('[Matilde] OS Primeiro Emplacamento criada:', novaOrdem.id);
 
                         // Abrir modal em modo REVISAR para conferência
-                        const dadosIniciais: DadosIniciaisPrimeiroEmplacamento = {
+                        const dadosIniciais = {
                             osId: novaOrdem.id,
                             clienteId,
                             veiculoId: veiculo.id,
@@ -942,21 +928,11 @@ function ExtensionListener() {
                                 return;
                             }
 
-                            // FIX #5: aviso antes de sobrescrever um agendamento existente diferente
+                            // Reagendamento: registra no audit mas não bloqueia —
+                            // o usuário já confirmou ao completar o fluxo no Detran
                             const protocoloAnterior = os.vistoria?.protocolo;
-                            if (protocoloAnterior && protocoloAnterior !== protocolo && os.vistoria?.status === 'agendada') {
-                                const confirmar = window.confirm(
-                                    `Esta OS já tem uma vistoria agendada:\n` +
-                                    `• Protocolo anterior: ${protocoloAnterior}\n` +
-                                    `• Data: ${os.vistoria?.dataAgendamento || '-'} ${os.vistoria?.horaAgendamento || ''}\n\n` +
-                                    `Deseja substituir pelo novo agendamento?\n` +
-                                    `• Protocolo novo: ${protocolo}\n` +
-                                    `• Data: ${dataAgendamento} ${horaAgendamento}`
-                                );
-                                if (!confirmar) {
-                                    console.log('[Matilde] Usuário cancelou substituição da vistoria.');
-                                    return;
-                                }
+                            if (protocoloAnterior && protocoloAnterior !== protocolo) {
+                                console.log('[Matilde] Reagendamento detectado. Anterior:', protocoloAnterior, '→ Novo:', protocolo);
                             }
 
                             // Converter data DD/MM/YYYY → YYYY-MM-DD
@@ -1162,7 +1138,7 @@ function ExtensionListener() {
                         console.log('[Matilde] OS 2ª Via criada:', novaOrdem.id);
 
                         // Abrir modal em modo REVISAR para conferência
-                        const dadosIniciais: DadosIniciaisSegundaVia = {
+                        const dadosIniciais = {
                             osId: novaOrdem.id,
                             clienteId,
                             veiculoId: veiculo.id,
@@ -1319,7 +1295,7 @@ function ExtensionListener() {
                         console.log('[Matilde] OS Primeiro Emplacamento criada:', novaOrdem.id);
 
                         // Abrir modal em revisar
-                        const dadosIniciais: DadosIniciaisPrimeiroEmplacamento = {
+                        const dadosIniciais = {
                             osId: novaOrdem.id, clienteId, veiculoId: veiculo.id,
                             chassi: ficha.chassi, renavam: ficha.renavam,
                             marcaModelo: ficha.marcaModelo,
@@ -1411,62 +1387,6 @@ function ExtensionListener() {
                     {iaStatus}
                 </div>
             )}
-            <ATPVeModal
-                isOpen={decalqueModalOpen}
-                onClose={() => { setDecalqueModalOpen(false); setDecalqueDadosIniciais(undefined); setDecalqueModo('coletar'); }}
-                onSuccess={(osId) => { setDecalqueModalOpen(false); setDecalqueDadosIniciais(undefined); setDecalqueModo('coletar'); navigate(`/ordens/${osId}`); }}
-                dadosIniciais={decalqueDadosIniciais}
-                modo={decalqueModo}
-            />
-            <PrimeiroEmplacamentoModal
-                isOpen={primeiroEmplacamentoModalOpen}
-                onClose={() => {
-                    setPrimeiroEmplacamentoModalOpen(false);
-                    setPrimeiroEmplacamentoDadosIniciais(undefined);
-                    setPrimeiroEmplacamentoModo('coletar');
-                    notificarCleanupPrimeiroEmplacamento();
-                }}
-                modo={primeiroEmplacamentoModo}
-                onSuccess={async (osId) => {
-                    setPrimeiroEmplacamentoModalOpen(false);
-                    setPrimeiroEmplacamentoDadosIniciais(undefined);
-                    setPrimeiroEmplacamentoModo('coletar');
-                    // Anexar PDF pendente se houver
-                    if (pdfPrimeiroEmplacamentoPendente) {
-                        const { fileBase64, fileName } = pdfPrimeiroEmplacamentoPendente;
-                        setPdfPrimeiroEmplacamentoPendente(null);
-                        try {
-                            const { uploadFileToSupabase } = await import('./lib/fileStorage');
-                            const { saveOrdem, getOrdem, addAuditEntry } = await import('./lib/database');
-                            const byteString = atob(fileBase64.split(',').pop() || fileBase64);
-                            const ab = new ArrayBuffer(byteString.length);
-                            const ia = new Uint8Array(ab);
-                            for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
-                            const blob = new Blob([ab], { type: 'application/pdf' });
-                            const file = new File([blob], fileName, { type: 'application/pdf' });
-                            const pdfPath = `ordens/${osId}/${fileName}`;
-                            const pdfUrl = await uploadFileToSupabase(file, pdfPath);
-                            const os = await getOrdem(osId);
-                            if (os) {
-                                await saveOrdem({ ...os, pdfDetranUrl: pdfUrl, primeiroEmplacamento: { ...(os.primeiroEmplacamento || {}), pdfFichaCadastroUrl: pdfUrl } } as any);
-                                await addAuditEntry(osId, 'upload', `Ficha de cadastro/DAE anexada: ${fileName}`);
-                            }
-                            console.log('[Matilde] PDF pendente anexado à OS:', osId);
-                        } catch (err: any) {
-                            console.error('[Matilde] Erro ao anexar PDF pendente:', err?.message || err);
-                        }
-                    }
-                    navigate(`/ordens/${osId}`);
-                }}
-                dadosIniciais={primeiroEmplacamentoDadosIniciais}
-            />
-            <ModalSegundaVia
-                isOpen={segundaViaModalOpen}
-                onClose={() => { setSegundaViaModalOpen(false); setSegundaViaDadosIniciais(undefined); setSegundaViaModo('coletar'); }}
-                onSuccess={(osId) => { setSegundaViaModalOpen(false); setSegundaViaDadosIniciais(undefined); setSegundaViaModo('coletar'); navigate(`/ordens/${osId}`); }}
-                dadosIniciais={segundaViaDadosIniciais}
-                modo={segundaViaModo}
-            />
             <NovaOSModal
                 isOpen={novaOSOpen}
                 onClose={closeNovaOS}

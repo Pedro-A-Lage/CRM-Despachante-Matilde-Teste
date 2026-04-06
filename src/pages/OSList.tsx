@@ -10,7 +10,6 @@ import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import OSKanban from '../components/OSKanban';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import OSCreateDrawer from '../components/OSCreateDrawer';
 import { useNovaOSModal } from '../hooks/useNovaOSModal';
 
 function getStatusBadge(status: string) {
@@ -109,9 +108,6 @@ export default function OSList() {
     const [loading, setLoading] = useState(true);
     const [hoveredRow, setHoveredRow] = useState<string | null>(null);
     const [paymentTotals, setPaymentTotals] = useState<Record<string, number>>({});
-    const [showDrawer, setShowDrawer] = useState(false);
-    const [drawerExtensionData, setDrawerExtensionData] = useState<any>(null);
-
     useEffect(() => { ensureAnimations(); }, []);
     useEffect(() => { getEmpresas().then(setEmpresas); }, []);
     const { open: openNovaOSModal } = useNovaOSModal();
@@ -168,17 +164,7 @@ export default function OSList() {
         };
     }, [loadData]);
 
-    // Open drawer with pre-filled data when extension navigates to /ordens with extensionData
-    useEffect(() => {
-        const extData = (location.state as any)?.extensionData;
-        if (extData) {
-            setDrawerExtensionData(extData);
-            setShowDrawer(true);
-            // Clear the state so a refresh doesn't reopen it
-            window.history.replaceState({}, '', window.location.pathname);
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    // Extension data from navigation state is now handled by NovaOSModal in App.tsx
 
     const filtered = useMemo(() => {
         let result = ordens;
@@ -1209,17 +1195,6 @@ export default function OSList() {
                 </div>
             )}
 
-            <OSCreateDrawer
-                open={showDrawer}
-                onClose={() => { setShowDrawer(false); setDrawerExtensionData(null); }}
-                onCreated={(osId) => {
-                    setShowDrawer(false);
-                    setDrawerExtensionData(null);
-                    loadData(true);
-                    navigate(`/ordens/${osId}`);
-                }}
-                initialExtensionData={drawerExtensionData}
-            />
         </div>
     );
 }
