@@ -89,12 +89,16 @@ export default function ServicosDetran() {
             setShowSegundaViaModal(true);
             return;
         }
-        // Define o serviço que será capturado quando o PDF voltar do Detran
-        window.postMessage({
-            source: 'MATILDE_CRM',
-            action: 'DEFINIR_SERVICO',
-            payload: { servico: service.id },
-        }, '*');
+        // Primeiro emplacamento já tem fluxo próprio na extensão (CAPTURE_PRIMEIRO_EMPLACAMENTO)
+        // que define seu próprio servicoAtivo. Não enviamos DEFINIR_SERVICO daqui para evitar
+        // colisão com o handler de Decalque/DAE (que escuta apenas 4 tipos).
+        if (service.id !== 'primeiro_emplacamento') {
+            window.postMessage({
+                source: 'MATILDE_CRM',
+                action: 'DEFINIR_SERVICO',
+                payload: { servico: service.id },
+            }, '*');
+        }
         window.open(service.url, '_blank');
     };
 

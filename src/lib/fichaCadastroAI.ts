@@ -215,7 +215,9 @@ export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaC
     const tipoVeiculo = (tipoVeiculoRaw.includes('moto') || tipoVeiculoRaw.includes('ciclomot')) ? 'moto' : 'carro';
 
     return {
-        tipoServico: limpar(parsed.tipoServico) || 'segunda_via',
+        // IA pode devolver "" quando o motivo for ambíguo. Não force fallback —
+        // o chamador (App.tsx) decide o tipo via servicoAtivo do storage.
+        tipoServico: limpar(parsed.tipoServico),
         placa: limpar(parsed.placa),
         chassi: limpar(parsed.chassi),
         renavam: limpar(parsed.renavam),

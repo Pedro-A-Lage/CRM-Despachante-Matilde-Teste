@@ -1078,15 +1078,20 @@ export default function ATPVeModal({ isOpen, onClose, onSuccess, dadosIniciais, 
                             </button>
                         )}
                         {modo === 'revisar' ? (
-                            <button style={btnPrimary} onClick={handleSalvarAlteracoes}>
-                                Salvar Alterações
+                            <button
+                                style={{ ...btnPrimary, opacity: (etapa as Etapa) === 'salvando' ? 0.6 : 1, cursor: (etapa as Etapa) === 'salvando' ? 'not-allowed' : 'pointer' }}
+                                onClick={handleSalvarAlteracoes}
+                                disabled={(etapa as Etapa) === 'salvando'}
+                            >
+                                {(etapa as Etapa) === 'salvando' ? 'Salvando...' : 'Salvar Alterações'}
                             </button>
                         ) : (
                             <button
-                                style={{ ...btnPrimary, display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                                style={{ ...btnPrimary, display: 'inline-flex', alignItems: 'center', gap: 8, opacity: (etapa as Etapa) === 'salvando' ? 0.6 : 1, cursor: (etapa as Etapa) === 'salvando' ? 'not-allowed' : 'pointer' }}
                                 onClick={handleConfirmar}
+                                disabled={(etapa as Etapa) === 'salvando'}
                             >
-                                Criar OS
+                                {(etapa as Etapa) === 'salvando' ? 'Criando...' : 'Criar OS'}
                             </button>
                         )}
                     </div>

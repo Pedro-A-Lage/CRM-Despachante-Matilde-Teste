@@ -170,7 +170,23 @@ async function tentarCapturarDecalque() {
     if (!servicosElegiveis.includes(ctx.matilde_servico_ativo)) return;
 
     const linkPdf = document.getElementById('link-pdf-dae');
-    if (!linkPdf) return;
+    if (!linkPdf) {
+        // Diagnóstico: ajuda a descobrir se 'mudanca_caracteristica' / 'baixa' usam outro elemento
+        if (ctx.matilde_servico_ativo === 'mudanca_caracteristica' || ctx.matilde_servico_ativo === 'baixa') {
+            const candidatos = document.querySelectorAll('a[href^="data:application/pdf;base64,"]');
+            if (candidatos.length > 0) {
+                console.warn(
+                    '[Matilde][Content] #link-pdf-dae não encontrado para',
+                    ctx.matilde_servico_ativo,
+                    '— porém existem',
+                    candidatos.length,
+                    'link(s) PDF base64 nesta página. IDs:',
+                    Array.from(candidatos).map(a => a.id || '(sem id)').join(', ')
+                );
+            }
+        }
+        return;
+    }
 
     const href = linkPdf.getAttribute('href') || '';
     if (!href.startsWith('data:application/pdf;base64,')) return;
