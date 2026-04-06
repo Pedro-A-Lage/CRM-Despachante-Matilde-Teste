@@ -562,7 +562,7 @@ function ExtensionListener() {
                 // Usa servicoAtivo (vindo do storage da extensão) para distinguir o tipoServico real.
                 const tiposValidosDae = ['transferencia', 'alteracao_dados', 'mudanca_caracteristica', 'baixa'] as const;
                 type TipoServicoDae = typeof tiposValidosDae[number];
-                const tipoServicoCapturado: TipoServicoDae =
+                let tipoServicoCapturado: TipoServicoDae =
                     (tiposValidosDae as readonly string[]).includes(servicoAtivo) ? servicoAtivo : 'transferencia';
                 const labelPorTipo: Record<TipoServicoDae, string> = {
                     transferencia: 'Transferência',
@@ -570,7 +570,7 @@ function ExtensionListener() {
                     mudanca_caracteristica: 'Alteração de Características',
                     baixa: 'Baixa de Veículo',
                 };
-                const labelServico = labelPorTipo[tipoServicoCapturado];
+                let labelServico = labelPorTipo[tipoServicoCapturado];
                 console.log('[Matilde] CAPTURED_DAE_PDF recebido:', { placa, chassi, hasFile: !!fileBase64, tipoServicoCapturado });
                 if (!fileBase64) return;
 
@@ -588,6 +588,13 @@ function ExtensionListener() {
                         setIaStatus('Matilde analisando Decalque/DAE...');
                         const { extrairDecalqueChassi } = await import('./lib/atpveAI');
                         const decalque = await extrairDecalqueChassi(file);
+                        // Se a IA identificou o serviço pelo cabeçalho da folha, ela vence o servicoAtivo do storage
+                        const tipoIa = decalque.tipoServicoFolha;
+                        if (tipoIa && (tiposValidosDae as readonly string[]).includes(tipoIa) && tipoIa !== tipoServicoCapturado) {
+                            console.log('[Matilde] tipoServico ajustado pela IA:', tipoServicoCapturado, '→', tipoIa);
+                            tipoServicoCapturado = tipoIa as TipoServicoDae;
+                            labelServico = labelPorTipo[tipoServicoCapturado];
+                        }
                         setIaStatus(`Criando OS de ${labelServico}...`);
                         console.log('[Matilde] Decalque extraído:', decalque);
 

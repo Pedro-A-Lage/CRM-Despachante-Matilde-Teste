@@ -196,6 +196,8 @@ ERROS COMUNS — NÃO COMETA ESTES ERROS
 Se um campo não existir no documento, deixe a string vazia "". Não invente dados.`;
 
 export interface DadosDecalque {
+  /** Tipo de serviço identificado pelo cabeçalho da folha (string vazia se IA não conseguiu detectar). */
+  tipoServicoFolha?: string;
   placa: string;
   chassi: string;
   renavam: string;
@@ -230,12 +232,21 @@ export interface DadosDecalque {
   };
 }
 
-const PROMPT_DECALQUE = `Você é um especialista em documentos veiculares brasileiros. Analise este DECALQUE DE CHASSI (Documento de Cadastro do Detran/MG) e extraia SOMENTE os campos listados abaixo.
+const PROMPT_DECALQUE = `Você é um especialista em documentos veiculares brasileiros. Analise este DECALQUE DE CHASSI / FOLHA DE CADASTRO (Documento de Cadastro do Detran/MG) e extraia SOMENTE os campos listados abaixo.
 
 Foque na PRIMEIRA PÁGINA do documento. Ignore qualquer conteúdo de DAE ou boleto.
 
+IMPORTANTE: o cabeçalho da folha indica o SERVIÇO solicitado (ex.: "TRANSFERÊNCIA DE PROPRIEDADE", "ALTERAÇÃO DE DADOS CADASTRAIS / INCLUSÃO DE GRAVAME / RETIRADA DE GRAVAME", "ALTERAÇÃO DE CARACTERÍSTICA", "BAIXA DE VEÍCULO", "PRIMEIRO EMPLACAMENTO"). Identifique-o no campo "tipoServicoFolha" usando EXATAMENTE um destes valores:
+- "transferencia"
+- "alteracao_dados"
+- "mudanca_caracteristica"
+- "baixa"
+- "primeiro_emplacamento"
+- "" (vazio se não conseguir identificar com certeza)
+
 Retorne APENAS um objeto JSON válido, sem markdown, sem explicações:
 {
+  "tipoServicoFolha": "",
   "placa": "",
   "chassi": "",
   "renavam": "",
@@ -298,6 +309,7 @@ export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> 
         const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : texto);
         const limpar = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
         return {
+            tipoServicoFolha: limpar(parsed.tipoServicoFolha),
             placa: limpar(parsed.placa),
             chassi: limpar(parsed.chassi),
             renavam: limpar(parsed.renavam),
