@@ -1109,7 +1109,7 @@ export default function OSDetail() {
                     </div>
 
                     {/* Tab Content */}
-                    <div className="card">
+                    <div className="card" style={{ minHeight: 520 }}>
                         {activeTab === 'checklist' && (
                             <ChecklistTab os={os} cliente={cliente} onRefresh={refresh} checklistComplete={checklistComplete} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
                         )}
@@ -2129,182 +2129,241 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
 
     // (matchDocCliente já está declarado acima do useEffect)
 
+    const CLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-text-tertiary)', marginBottom: 4 };
+    const bannerColor = checklistComplete ? 'var(--color-success)' : 'var(--color-primary)';
+    const bannerBg = checklistComplete ? 'rgba(16,185,129,0.08)' : 'rgba(212,168,67,0.08)';
+    const bannerBorder = checklistComplete ? 'rgba(16,185,129,0.25)' : 'rgba(212,168,67,0.25)';
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 900 }}>
 
-            {/* ===== SUMMARY BAR (top) ===== */}
+            {/* ===== BANNER HEADER ===== */}
             <div style={{
-                display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
-                background: 'var(--bg-body)', borderRadius: 10, padding: '10px 16px',
-                border: '1px solid var(--border-color)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 14px', borderRadius: 10, flexWrap: 'wrap', gap: 8,
+                background: bannerBg, border: `1px solid ${bannerBorder}`,
             }}>
-                <div style={{ width: 120, height: 5, borderRadius: 3, background: 'rgba(128,128,128,0.15)', overflow: 'hidden', flexShrink: 0 }}>
-                    <div style={{ height: '100%', borderRadius: 3, width: `${progressPercent}%`, background: checklistComplete ? 'var(--color-success)' : 'var(--color-primary)', transition: 'width 0.5s ease' }} />
-                </div>
-                <span style={{ fontSize: 13, fontWeight: 800, color: checklistComplete ? 'var(--color-success)' : 'var(--color-primary)' }}>{progressPercent}%</span>
-                {checklistComplete && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 3 }}><CheckCircle size={11} strokeWidth={3} /> COMPLETO</span>}
-                <span style={{ color: 'var(--color-text-secondary)', fontSize: 11, opacity: 0.4 }}>|</span>
-                {[
-                    { label: 'recebidos', value: recebidos, color: 'var(--color-success)' },
-                    { label: 'pendentes', value: pendentes, color: 'var(--color-warning)' },
-                    { label: 'invalidos', value: invalidos, color: 'var(--color-danger)' },
-                    { label: 'n/a', value: naoAplica, color: 'var(--color-neutral)' },
-                ].map(s => (
-                    <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                        <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 500 }}>
-                            <span style={{ fontWeight: 700, color: s.value > 0 ? s.color : 'var(--color-text-secondary)' }}>{s.value}</span> {s.label}
-                        </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                        width: 30, height: 30, borderRadius: 8,
+                        background: bannerColor + '22',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: bannerColor,
+                    }}>
+                        <FileText size={15} />
                     </div>
-                ))}
-                {cliente && (
-                    <>
-                        <span style={{ color: 'var(--color-text-secondary)', fontSize: 11, opacity: 0.4 }}>|</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <User size={12} style={{ color: 'var(--color-info)', opacity: 0.7 }} />
-                            <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{cliente.nome}</span>
-                            {docsCliente.filter(d => d.arquivo).length > 0 && <span style={{ fontSize: 10, color: 'var(--color-success)', fontWeight: 700 }}>({docsCliente.filter(d => d.arquivo).length} docs)</span>}
+                    <div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                            Documentos do Processo
+                        </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                            {/* Progress bar */}
+                            <div style={{ width: 80, height: 4, borderRadius: 2, background: 'rgba(128,128,128,0.15)', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', borderRadius: 2, width: `${progressPercent}%`, background: bannerColor, transition: 'width 0.5s ease' }} />
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: bannerColor }}>{progressPercent}%</span>
+                            {checklistComplete && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 3 }}><CheckCircle size={10} strokeWidth={3} /> COMPLETO</span>}
                         </div>
-                    </>
-                )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
+                        {[
+                            { label: `${recebidos} recebidos`, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)' },
+                            { label: `${pendentes} pendentes`, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)' },
+                            ...(invalidos > 0 ? [{ label: `${invalidos} invalidos`, color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.12)' }] : []),
+                            ...(naoAplica > 0 ? [{ label: `${naoAplica} n/a`, color: 'var(--color-text-tertiary)', bg: 'rgba(128,128,128,0.10)' }] : []),
+                        ].map(s => (
+                            <span key={s.label} style={{ fontSize: 10, fontWeight: 700, color: s.color, background: s.bg, padding: '2px 7px', borderRadius: 99, border: `1px solid ${s.color}22` }}>
+                                {s.label}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+                <button onClick={handleSave} disabled={!dirty}
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '5px 12px', borderRadius: 7, border: 'none',
+                        fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed',
+                        background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-card)',
+                        color: dirty ? '#fff' : 'var(--color-text-tertiary)',
+                        border: dirty ? 'none' : '1px solid var(--border-color)',
+                        boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                        transition: 'all 0.2s', opacity: dirty ? 1 : 0.6,
+                    } as React.CSSProperties}>
+                    <Save size={12} /> {dirty ? 'Salvar' : 'Salvo'}
+                </button>
             </div>
 
-            {/* ===== CLIENT DOCS (compact chips) ===== */}
-            {docsCliente.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', padding: '6px 12px', background: 'rgba(59,130,246,0.04)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.1)' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-info)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 4 }}>Docs Cliente:</span>
-                    {docsCliente.map(doc => (
-                        <span key={doc.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 5, fontSize: 11, fontWeight: 600, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border-color)', color: 'var(--color-text-primary)', cursor: doc.arquivo ? 'pointer' : 'default' }}
-                            onClick={() => doc.arquivo && onOpenViewer(doc.arquivo, doc.nome || doc.tipo)}>
-                            {doc.arquivo ? <CheckCircle size={10} style={{ color: 'var(--color-success)' }} /> : <FileText size={10} style={{ color: 'var(--color-neutral)' }} />}
-                            {doc.tipo || doc.nome}
-                            {doc.arquivo && <Eye size={9} style={{ color: 'var(--color-info)', opacity: 0.7 }} />}
-                        </span>
-                    ))}
-                </div>
-            )}
+            {/* ===== LAYOUT 2 COLUNAS ===== */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start' }}>
 
-            {/* ===== DOCUMENT LIST (full width, compact rows) ===== */}
-            <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)' }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>Documentos do Processo</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>{total} itens</span>
-                </div>
-                {localChecklist.map((item, idx) => {
-                    const sc = statusColor(item.status);
-                    const isNa = item.status === 'nao_se_aplica';
-                    return (
-                        <div key={item.id} style={{ borderBottom: idx < localChecklist.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42, transition: 'background 0.15s' }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                <div style={{ width: 9, height: 9, borderRadius: '50%', background: sc.color, flexShrink: 0, boxShadow: `0 0 4px ${sc.color}44` }} />
-                                <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</span>
-                                <div style={{ display: 'flex', gap: 1, padding: '1px', borderRadius: 6, background: 'rgba(128,128,128,0.06)', alignItems: 'center', flexShrink: 0 }}>
-                                    {[
-                                        { id: 'pendente', icon: Clock, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.15)', label: 'Pendente' },
-                                        { id: 'recebido', icon: CheckCircle, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.15)', label: 'Recebido' },
-                                        { id: 'invalido', icon: AlertTriangle, color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.15)', label: 'Invalido' },
-                                        { id: 'nao_se_aplica', icon: X, color: 'var(--color-neutral)', bg: 'rgba(107,114,128,0.15)', label: 'N/A' },
-                                    ].map(opt => {
-                                        const isSelected = item.status === opt.id;
-                                        return (
-                                            <button key={opt.id} onClick={() => updateItem(item.id, { status: opt.id as StatusChecklist })} title={opt.label}
-                                                style={{ width: 22, height: 22, borderRadius: 5, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? opt.bg : 'transparent', color: isSelected ? opt.color : 'var(--color-text-secondary)', opacity: isSelected ? 1 : 0.35 }}
-                                                onMouseEnter={e => !isSelected && (e.currentTarget.style.opacity = '0.75')}
-                                                onMouseLeave={e => !isSelected && (e.currentTarget.style.opacity = '0.35')}>
-                                                <opt.icon size={11} strokeWidth={isSelected ? 3 : 2} />
+                {/* COLUNA ESQUERDA: Document List */}
+                <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                        <span style={{ ...CLBL, marginBottom: 0, flex: 1 }}>Lista de Documentos</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>{total} itens</span>
+                    </div>
+                    {localChecklist.map((item, idx) => {
+                        const sc = statusColor(item.status);
+                        const isNa = item.status === 'nao_se_aplica';
+                        return (
+                            <div key={item.id} style={{ borderBottom: idx < localChecklist.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 48, transition: 'background 0.15s' }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(128,128,128,0.04)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    <div style={{ width: 9, height: 9, borderRadius: '50%', background: sc.color, flexShrink: 0, boxShadow: `0 0 4px ${sc.color}44` }} />
+                                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</span>
+                                    <div style={{ display: 'flex', gap: 1, padding: '1px', borderRadius: 6, background: 'rgba(128,128,128,0.06)', alignItems: 'center', flexShrink: 0 }}>
+                                        {[
+                                            { id: 'pendente', icon: Clock, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.15)', label: 'Pendente' },
+                                            { id: 'recebido', icon: CheckCircle, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.15)', label: 'Recebido' },
+                                            { id: 'invalido', icon: AlertTriangle, color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.15)', label: 'Invalido' },
+                                            { id: 'nao_se_aplica', icon: X, color: 'var(--color-neutral)', bg: 'rgba(107,114,128,0.15)', label: 'N/A' },
+                                        ].map(opt => {
+                                            const isSelected = item.status === opt.id;
+                                            return (
+                                                <button key={opt.id} onClick={() => updateItem(item.id, { status: opt.id as StatusChecklist })} title={opt.label}
+                                                    style={{ width: 22, height: 22, borderRadius: 5, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? opt.bg : 'transparent', color: isSelected ? opt.color : 'var(--color-text-secondary)', opacity: isSelected ? 1 : 0.35 }}
+                                                    onMouseEnter={e => !isSelected && (e.currentTarget.style.opacity = '0.75')}
+                                                    onMouseLeave={e => !isSelected && (e.currentTarget.style.opacity = '0.35')}>
+                                                    <opt.icon size={11} strokeWidth={isSelected ? 3 : 2} />
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <span style={{ fontSize: 10, fontWeight: 800, color: sc.color, background: sc.bg, padding: '2px 8px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0, border: `1px solid ${sc.color}22`, minWidth: 52, textAlign: 'center' }}>{sc.label}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                                        {item.arquivo ? (
+                                            <>
+                                                <button onClick={() => onOpenViewer(item.arquivo!, item.nome)} title="Ver documento"
+                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-info)', transition: 'background 0.15s' }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}>
+                                                    <Eye size={12} />
+                                                </button>
+                                                <button title="Remover anexo"
+                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-danger)', transition: 'background 0.15s' }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
+                                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+                                                    onClick={async () => { const confirmed = await confirm('Deseja remover este anexo?'); if (confirmed) { updateItem(item.id, { arquivo: undefined, status: 'pendente' }); setDirty(true); } }}>
+                                                    <Trash2 size={11} />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button title="Anexar arquivo" disabled={uploadingId === item.id}
+                                                style={{ height: 26, padding: '0 8px', borderRadius: 6, background: uploadingId === item.id ? 'var(--bg-secondary)' : 'var(--color-primary)', color: uploadingId === item.id ? 'var(--color-text-secondary)' : 'var(--bg-body)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'opacity 0.15s' }}
+                                                onClick={() => { setActiveUploadItemId(item.id); fileInputRef.current?.click(); }}>
+                                                {uploadingId === item.id ? <Clock size={11} className="animate-spin" /> : <Upload size={11} />}
+                                                {uploadingId === item.id ? '...' : 'Anexar'}
                                             </button>
-                                        );
-                                    })}
-                                </div>
-                                <span style={{ fontSize: 9, fontWeight: 800, color: sc.color, background: sc.bg, padding: '2px 6px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0, border: `1px solid ${sc.color}22`, minWidth: 44, textAlign: 'center' }}>{sc.label}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                                    {item.arquivo ? (
-                                        <>
-                                            <button onClick={() => onOpenViewer(item.arquivo!, item.nome)} title="Ver documento"
-                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-info)', transition: 'background 0.15s' }}
-                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
-                                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}>
-                                                <Eye size={12} />
-                                            </button>
-                                            <button title="Remover anexo"
-                                                style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-danger)', transition: 'background 0.15s' }}
-                                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
-                                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
-                                                onClick={async () => { const confirmed = await confirm('Deseja remover este anexo?'); if (confirmed) { updateItem(item.id, { arquivo: undefined, status: 'pendente' }); setDirty(true); } }}>
-                                                <Trash2 size={11} />
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button title="Anexar arquivo" disabled={uploadingId === item.id}
-                                            style={{ height: 26, padding: '0 8px', borderRadius: 6, background: uploadingId === item.id ? 'var(--bg-secondary)' : 'var(--color-primary)', color: uploadingId === item.id ? 'var(--color-text-secondary)' : 'var(--bg-body)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'opacity 0.15s' }}
-                                            onClick={() => { setActiveUploadItemId(item.id); fileInputRef.current?.click(); }}>
-                                            {uploadingId === item.id ? <Clock size={11} className="animate-spin" /> : <Upload size={11} />}
-                                            {uploadingId === item.id ? '...' : 'Anexar'}
+                                        )}
+                                        <button title="Excluir item"
+                                            style={{ width: 22, height: 22, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', opacity: 0.2, transition: 'opacity 0.15s, color 0.15s' }}
+                                            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--color-danger)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+                                            onClick={async () => { const confirmed = await confirm(`Deseja mesmo remover o item "${item.nome}"?`); if (confirmed) { setLocalChecklist(prev => prev.filter(i => i.id !== item.id)); setDirty(true); } }}>
+                                            <Trash2 size={11} />
                                         </button>
+                                    </div>
+                                    {(item.nome === 'CNH' || item.nome.includes('CNH')) && item.status !== 'nao_se_aplica' && item.status !== 'recebido' && (
+                                        <button style={{ background: 'transparent', border: '1px solid #F59E0B44', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: 'var(--color-warning)', whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0 }}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                            onClick={() => handleNaoPossuiCNH(item.id)}>Sem CNH?</button>
                                     )}
-                                    <button title="Excluir item"
-                                        style={{ width: 22, height: 22, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', opacity: 0.2, transition: 'opacity 0.15s, color 0.15s' }}
-                                        onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--color-danger)'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
-                                        onClick={async () => { const confirmed = await confirm(`Deseja mesmo remover o item "${item.nome}"?`); if (confirmed) { setLocalChecklist(prev => prev.filter(i => i.id !== item.id)); setDirty(true); } }}>
-                                        <Trash2 size={11} />
-                                    </button>
                                 </div>
-                                {(item.nome === 'CNH' || item.nome.includes('CNH')) && item.status !== 'nao_se_aplica' && item.status !== 'recebido' && (
-                                    <button style={{ background: 'transparent', border: '1px solid #F59E0B44', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: 'var(--color-warning)', whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0 }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                        onClick={() => handleNaoPossuiCNH(item.id)}>Sem CNH?</button>
+                                {(item.observacao) && (
+                                    <div style={{ padding: '0 12px 6px 29px' }}>
+                                        <input type="text" placeholder="Observacao..."
+                                            value={item.observacao || ''} onChange={(e) => updateItem(item.id, { observacao: e.target.value })}
+                                            style={{ width: '100%', fontSize: 10, padding: '3px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 5, color: 'var(--color-text-secondary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s', fontStyle: 'italic', boxSizing: 'border-box' }}
+                                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'rgba(128,128,128,0.06)'; }}
+                                            onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
+                                    </div>
                                 )}
                             </div>
-                            {(item.observacao) && (
-                                <div style={{ padding: '0 12px 6px 29px' }}>
-                                    <input type="text" placeholder="Observacao..."
-                                        value={item.observacao || ''} onChange={(e) => updateItem(item.id, { observacao: e.target.value })}
-                                        style={{ width: '100%', fontSize: 10, padding: '3px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 5, color: 'var(--color-text-secondary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s', fontStyle: 'italic', boxSizing: 'border-box' }}
-                                        onFocus={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'rgba(128,128,128,0.06)'; }}
-                                        onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderTop: '1px solid var(--border-color)', background: 'var(--bg-body)' }}>
-                    <Plus size={13} style={{ color: 'var(--color-primary)', opacity: 0.5, flexShrink: 0 }} />
-                    <input type="text" placeholder="Adicionar documento..."
-                        value={novoDocNome} onChange={(e) => setNovoDocNome(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddDocumento()}
-                        style={{ flex: 1, fontSize: 12, padding: '6px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: 'var(--color-text-primary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
-                        onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.04)'; }}
-                        onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
-                    {novoDocNome.trim() && (
-                        <button onClick={handleAddDocumento}
-                            style={{ height: 26, padding: '0 10px', borderRadius: 6, background: 'var(--color-primary)', color: 'var(--bg-body)', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, transition: 'opacity 0.15s' }}>
-                            <Plus size={12} /> Adicionar
-                        </button>
-                    )}
+                        );
+                    })}
+                    {/* Add new doc row */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderTop: '1px solid var(--border-color)', background: 'var(--bg-body)' }}>
+                        <Plus size={13} style={{ color: 'var(--color-primary)', opacity: 0.5, flexShrink: 0 }} />
+                        <input type="text" placeholder="Adicionar documento..."
+                            value={novoDocNome} onChange={(e) => setNovoDocNome(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddDocumento()}
+                            style={{ flex: 1, fontSize: 12, padding: '6px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: 'var(--color-text-primary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
+                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.04)'; }}
+                            onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
+                        {novoDocNome.trim() && (
+                            <button onClick={handleAddDocumento}
+                                style={{ height: 26, padding: '0 10px', borderRadius: 6, background: 'var(--color-primary)', color: 'var(--bg-body)', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, transition: 'opacity 0.15s' }}>
+                                <Plus size={12} /> Adicionar
+                            </button>
+                        )}
+                    </div>
+                    <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
                 </div>
-                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
-            </div>
 
-            {/* ===== BOTTOM ROW: Observacoes + Save ===== */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
-                <div style={{ flex: 1 }}>
-                    <textarea rows={2} placeholder="Observacoes gerais do checklist..."
-                        value={observacoesGlobais} onChange={(e) => { setObservacoesGlobais(e.target.value); markDirty(true); }}
-                        style={{ width: '100%', fontSize: 11, padding: '8px 12px', background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--color-text-primary)', outline: 'none', resize: 'vertical', minHeight: 50, fontFamily: 'inherit', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
-                        onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-                        onBlur={e => e.currentTarget.style.borderColor = 'var(--border-color)'} />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
-                    <button onClick={handleSave} disabled={!dirty}
-                        style={{ height: 40, padding: '0 24px', background: dirty ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(128,128,128,0.1)', color: dirty ? '#fff' : 'var(--color-text-secondary)', border: 'none', borderRadius: 8, cursor: dirty ? 'pointer' : 'default', fontWeight: 800, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s', boxShadow: dirty ? '0 2px 10px rgba(16,185,129,0.25)' : 'none', whiteSpace: 'nowrap' }}>
-                        {dirty ? <Save size={14} /> : <CheckCircle size={14} />}
-                        {dirty ? 'SALVAR' : 'SALVO'}
-                    </button>
-                    {dirty && <span style={{ fontSize: 9, color: 'var(--color-warning)', fontWeight: 700, textAlign: 'center' }}>Alteracoes pendentes</span>}
+                {/* COLUNA DIREITA: Docs Cliente + Observacoes + Salvar */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+                    {/* Docs do Cliente */}
+                    {docsCliente.length > 0 && (
+                        <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                                <span style={CLBL}>Docs do Cliente</span>
+                                {cliente && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                                        <User size={11} style={{ color: 'var(--color-text-tertiary)' }} />
+                                        <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{cliente.nome}</span>
+                                        {docsCliente.filter(d => d.arquivo).length > 0 && (
+                                            <span style={{ fontSize: 10, color: 'var(--color-success)', fontWeight: 700 }}>
+                                                · {docsCliente.filter(d => d.arquivo).length} com arquivo
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            <div style={{ padding: '10px 12px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                                {docsCliente.map(doc => (
+                                    <span key={doc.id}
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border-color)', color: 'var(--color-text-primary)', cursor: doc.arquivo ? 'pointer' : 'default', transition: 'border-color 0.15s' }}
+                                        onClick={() => doc.arquivo && onOpenViewer(doc.arquivo, doc.nome || doc.tipo)}
+                                        onMouseEnter={e => { if (doc.arquivo) e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}>
+                                        {doc.arquivo ? <CheckCircle size={10} style={{ color: 'var(--color-success)' }} /> : <FileText size={10} style={{ color: 'var(--color-neutral)' }} />}
+                                        {doc.tipo || doc.nome}
+                                        {doc.arquivo && <Eye size={9} style={{ color: 'var(--color-info)', opacity: 0.7 }} />}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Observacoes */}
+                    <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                        <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                            <span style={CLBL}>Observacoes</span>
+                        </div>
+                        <div style={{ padding: '10px 12px' }}>
+                            <textarea rows={4} placeholder="Observacoes gerais do checklist..."
+                                value={observacoesGlobais} onChange={(e) => { setObservacoesGlobais(e.target.value); markDirty(true); }}
+                                style={{ width: '100%', fontSize: 13, padding: '8px 10px', background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 7, color: 'var(--color-text-primary)', outline: 'none', resize: 'vertical', minHeight: 80, fontFamily: 'inherit', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
+                                onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                                onBlur={e => e.currentTarget.style.borderColor = 'var(--border-color)'} />
+                        </div>
+                        <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+                            {dirty && (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--color-warning)' }}>
+                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-warning)' }} />
+                                    Nao salvo
+                                </span>
+                            )}
+                            <button onClick={handleSave} disabled={!dirty}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, border: 'none', fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-body)', color: dirty ? '#fff' : 'var(--color-text-tertiary)', border: dirty ? 'none' : '1px solid var(--border-color)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
+                                {dirty ? <Save size={12} /> : <CheckCircle size={12} />}
+                                {dirty ? 'Salvar' : 'Salvo'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
