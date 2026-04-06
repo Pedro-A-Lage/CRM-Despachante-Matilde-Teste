@@ -1,6 +1,6 @@
 // src/components/NovaOSModal.tsx
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { X, Upload, Camera, Edit3, Loader } from 'lucide-react';
+import { X, Upload, Camera, Edit3, Loader, CheckCircle } from 'lucide-react';
 import {
   overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle,
   btnPrimary, btnSecondary,
@@ -9,7 +9,10 @@ import {
 import { useServiceLabels } from '../hooks/useServiceLabels';
 import type { DadosIniciaisOS } from '../hooks/useNovaOSModal';
 import { extrairDadosFichaCadastro, type DadosFichaCadastro } from '../lib/fichaCadastroAI';
-import { getClientes } from '../lib/database';
+import { getClientes, saveCliente, saveVeiculo, saveOrdem, generateId } from '../lib/database';
+import { gerarChecklistDinamico } from '../lib/configService';
+import { finalizarOS } from '../lib/osService';
+import { useNavigate } from 'react-router-dom';
 import type { Cliente } from '../types';
 
 type Etapa = 'upload' | 'analisando' | 'revisao' | 'salvando' | 'sucesso';
@@ -23,6 +26,7 @@ interface NovaOSModalProps {
 }
 
 export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais }: NovaOSModalProps) {
+  const navigate = useNavigate();
   const [etapa, setEtapa] = useState<Etapa>(() =>
     dadosIniciais ? 'revisao' : 'upload'
   );
@@ -30,8 +34,99 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
   const [erro, setErro] = useState('');
   const [dadosForm, setDadosForm] = useState<DadosIniciaisOS>(dadosIniciais ?? {});
   const [clienteExistente, setClienteExistente] = useState<Cliente | undefined>();
+  const [osIdCriada, setOsIdCriada] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  async function salvarOS() {
+    setEtapa('salvando');
+    try {
+      // 1. Resolver ou criar cliente
+      let clienteId = clienteExistente?.id;
+      if (!clienteId) {
+        const novoCliente = {
+          tipo: (dadosForm.tipoCpfCnpj === 'CNPJ' ? 'PJ' : 'PF') as 'PF' | 'PJ',
+          nome: dadosForm.nomeCliente!,
+          cpfCnpj: dadosForm.cpfCnpj!,
+          telefones: dadosForm.telefone ? [dadosForm.telefone] : [],
+          documentos: [] as Cliente['documentos'],
+          rg: dadosForm.rg,
+          orgaoExpedidor: dadosForm.orgaoExpedidor,
+          ufDocumento: dadosForm.ufDocumento,
+          endereco: dadosForm.endereco,
+          numero: dadosForm.numero,
+          complemento: dadosForm.complemento,
+          cep: dadosForm.cep,
+          bairro: dadosForm.bairro,
+          municipio: dadosForm.municipio,
+          uf: dadosForm.uf,
+        };
+        const clienteSalvo = await saveCliente(novoCliente);
+        clienteId = clienteSalvo.id;
+      } else {
+        await saveCliente({
+          ...clienteExistente!,
+          nome: dadosForm.nomeCliente || clienteExistente!.nome,
+          telefones: dadosForm.telefone
+            ? [dadosForm.telefone, ...clienteExistente!.telefones.filter(t => t !== dadosForm.telefone)]
+            : clienteExistente!.telefones,
+          rg: dadosForm.rg || clienteExistente!.rg,
+          orgaoExpedidor: dadosForm.orgaoExpedidor || clienteExistente!.orgaoExpedidor,
+          ufDocumento: dadosForm.ufDocumento || clienteExistente!.ufDocumento,
+          endereco: dadosForm.endereco || clienteExistente!.endereco,
+          numero: dadosForm.numero || clienteExistente!.numero,
+          cep: dadosForm.cep || clienteExistente!.cep,
+          bairro: dadosForm.bairro || clienteExistente!.bairro,
+          municipio: dadosForm.municipio || clienteExistente!.municipio,
+          uf: dadosForm.uf || clienteExistente!.uf,
+        });
+      }
+
+      // 2. Criar veículo
+      const veiculo = await saveVeiculo({
+        clienteId: clienteId,
+        placa: dadosForm.placa || '',
+        chassi: dadosForm.chassi || '',
+        renavam: dadosForm.renavam || '',
+        marcaModelo: dadosForm.marcaModelo || '',
+        anoFabricacao: dadosForm.anoFabricacao,
+        anoModelo: dadosForm.anoModelo,
+        cor: dadosForm.cor,
+        combustivel: dadosForm.combustivel,
+        categoria: dadosForm.categoria,
+        dataAquisicao: dadosForm.dataAquisicao,
+      });
+
+      // 3. Gerar checklist
+      const tipoCliente = (dadosForm.tipoCpfCnpj === 'CNPJ' ? 'PJ' : 'PF') as 'PF' | 'PJ';
+      const checklist = await gerarChecklistDinamico(dadosForm.tipoServico!, tipoCliente);
+
+      // 4. Criar OS
+      const ordem = await saveOrdem({
+        clienteId: clienteId,
+        veiculoId: veiculo.id,
+        tipoServico: dadosForm.tipoServico!,
+        tipoVeiculo: dadosForm.tipoVeiculo || 'carro',
+        trocaPlaca: false,
+        status: 'aguardando_documentacao',
+        checklist,
+      });
+
+      // 5. Finalizar OS (gerar cobranças e valorServico)
+      try {
+        await finalizarOS(ordem.id, dadosForm.tipoServico!, dadosForm.tipoVeiculo as any || 'carro', false);
+      } catch (finErr) {
+        console.warn('finalizarOS falhou (não bloqueante):', finErr);
+      }
+
+      setOsIdCriada(ordem.id);
+      onCreated?.(ordem.id);
+      setEtapa('sucesso');
+    } catch (err: any) {
+      setErro(err?.message || 'Erro ao salvar OS');
+      setEtapa('revisao');
+    }
+  }
 
   // Reset ao abrir
   const handleClose = useCallback(() => {
@@ -83,11 +178,22 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
               onChange={setDadosForm}
               clienteExistente={clienteExistente}
               onVoltar={() => setEtapa('upload')}
-              onConfirmar={() => setEtapa('salvando')}
+              onConfirmar={salvarOS}
             />
           )}
-          {(etapa === 'salvando' || etapa === 'sucesso') && (
-            <div style={{ padding: '3rem', textAlign: 'center' }}>Salvando... (Task 6)</div>
+          {etapa === 'salvando' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '3rem' }}>
+              <Loader size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-primary)' }} />
+              <p style={{ margin: 0, fontWeight: 600 }}>Criando OS...</p>
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            </div>
+          )}
+          {etapa === 'sucesso' && (
+            <EtapaSucesso
+              osId={osIdCriada}
+              onVerOS={() => { handleClose(); navigate(`/ordens/${osIdCriada}`); }}
+              onFechar={handleClose}
+            />
           )}
         </div>
       </div>
@@ -438,6 +544,20 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onVoltar, onConfirmar
         >
           Confirmar e Criar OS
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Etapa 4: Sucesso ───────────────────────────────────────
+function EtapaSucesso({ osId, onVerOS, onFechar }: { osId: string; onVerOS: () => void; onFechar: () => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '3rem' }}>
+      <CheckCircle size={56} style={{ color: 'var(--color-success)' }} />
+      <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>OS criada com sucesso!</p>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <button style={btnSecondary} onClick={onFechar}>Fechar</button>
+        <button style={btnPrimary} onClick={onVerOS}>Ver OS</button>
       </div>
     </div>
   );
