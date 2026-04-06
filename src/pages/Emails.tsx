@@ -202,7 +202,7 @@ export default function Emails() {
                 {loading ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-gray-500)' }}>
                         <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
-                        <p>Sincronizando com o Gmail (Marcador: Estampadora)...</p>
+                        <p>Sincronizando com o Outlook (Categoria: Estampadora)...</p>
                     </div>
                 ) : emails.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-gray-500)' }}>
@@ -273,7 +273,7 @@ export default function Emails() {
                             {loadingDetails ? (
                                 <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-gray-500)' }}>
                                     <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
-                                    <p>Baixando mensagem do Google...</p>
+                                    <p>Baixando mensagem do Outlook...</p>
                                 </div>
                             ) : emailDetails ? (
                                 <>
