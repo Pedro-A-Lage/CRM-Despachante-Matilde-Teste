@@ -211,8 +211,17 @@ function ExtensionListener() {
                 }
             }
             else if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'CAPTURED_VISTORIA_ECV') {
-                const { osId, placa, chassi, cpfCnpj, nome, dataVistoria, horaVistoria, localVistoria, protocolo } = event.data.payload;
-                console.log('CRM recebeu dados de Vistoria da extensão:', { osId, placa, chassi, cpfCnpj, nome, dataVistoria, horaVistoria, localVistoria, protocolo });
+                const {
+                    osId, placa, chassi, cpfCnpj, nome, protocolo,
+                    // content.js (antigo) usa dataVistoria/horaVistoria/localVistoria
+                    dataVistoria, horaVistoria, localVistoria,
+                    // content_vistoria.js (novo) usa dataAgendamento/horaAgendamento/local
+                    dataAgendamento: dataAgendamentoRaw, horaAgendamento: horaAgendamentoRaw, local: localRaw,
+                } = event.data.payload;
+                const dataFinal = dataVistoria || dataAgendamentoRaw;
+                const horaFinal = horaVistoria || horaAgendamentoRaw;
+                const localFinal = localVistoria || localRaw;
+                console.log('CRM recebeu dados de Vistoria da extensão:', { osId, placa, chassi, cpfCnpj, nome, dataFinal, horaFinal, localFinal, protocolo });
 
                 try {
                     const { getVeiculos, getOrdens, updateOrdem, addAuditEntry, getClientes } = await import('./lib/database');
@@ -259,16 +268,16 @@ function ExtensionListener() {
                     if (osTarget) {
                         // Converter DD/MM/YYYY para YYYY-MM-DD pro HTML input date
                         let dataHtml = '';
-                        if (dataVistoria && dataVistoria.includes('/')) {
-                            const parts = dataVistoria.split('/');
+                        if (dataFinal && dataFinal.includes('/')) {
+                            const parts = dataFinal.split('/');
                             dataHtml = `${parts[2]}-${parts[1]}-${parts[0]}`;
                         }
 
                         const novaVistoria = {
                             ...(osTarget.vistoria || { local: '', status: 'agendar' as const }),
                             dataAgendamento: dataHtml || osTarget.vistoria?.dataAgendamento,
-                            horaAgendamento: horaVistoria || osTarget.vistoria?.horaAgendamento,
-                            local: localVistoria || osTarget.vistoria?.local || '',
+                            horaAgendamento: horaFinal || osTarget.vistoria?.horaAgendamento,
+                            local: localFinal || osTarget.vistoria?.local || '',
                             protocolo: protocolo || osTarget.vistoria?.protocolo,
                             status: 'agendada' as const
                         };
@@ -280,7 +289,7 @@ function ExtensionListener() {
                             updateData.status = 'vistoria';
                         }
 
-                        await addAuditEntry(osTarget.id, 'Vistoria Auto-Agendada', `Agendamento ECV importado: ${dataVistoria} às ${horaVistoria} em ${localVistoria}${protocolo ? ` — Protocolo: ${protocolo}` : ''}`);
+                        await addAuditEntry(osTarget.id, 'Vistoria Auto-Agendada', `Agendamento ECV importado: ${dataFinal} às ${horaFinal} em ${localFinal}${protocolo ? ` — Protocolo: ${protocolo}` : ''}`);
 
                         await updateOrdem(osTarget.id, updateData);
 
@@ -296,7 +305,7 @@ function ExtensionListener() {
                             navigate(`/ordens/${osTarget.id}`);
                         }
                     } else {
-                        console.warn(`Vistoria capturada, mas OS não encontrada para ${placa || chassi || cpfCnpj || nome}`);
+                        console.warn(`Vistoria capturada, mas OS não encontrada para osId=${osId} placa=${placa} chassi=${chassi}`);
                     }
                 } catch (error) {
                     console.error('Erro ao processar dados de vistoria:', error);
