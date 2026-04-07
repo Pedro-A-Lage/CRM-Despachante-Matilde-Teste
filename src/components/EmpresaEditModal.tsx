@@ -72,6 +72,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [emailAssunto, setEmailAssunto] = useState(empresa.emailAssuntoTemplate || '');
   const [emailCorpo, setEmailCorpo] = useState(empresa.emailCorpoTemplate || '');
   const [novoDocInputs, setNovoDocInputs] = useState<Record<number, string>>({});
+  const [docLabels, setDocLabels] = useState<Record<string, string>>(empresa.documentosLabels || {});
 
   // Reset form when empresa changes
   useEffect(() => {
@@ -86,6 +87,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     setEmailAssunto(empresa.emailAssuntoTemplate || '');
     setEmailCorpo(empresa.emailCorpoTemplate || '');
     setNovoDocInputs({});
+    setDocLabels(empresa.documentosLabels || {});
   }, [open, empresa]);
 
   const handleAddEtapa = () => {
@@ -127,6 +129,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
       valorServico: valorServico ? parseFloat(valorServico) : undefined,
       valorPlaca: valorPlaca ? parseFloat(valorPlaca) : undefined,
       etapasEnvio: etapas,
+      documentosLabels: docLabels,
       emailAssuntoTemplate: emailAssunto.trim() || undefined,
       emailCorpoTemplate: emailCorpo.trim() || undefined,
     });
@@ -291,16 +294,19 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                       <div className="pl-7 flex flex-col gap-1">
                         {etapa.documentos.map((doc, dIdx) => (
                           <div key={dIdx} className="flex items-center gap-2 group">
-                            <FileText className="w-3 h-3" style={{ color: '#5A5D70' }} />
-                            <span style={{ fontSize: '11px', color: '#C2C4CE', flex: 1 }}>
-                              {docLabel(doc)}
-                            </span>
-                            <span style={{ fontSize: '9px', color: '#5A5D70', fontFamily: 'monospace' }}>
+                            <FileText className="w-3 h-3" style={{ color: '#5A5D70', flexShrink: 0 }} />
+                            <Input
+                              value={docLabels[doc] ?? docLabel(doc)}
+                              onChange={(e) => setDocLabels({ ...docLabels, [doc]: e.target.value })}
+                              placeholder={docLabel(doc)}
+                              style={{ ...INPUT_STYLE, flex: 1, height: '24px', fontSize: '11px' }}
+                            />
+                            <span style={{ fontSize: '9px', color: '#5A5D70', fontFamily: 'monospace', flexShrink: 0 }}>
                               {doc}
                             </span>
                             <button
                               onClick={() => handleRemoveDoc(eIdx, dIdx)}
-                              style={{ color: '#C84040', opacity: 0, padding: '2px' }}
+                              style={{ color: '#C84040', opacity: 0, padding: '2px', flexShrink: 0 }}
                               className="group-hover:opacity-70 hover:!opacity-100 transition-opacity"
                             >
                               <Trash2 className="w-3 h-3" />

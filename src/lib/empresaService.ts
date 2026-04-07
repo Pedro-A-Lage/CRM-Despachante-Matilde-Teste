@@ -14,6 +14,7 @@ function dbToEmpresa(row: any): EmpresaParceira {
         valorServico: row.valor_servico != null ? Number(row.valor_servico) : undefined,
         valorPlaca: row.valor_placa != null ? Number(row.valor_placa) : undefined,
         etapasEnvio: row.etapas_envio || [],
+        documentosLabels: row.documentos_labels ?? undefined,
         emailAssuntoTemplate: row.email_assunto_template ?? undefined,
         emailCorpoTemplate: row.email_corpo_template ?? undefined,
         createdAt: row.created_at,
@@ -30,6 +31,7 @@ function empresaToDb(e: Partial<EmpresaParceira>): Record<string, any> {
     if (e.valorServico !== undefined) map.valor_servico = e.valorServico;
     if (e.valorPlaca !== undefined) map.valor_placa = e.valorPlaca;
     if (e.etapasEnvio !== undefined) map.etapas_envio = e.etapasEnvio;
+    if (e.documentosLabels !== undefined) map.documentos_labels = e.documentosLabels;
     if (e.emailAssuntoTemplate !== undefined) map.email_assunto_template = e.emailAssuntoTemplate;
     if (e.emailCorpoTemplate !== undefined) map.email_corpo_template = e.emailCorpoTemplate;
     map.updated_at = new Date().toISOString();

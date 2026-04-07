@@ -31,6 +31,8 @@ export interface EmpresaParceira {
     valorServico?: number;
     valorPlaca?: number;
     etapasEnvio: EtapaEnvioConfig[];
+    /** Mapa { tipoDoc → label customizado }. Sobrescreve os labels padrão. */
+    documentosLabels?: Record<string, string>;
     emailAssuntoTemplate?: string;
     emailCorpoTemplate?: string;
     createdAt: string;

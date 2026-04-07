@@ -37,7 +37,8 @@ const DOC_LABELS: Record<string, string> = {
     doc_pronto: 'Documento Pronto',
 };
 
-function docLabel(tipo: string): string {
+function docLabel(tipo: string, customLabels?: Record<string, string>): string {
+    if (customLabels && customLabels[tipo]) return customLabels[tipo];
     return DOC_LABELS[tipo] || tipo.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -77,11 +78,11 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
         const docsAnexadosTexto = etapa.documentos
             .filter((d) => d.pronto && d.arquivo_nome)
-            .map((d) => `- ${docLabel(d.tipo)}: ${d.arquivo_nome}`)
+            .map((d) => `- ${docLabel(d.tipo, empresa.documentosLabels)}: ${d.arquivo_nome}`)
             .join('\n');
 
         const corpo = empresa.emailCorpoTemplate
-            || `Segue documentação referente à OS #${osNumero} (${placa}).\n\nEtapa: ${etapa.nome}\n\nDocumentos em anexo:\n${docsAnexadosTexto || etapa.documentos.map((d) => '- ' + docLabel(d.tipo)).join('\n')}`;
+            || `Segue documentação referente à OS #${osNumero} (${placa}).\n\nEtapa: ${etapa.nome}\n\nDocumentos em anexo:\n${docsAnexadosTexto || etapa.documentos.map((d) => '- ' + docLabel(d.tipo, empresa.documentosLabels)).join('\n')}`;
 
         // Coleta os anexos (apenas docs com arquivo)
         const anexos = etapa.documentos
@@ -320,7 +321,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
                                             {/* Doc name */}
                                             <span style={{ fontSize: '12px', color: doc.pronto ? '#28A06A' : 'var(--color-text-secondary)', flex: 1 }}>
-                                                {docLabel(doc.tipo)}
+                                                {docLabel(doc.tipo, empresa.documentosLabels)}
                                             </span>
 
                                             {/* File info or upload */}
