@@ -21,6 +21,17 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
     return btoa(binary);
 }
 
+/** Detecta mimeType — aceita PDF e imagens (PNG, JPEG, WebP). */
+function detectarMimeType(file: File): string {
+    if (file.type) return file.type;
+    const nome = file.name.toLowerCase();
+    if (nome.endsWith('.pdf')) return 'application/pdf';
+    if (nome.endsWith('.png')) return 'image/png';
+    if (nome.endsWith('.jpg') || nome.endsWith('.jpeg')) return 'image/jpeg';
+    if (nome.endsWith('.webp')) return 'image/webp';
+    return 'application/pdf';
+}
+
 const PROMPT_ATPVE = `Você é um especialista em documentos veiculares brasileiros. Analise este ATPV-e (Autorização para Transferência de Propriedade de Veículo Eletrônico) e extraia os dados.
 
 Retorne APENAS um objeto JSON válido, sem markdown, sem explicações:
@@ -340,10 +351,11 @@ REGRAS GERAIS
 
 export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> {
     const arrayBuffer = await file.arrayBuffer();
-    const pdfBase64 = arrayBufferToBase64(arrayBuffer);
+    const dataBase64 = arrayBufferToBase64(arrayBuffer);
+    const mimeType = detectarMimeType(file);
 
     const result = await model.generateContent([
-        { inlineData: { data: pdfBase64, mimeType: 'application/pdf' } },
+        { inlineData: { data: dataBase64, mimeType } },
         { text: PROMPT_DECALQUE },
     ]);
 
@@ -393,11 +405,11 @@ export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> 
     }
 }
 
-async function chamarGeminiComRetry(pdfBase64: string, prompt: string, maxTentativas = 3): Promise<string> {
+async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt: string, maxTentativas = 3): Promise<string> {
     for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
         try {
             const result = await model.generateContent([
-                { inlineData: { data: pdfBase64, mimeType: 'application/pdf' } },
+                { inlineData: { data: dataBase64, mimeType } },
                 { text: prompt },
             ]);
             return result.response.text();
@@ -420,9 +432,10 @@ async function chamarGeminiComRetry(pdfBase64: string, prompt: string, maxTentat
 
 export async function extrairDadosATPVeComIA(file: File): Promise<DadosExtraidos> {
     const arrayBuffer = await file.arrayBuffer();
-    const pdfBase64 = arrayBufferToBase64(arrayBuffer);
+    const dataBase64 = arrayBufferToBase64(arrayBuffer);
+    const mimeType = detectarMimeType(file);
 
-    const textoResposta = await chamarGeminiComRetry(pdfBase64, PROMPT_ATPVE);
+    const textoResposta = await chamarGeminiComRetry(dataBase64, mimeType, PROMPT_ATPVE);
 
     // Parse do JSON retornado
     let parsed: any;
