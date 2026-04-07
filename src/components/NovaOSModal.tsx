@@ -208,6 +208,7 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
               dados={dadosForm}
               onChange={setDadosForm}
               clienteExistente={clienteExistente}
+              onClienteEncontrado={setClienteExistente}
               onVoltar={() => setEtapa('upload')}
               onConfirmar={salvarOS}
             />
@@ -422,14 +423,50 @@ interface EtapaRevisaoProps {
   dados: DadosIniciaisOS;
   onChange: (dados: DadosIniciaisOS) => void;
   clienteExistente?: Cliente;
+  onClienteEncontrado: (cliente: Cliente | undefined) => void;
   onVoltar: () => void;
   onConfirmar: () => void;
 }
 
-function EtapaRevisao({ dados, onChange, clienteExistente, onVoltar, onConfirmar }: EtapaRevisaoProps) {
+function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, onVoltar, onConfirmar }: EtapaRevisaoProps) {
   const serviceLabels = useServiceLabels();
   const set = (key: keyof DadosIniciaisOS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...dados, [key]: e.target.value });
+
+  // Busca cliente no banco quando CPF/CNPJ é editado (onBlur)
+  const buscarClientePorCpfCnpj = async () => {
+    const cpfNorm = (dados.cpfCnpj || '').replace(/\D/g, '');
+    if (cpfNorm.length < 11) {
+      onClienteEncontrado(undefined);
+      return;
+    }
+    try {
+      const clientes = await getClientes();
+      const encontrado = clientes.find(c => c.cpfCnpj.replace(/\D/g, '') === cpfNorm);
+      if (encontrado) {
+        onClienteEncontrado(encontrado);
+        // Auto-preenche apenas campos vazios (não sobrescreve o que o usuário digitou)
+        onChange({
+          ...dados,
+          nomeCliente: dados.nomeCliente || encontrado.nome,
+          tipoCpfCnpj: dados.tipoCpfCnpj || encontrado.tipoCpfCnpj,
+          rg: dados.rg || encontrado.rg,
+          orgaoExpedidor: dados.orgaoExpedidor || encontrado.orgaoExpedidor,
+          telefone: dados.telefone || encontrado.telefones?.[0],
+          endereco: dados.endereco || encontrado.endereco,
+          numero: dados.numero || encontrado.numero,
+          bairro: dados.bairro || encontrado.bairro,
+          municipio: dados.municipio || encontrado.municipio,
+          uf: dados.uf || encontrado.uf,
+          cep: dados.cep || encontrado.cep,
+        });
+      } else {
+        onClienteEncontrado(undefined);
+      }
+    } catch (err) {
+      console.warn('Erro ao buscar cliente:', err);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '1.5rem' }}>
@@ -474,7 +511,7 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onVoltar, onConfirmar
           </div>
           <div style={fieldWrapStyle}>
             <label style={labelStyle}>CPF/CNPJ *</label>
-            <input style={inputStyle} value={dados.cpfCnpj || ''} onChange={set('cpfCnpj')} />
+            <input style={inputStyle} value={dados.cpfCnpj || ''} onChange={set('cpfCnpj')} onBlur={buscarClientePorCpfCnpj} />
           </div>
           <div style={fieldWrapStyle}>
             <label style={labelStyle}>Tipo</label>
