@@ -2135,7 +2135,7 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
     const bannerBorder = checklistComplete ? 'rgba(16,185,129,0.25)' : 'rgba(212,168,67,0.25)';
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 900 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
             {/* ===== BANNER HEADER ===== */}
             <div style={{

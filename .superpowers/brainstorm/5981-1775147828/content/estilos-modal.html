@@ -1,0 +1,188 @@
+<h2>Qual estilo de modal você prefere?</h2>
+<p class="subtitle">Mockups reais da seção de preenchimento de dados — escolha o que mais agrada</p>
+
+<div class="cards" style="grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+
+  <!-- OPÇÃO A: Elegante Minimalista -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; background: #f8fafc;">
+      <div style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,0.10); font-family:system-ui,sans-serif; font-size:13px;">
+        <!-- Header -->
+        <div style="padding:14px 18px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:#0f172a;">🚗 Primeiro Emplacamento</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">Novo veículo — sem placa anterior</div>
+          </div>
+          <span style="color:#cbd5e1; font-size:16px;">✕</span>
+        </div>
+        <!-- Body -->
+        <div style="padding:14px 18px; background:#f8fafc;">
+          <!-- Seção Veículo -->
+          <div style="background:#fff; border-radius:10px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+            <div style="padding:9px 14px; font-weight:700; font-size:11px; color:#3b82f6; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #f1f5f9;">🚗 Dados do Veículo</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px;">
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; margin-bottom:3px;">Chassi *</div>
+                <div style="border-bottom:2px solid #3b82f6; padding:4px 0; font-size:12px; color:#1e293b;">9BWZZZ377VT004</div>
+              </div>
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; margin-bottom:3px;">RENAVAM *</div>
+                <div style="border-bottom:2px solid #e2e8f0; padding:4px 0; font-size:12px; color:#94a3b8;">01234567890</div>
+              </div>
+              <div style="grid-column:1/-1;">
+                <div style="font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; margin-bottom:3px;">Marca / Modelo</div>
+                <div style="border-bottom:2px solid #e2e8f0; padding:4px 0; font-size:12px; color:#94a3b8;">Fiat Pulse</div>
+              </div>
+            </div>
+          </div>
+          <!-- Seção Adquirente -->
+          <div style="background:#fff; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+            <div style="padding:9px 14px; font-weight:700; font-size:11px; color:#10b981; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #f1f5f9;">👤 Adquirente</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px;">
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; margin-bottom:3px;">CPF/CNPJ *</div>
+                <div style="border-bottom:2px solid #e2e8f0; padding:4px 0; font-size:12px; color:#94a3b8;">000.000.000-00</div>
+              </div>
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#f59e0b; text-transform:uppercase; margin-bottom:3px;">Telefone *</div>
+                <div style="border-bottom:2px solid #f59e0b; padding:4px 0; font-size:12px; color:#f59e0b; font-style:italic;">obrigatório</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div style="padding:10px 18px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px; background:#fff;">
+          <div style="padding:6px 14px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; color:#64748b;">Cancelar</div>
+          <div style="padding:6px 14px; background:#3b82f6; border-radius:6px; font-size:12px; color:#fff; font-weight:600;">✅ Confirmar OS</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Elegante Minimalista</h3>
+      <p>Cards brancos flutuantes, inputs com sublinhado colorido por seção, fundo cinza suave. Limpo e moderno.</p>
+    </div>
+  </div>
+
+  <!-- OPÇÃO B: Quente Profissional -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; background: #fdf8f0;">
+      <div style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,0.10); font-family:system-ui,sans-serif; font-size:13px;">
+        <!-- Header -->
+        <div style="padding:14px 18px; border-bottom:1px solid #e8d5b7; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(135deg,#fff8ed,#fff);">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:#78350f;">🚗 Primeiro Emplacamento</div>
+            <div style="font-size:11px; color:#a16207; margin-top:2px;">Novo veículo — sem placa anterior</div>
+          </div>
+          <span style="color:#d4b896; font-size:16px;">✕</span>
+        </div>
+        <!-- Body -->
+        <div style="padding:14px 18px; background:#fdf8f0;">
+          <!-- Seção Veículo -->
+          <div style="background:#fff; border-radius:10px; border:1px solid #e8d5b7; margin-bottom:10px;">
+            <div style="padding:9px 14px; font-weight:700; font-size:12px; color:#92400e; border-bottom:1px solid #e8d5b7; background:#fef3c7; display:flex; align-items:center; gap:6px;">🚗 Dados do Veículo</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px; background:#fffdf8;">
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#92400e; text-transform:uppercase; margin-bottom:3px;">Chassi *</div>
+                <input style="width:100%; padding:5px 8px; border:1px solid #d4b896; border-radius:6px; background:#fffdf8; font-size:12px; color:#1c1917; box-sizing:border-box;" value="9BWZZZ377VT004" readonly />
+              </div>
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#92400e; text-transform:uppercase; margin-bottom:3px;">RENAVAM *</div>
+                <input style="width:100%; padding:5px 8px; border:1px solid #e8d5b7; border-radius:6px; background:#fffdf8; font-size:12px; color:#78716c; box-sizing:border-box;" placeholder="01234567890" readonly />
+              </div>
+              <div style="grid-column:1/-1;">
+                <div style="font-size:10px; font-weight:600; color:#92400e; text-transform:uppercase; margin-bottom:3px;">Marca / Modelo</div>
+                <input style="width:100%; padding:5px 8px; border:1px solid #e8d5b7; border-radius:6px; background:#fffdf8; font-size:12px; color:#78716c; box-sizing:border-box;" placeholder="Fiat Pulse" readonly />
+              </div>
+            </div>
+          </div>
+          <!-- Seção Adquirente -->
+          <div style="background:#fff; border-radius:10px; border:1px solid #e8d5b7;">
+            <div style="padding:9px 14px; font-weight:700; font-size:12px; color:#92400e; border-bottom:1px solid #e8d5b7; background:#fef3c7;">👤 Adquirente</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px; background:#fffdf8;">
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#92400e; text-transform:uppercase; margin-bottom:3px;">CPF/CNPJ *</div>
+                <input style="width:100%; padding:5px 8px; border:1px solid #e8d5b7; border-radius:6px; background:#fffdf8; font-size:12px; color:#78716c; box-sizing:border-box;" placeholder="000.000.000-00" readonly />
+              </div>
+              <div>
+                <div style="font-size:10px; font-weight:600; color:#d97706; text-transform:uppercase; margin-bottom:3px;">Telefone *</div>
+                <input style="width:100%; padding:5px 8px; border:1px solid #f59e0b; border-radius:6px; background:#fffbeb; font-size:12px; color:#d97706; box-sizing:border-box;" placeholder="obrigatório" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div style="padding:10px 18px; border-top:1px solid #e8d5b7; display:flex; justify-content:flex-end; gap:8px; background:#fffdf8;">
+          <div style="padding:6px 14px; border:1px solid #e8d5b7; border-radius:6px; font-size:12px; color:#78716c;">Cancelar</div>
+          <div style="padding:6px 14px; background:#d97706; border-radius:6px; font-size:12px; color:#fff; font-weight:600;">✅ Confirmar OS</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Quente Profissional</h3>
+      <p>Fundo creme, bordas âmbar, headers dourados. Tom aconchegante e profissional ao mesmo tempo.</p>
+    </div>
+  </div>
+
+  <!-- OPÇÃO C: Bold Moderno -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; background: #f1f5f9;">
+      <div style="background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 16px rgba(0,0,0,0.10); font-family:system-ui,sans-serif; font-size:13px;">
+        <!-- Header com gradiente -->
+        <div style="padding:14px 18px; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(135deg,#1e40af,#3b82f6);">
+          <div>
+            <div style="font-weight:700; font-size:15px; color:#fff;">🚗 Primeiro Emplacamento</div>
+            <div style="font-size:11px; color:#bfdbfe; margin-top:2px;">Novo veículo — sem placa anterior</div>
+          </div>
+          <span style="color:#bfdbfe; font-size:16px;">✕</span>
+        </div>
+        <!-- Body -->
+        <div style="padding:14px 18px; background:#fff;">
+          <!-- Seção Veículo -->
+          <div style="border-left:3px solid #3b82f6; border-radius:0 10px 10px 0; background:#f8fafc; margin-bottom:10px; overflow:hidden;">
+            <div style="padding:8px 14px; font-weight:700; font-size:12px; color:#1e40af; background:#eff6ff; border-bottom:1px solid #dbeafe;">🚗 Dados do Veículo</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px;">
+              <div>
+                <div style="font-size:10px; font-weight:700; color:#3b82f6; text-transform:uppercase; margin-bottom:3px;">Chassi *</div>
+                <input style="width:100%; padding:5px 8px; border:1.5px solid #3b82f6; border-radius:6px; background:#fff; font-size:12px; color:#1e293b; box-sizing:border-box;" value="9BWZZZ377VT004" readonly />
+              </div>
+              <div>
+                <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:3px;">RENAVAM *</div>
+                <input style="width:100%; padding:5px 8px; border:1.5px solid #e2e8f0; border-radius:6px; background:#fff; font-size:12px; color:#94a3b8; box-sizing:border-box;" placeholder="01234567890" readonly />
+              </div>
+              <div style="grid-column:1/-1;">
+                <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:3px;">Marca / Modelo</div>
+                <input style="width:100%; padding:5px 8px; border:1.5px solid #e2e8f0; border-radius:6px; background:#fff; font-size:12px; color:#94a3b8; box-sizing:border-box;" placeholder="Fiat Pulse" readonly />
+              </div>
+            </div>
+          </div>
+          <!-- Seção Adquirente -->
+          <div style="border-left:3px solid #10b981; border-radius:0 10px 10px 0; background:#f8fafc; overflow:hidden;">
+            <div style="padding:8px 14px; font-weight:700; font-size:12px; color:#065f46; background:#ecfdf5; border-bottom:1px solid #d1fae5;">👤 Adquirente</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px;">
+              <div>
+                <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:3px;">CPF/CNPJ *</div>
+                <input style="width:100%; padding:5px 8px; border:1.5px solid #e2e8f0; border-radius:6px; background:#fff; font-size:12px; color:#94a3b8; box-sizing:border-box;" placeholder="000.000.000-00" readonly />
+              </div>
+              <div>
+                <div style="font-size:10px; font-weight:700; color:#d97706; text-transform:uppercase; margin-bottom:3px;">Telefone *</div>
+                <input style="width:100%; padding:5px 8px; border:1.5px solid #f59e0b; border-radius:6px; background:#fffbeb; font-size:12px; color:#d97706; box-sizing:border-box;" placeholder="obrigatório" readonly />
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div style="padding:10px 18px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
+          <div style="padding:6px 14px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; color:#64748b;">Cancelar</div>
+          <div style="padding:6px 14px; background:linear-gradient(135deg,#1e40af,#3b82f6); border-radius:6px; font-size:12px; color:#fff; font-weight:600;">✅ Confirmar OS</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Bold Moderno</h3>
+      <p>Header com gradiente azul, seções com borda lateral colorida por tipo. Visual forte e hierarquia clara.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px; text-align:center;">Clique numa opção para selecionar, ou descreva no terminal o que preferiu.</p>
