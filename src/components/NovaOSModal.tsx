@@ -449,7 +449,7 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
         onChange({
           ...dados,
           nomeCliente: dados.nomeCliente || encontrado.nome,
-          tipoCpfCnpj: dados.tipoCpfCnpj || encontrado.tipoCpfCnpj,
+          tipoCpfCnpj: dados.tipoCpfCnpj || (cpfNorm.length > 11 ? 'CNPJ' : 'CPF'),
           rg: dados.rg || encontrado.rg,
           orgaoExpedidor: dados.orgaoExpedidor || encontrado.orgaoExpedidor,
           telefone: dados.telefone || encontrado.telefones?.[0],
