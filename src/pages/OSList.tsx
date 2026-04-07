@@ -373,12 +373,21 @@ export default function OSList() {
     return (
         <div style={{ animation: 'oslist-fadeSlideIn 0.3s ease-out' }}>
             {/* Compact status bar + Nova OS button */}
-            <div style={{
+            <style>{`
+                @media (max-width: 720px) {
+                    .oslist-topbar { flex-wrap: wrap !important; }
+                    .oslist-statusbar { order: 2; flex: 1 1 100% !important; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+                    .oslist-statusbar > button { flex: 0 0 92px !important; }
+                    .oslist-nova-btn { order: 1; flex: 1 1 100% !important; justify-content: center; padding: 12px !important; font-size: 0.9rem !important; }
+                }
+            `}</style>
+            <div className="oslist-topbar" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
                 marginBottom: 12,
             }}>
+                <div className="oslist-statusbar" style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
                 {statusCards.map((card) => {
                     const isPendentes = card.key === 'pendentes';
                     const count = statusCounts[card.key as keyof typeof statusCounts] ?? 0;
@@ -461,10 +470,11 @@ export default function OSList() {
                         <X size={11} /> Limpar
                     </button>
                 )}
+                </div>
                 {/* Nova OS button */}
                 <button
                     onClick={() => openNovaOSModal()}
-                    className="btn btn-primary"
+                    className="btn btn-primary oslist-nova-btn"
                     style={{
                         padding: '8px 18px',
                         borderRadius: 8,

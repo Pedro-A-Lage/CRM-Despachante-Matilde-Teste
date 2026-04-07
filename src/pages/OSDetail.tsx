@@ -2194,7 +2194,7 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
             </div>
 
             {/* ===== LAYOUT 2 COLUNAS ===== */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 12, alignItems: 'start' }}>
 
                 {/* COLUNA ESQUERDA: Document List */}
                 <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
@@ -2207,11 +2207,11 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
                         const isNa = item.status === 'nao_se_aplica';
                         return (
                             <div key={item.id} style={{ borderBottom: idx < localChecklist.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 48, transition: 'background 0.15s' }}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', minHeight: 48, transition: 'background 0.15s', flexWrap: 'wrap' }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(128,128,128,0.04)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                     <div style={{ width: 9, height: 9, borderRadius: '50%', background: sc.color, flexShrink: 0, boxShadow: `0 0 4px ${sc.color}44` }} />
-                                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', wordBreak: 'break-word' }}>{item.nome}</span>
+                                    <span style={{ flex: '1 1 140px', fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</span>
                                     <div style={{ display: 'flex', gap: 1, padding: '1px', borderRadius: 6, background: 'rgba(128,128,128,0.06)', alignItems: 'center', flexShrink: 0 }}>
                                         {[
                                             { id: 'pendente', icon: Clock, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.15)', label: 'Pendente' },
