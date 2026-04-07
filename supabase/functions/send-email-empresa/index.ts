@@ -1,5 +1,4 @@
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
-import { encodeBase64Url } from "https://deno.land/std@0.224.0/encoding/base64url.ts";
 import { encodeBase64 } from "https://deno.land/std@0.224.0/encoding/base64.ts";
 
 const corsHeaders = {
@@ -12,24 +11,44 @@ interface Anexo {
   nome: string;
 }
 
+/**
+ * Obtém access token do Microsoft Identity Platform via refresh token (delegated flow).
+ *
+ * Secrets necessários no Supabase:
+ *   MS_CLIENT_ID       — Application (client) ID do app registrado no Entra ID
+ *   MS_CLIENT_SECRET   — Secret do app
+ *   MS_TENANT_ID       — Tenant ID (ou "common" para multi-tenant)
+ *   MS_REFRESH_TOKEN   — Refresh token obtido no fluxo de autorização inicial
+ *
+ * Scopes recomendados: offline_access Mail.Send
+ */
 async function getAccessToken(): Promise<string> {
-  const clientId = Deno.env.get('GMAIL_CLIENT_ID');
-  const clientSecret = Deno.env.get('GMAIL_CLIENT_SECRET');
-  const refreshToken = Deno.env.get('GMAIL_REFRESH_TOKEN');
+  const clientId = Deno.env.get('MS_CLIENT_ID');
+  const clientSecret = Deno.env.get('MS_CLIENT_SECRET');
+  const tenantId = Deno.env.get('MS_TENANT_ID') || 'common';
+  const refreshToken = Deno.env.get('MS_REFRESH_TOKEN');
 
   if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error("Credenciais do Gmail (OAuth2) não configuradas no Supabase Secrets.");
+    throw new Error('Credenciais Outlook (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_REFRESH_TOKEN) não configuradas no Supabase Secrets.');
   }
 
-  const response = await fetch('https://oauth2.googleapis.com/token', {
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    refresh_token: refreshToken,
+    grant_type: 'refresh_token',
+    scope: 'offline_access Mail.Send',
+  });
+
+  const response = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `client_id=${clientId}&client_secret=${clientSecret}&refresh_token=${refreshToken}&grant_type=refresh_token`,
+    body: params.toString(),
   });
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(`Falha ao renovar token OAuth: ${JSON.stringify(data)}`);
+    throw new Error(`Falha ao renovar token Microsoft: ${JSON.stringify(data)}`);
   }
   return data.access_token;
 }
@@ -61,9 +80,9 @@ serve(async (req) => {
     if (!assunto) throw new Error('Assunto não fornecido');
 
     // 1. Baixar todos os anexos
-    const anexosBaixados: { nome: string; mimeType: string; bytes: Uint8Array }[] = [];
+    const anexosBaixados: { nome: string; mimeType: string; base64: string }[] = [];
     for (const anexo of (anexos || [])) {
-      console.log(`Baixando anexo: ${anexo.nome} de ${anexo.url}`);
+      console.log(`Baixando anexo: ${anexo.nome}`);
       const r = await fetch(anexo.url);
       if (!r.ok) {
         console.warn(`Falha ao baixar ${anexo.nome}: HTTP ${r.status}`);
@@ -73,65 +92,55 @@ serve(async (req) => {
       anexosBaixados.push({
         nome: anexo.nome,
         mimeType: mimeTypeFromName(anexo.nome),
-        bytes: buf,
+        base64: encodeBase64(buf),
       });
     }
 
-    // 2. Token Gmail
-    console.log('Gerando Access Token Gmail...');
+    // 2. Token Microsoft
+    console.log('Gerando Access Token Microsoft Graph...');
     const accessToken = await getAccessToken();
 
-    // 3. Construir MIME multipart
-    const boundary = `----=_Matilde_${Date.now()}`;
-    const linhas: string[] = [
-      `To: ${destinatarioEmail}`,
-      `Subject: =?utf-8?B?${encodeBase64(new TextEncoder().encode(assunto))}?=`,
-      `MIME-Version: 1.0`,
-      `Content-Type: multipart/mixed; boundary="${boundary}"`,
-      ``,
-      `--${boundary}`,
-      `Content-Type: text/plain; charset=utf-8`,
-      `Content-Transfer-Encoding: 8bit`,
-      ``,
-      corpo,
-      ``,
-    ];
+    // 3. Monta o payload do Graph API
+    //    https://learn.microsoft.com/en-us/graph/api/user-sendmail
+    const message = {
+      message: {
+        subject: assunto,
+        body: {
+          contentType: 'Text',
+          content: corpo,
+        },
+        toRecipients: [
+          { emailAddress: { address: destinatarioEmail } },
+        ],
+        attachments: anexosBaixados.map((a) => ({
+          '@odata.type': '#microsoft.graph.fileAttachment',
+          name: a.nome,
+          contentType: a.mimeType,
+          contentBytes: a.base64,
+        })),
+      },
+      saveToSentItems: true,
+    };
 
-    for (const a of anexosBaixados) {
-      linhas.push(
-        `--${boundary}`,
-        `Content-Type: ${a.mimeType}; name="${a.nome}"`,
-        `Content-Disposition: attachment; filename="${a.nome}"`,
-        `Content-Transfer-Encoding: base64`,
-        ``,
-        encodeBase64(a.bytes),
-        ``,
-      );
-    }
-    linhas.push(`--${boundary}--`);
-
-    const rawEmail = linhas.join('\r\n');
-    const encodedRawEmail = encodeBase64Url(new TextEncoder().encode(rawEmail));
-
-    // 4. Enviar via Gmail API
-    console.log(`Enviando email para ${destinatarioEmail} com ${anexosBaixados.length} anexo(s)...`);
-    const sendResponse = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    // 4. Envia via Microsoft Graph
+    console.log(`Enviando email via Outlook para ${destinatarioEmail} com ${anexosBaixados.length} anexo(s)...`);
+    const sendResponse = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ raw: encodedRawEmail }),
+      body: JSON.stringify(message),
     });
 
-    const sendResult = await sendResponse.json();
     if (!sendResponse.ok) {
-      throw new Error(`Erro Gmail API: ${JSON.stringify(sendResult)}`);
+      const errText = await sendResponse.text();
+      throw new Error(`Erro Microsoft Graph (${sendResponse.status}): ${errText}`);
     }
 
-    console.log(`Email enviado! MessageId: ${sendResult.id}`);
+    console.log(`Email enviado via Outlook!`);
     return new Response(
-      JSON.stringify({ success: true, messageId: sendResult.id, anexos: anexosBaixados.length }),
+      JSON.stringify({ success: true, anexos: anexosBaixados.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
