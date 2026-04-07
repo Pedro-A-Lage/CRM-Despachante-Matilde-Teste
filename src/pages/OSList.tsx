@@ -989,14 +989,24 @@ export default function OSList() {
                                             {cliente?.nome || '—'}
                                             {os.empresaParceiraId && (() => {
                                                 const emp = empresas.find((e) => e.id === os.empresaParceiraId);
-                                                return emp ? (
+                                                if (!emp) return null;
+                                                const tudoEnviado = !!os.enviosStatus
+                                                    && os.enviosStatus.length > 0
+                                                    && os.enviosStatus.every((e: any) => e.enviado);
+                                                return (
                                                     <span
-                                                        className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white"
-                                                        style={{ backgroundColor: emp.cor, marginLeft: 6 }}
+                                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                                                        style={{
+                                                            backgroundColor: tudoEnviado ? '#28A06A' : emp.cor,
+                                                            marginLeft: 6,
+                                                            boxShadow: tudoEnviado ? '0 0 6px rgba(40,160,106,0.5)' : 'none',
+                                                        }}
+                                                        title={tudoEnviado ? 'Todos os documentos enviados' : 'Envios pendentes'}
                                                     >
                                                         {emp.nome}
+                                                        {tudoEnviado && <span style={{ marginLeft: 2 }}>✓</span>}
                                                     </span>
-                                                ) : null;
+                                                );
                                             })()}
                                         </td>
                                         <td data-label="Placa" style={{

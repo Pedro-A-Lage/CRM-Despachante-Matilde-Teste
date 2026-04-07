@@ -1080,12 +1080,20 @@ export default function OSDetail() {
                         <div style={{ display: 'flex', flex: '1 1 auto', gap: 0, flexWrap: 'wrap', rowGap: 4, minWidth: 0 }}>
                             {tabs.map((tab) => {
                                 const isFinanceiroComDebito = tab.id === 'financeiro' && temDebitosPendentes;
+                                const isEmpresaTudoEnviado = tab.id === 'empresa'
+                                    && os.enviosStatus
+                                    && os.enviosStatus.length > 0
+                                    && os.enviosStatus.every((e: any) => e.enviado);
                                 return (
                                     <button
                                         key={tab.id}
                                         className={`tab ${activeTab === tab.id ? 'active' : ''}`}
                                         onClick={() => handleTabSwitch(tab.id)}
-                                        style={isFinanceiroComDebito ? { color: 'var(--color-danger)', fontWeight: 700 } : undefined}
+                                        style={
+                                            isFinanceiroComDebito ? { color: 'var(--color-danger)', fontWeight: 700 }
+                                            : isEmpresaTudoEnviado ? { color: '#28A06A', fontWeight: 700 }
+                                            : undefined
+                                        }
                                     >
                                         {tab.icon}
                                         {tab.label}
@@ -1093,6 +1101,9 @@ export default function OSDetail() {
                                             <span style={{ fontSize: 9, marginLeft: 4, background: 'rgba(239,68,68,0.15)', color: 'var(--color-danger)', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>
                                                 Pendente
                                             </span>
+                                        )}
+                                        {isEmpresaTudoEnviado && (
+                                            <CheckCircle size={12} style={{ marginLeft: 4, color: '#28A06A' }} />
                                         )}
                                     </button>
                                 );
