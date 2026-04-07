@@ -13,6 +13,7 @@ import {
     removerEtapa,
 } from '../lib/empresaService';
 import { uploadFileToSupabase } from '../lib/fileStorage';
+import { supabase } from '../lib/supabaseClient';
 
 interface Props {
     empresa: EmpresaParceira;
@@ -59,21 +60,55 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
     };
 
-    const handleGerarEmail = (etapa: EtapaEnvioStatus) => {
+    const [enviandoEmail, setEnviandoEmail] = useState(false);
+
+    const handleGerarEmail = async (etapa: EtapaEnvioStatus) => {
+        if (!empresa.email) {
+            alert('Empresa sem email cadastrado.');
+            return;
+        }
+
         const assunto = empresa.emailAssuntoTemplate
             ? empresa.emailAssuntoTemplate.replace('{numero}', String(osNumero)).replace('{placa}', placa)
             : `OS #${osNumero} - ${placa} - ${etapa.nome}`;
 
-        const docsAnexados = etapa.documentos
+        const docsAnexadosTexto = etapa.documentos
             .filter((d) => d.pronto && d.arquivo_nome)
             .map((d) => `- ${docLabel(d.tipo)}: ${d.arquivo_nome}`)
             .join('\n');
 
         const corpo = empresa.emailCorpoTemplate
-            || `Segue documentação referente à OS #${osNumero} (${placa}).\n\nEtapa: ${etapa.nome}\n\nDocumentos em anexo:\n${docsAnexados || etapa.documentos.map((d) => '- ' + docLabel(d.tipo)).join('\n')}`;
+            || `Segue documentação referente à OS #${osNumero} (${placa}).\n\nEtapa: ${etapa.nome}\n\nDocumentos em anexo:\n${docsAnexadosTexto || etapa.documentos.map((d) => '- ' + docLabel(d.tipo)).join('\n')}`;
 
-        const mailto = `mailto:${empresa.email || ''}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-        window.open(mailto, '_blank');
+        // Coleta os anexos (apenas docs com arquivo)
+        const anexos = etapa.documentos
+            .filter((d) => d.arquivo_url && d.arquivo_nome)
+            .map((d) => ({ url: d.arquivo_url!, nome: d.arquivo_nome! }));
+
+        if (anexos.length === 0) {
+            const ok = confirm('Nenhum arquivo anexado a esta etapa. Deseja enviar mesmo assim?');
+            if (!ok) return;
+        }
+
+        setEnviandoEmail(true);
+        try {
+            const { data, error } = await supabase.functions.invoke('send-email-empresa', {
+                body: {
+                    destinatarioEmail: empresa.email,
+                    assunto,
+                    corpo,
+                    anexos,
+                },
+            });
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+            alert(`Email enviado com sucesso! ${data?.anexos || 0} anexo(s).`);
+        } catch (err: any) {
+            console.error('Erro ao enviar email:', err);
+            alert(`Erro ao enviar email: ${err.message || err}`);
+        } finally {
+            setEnviandoEmail(false);
+        }
     };
 
     const handleFileUpload = async (etapaIdx: number, tipoDoc: string, file: File) => {
@@ -343,7 +378,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                                     <button
                                         onClick={() => completa && handleGerarEmail(etapa)}
-                                        disabled={!completa}
+                                        disabled={!completa || enviandoEmail}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '4px',
                                             fontSize: '11px', fontWeight: 500,
@@ -351,11 +386,11 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                             background: completa ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.03)',
                                             border: `1px solid ${completa ? 'rgba(212,168,67,0.25)' : 'rgba(255,255,255,0.06)'}`,
                                             borderRadius: '6px', padding: '5px 12px',
-                                            cursor: completa ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
+                                            cursor: completa && !enviandoEmail ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
                                         }}
                                     >
                                         <Mail size={12} />
-                                        Gerar Email
+                                        {enviandoEmail ? 'Enviando...' : 'Enviar Email'}
                                     </button>
                                     {completa && (
                                         <button
