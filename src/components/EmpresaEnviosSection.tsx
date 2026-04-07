@@ -14,6 +14,7 @@ import {
 } from '../lib/empresaService';
 import { uploadFileToSupabase } from '../lib/fileStorage';
 import { supabase } from '../lib/supabaseClient';
+import { useToast } from './Toast';
 
 interface Props {
     empresa: EmpresaParceira;
@@ -45,12 +46,14 @@ function isImage(nome: string): boolean {
 }
 
 export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, placa, onUpdate }: Props) {
+    const { showToast } = useToast();
     const [editando, setEditando] = useState(false);
     const [novoDocTipo, setNovoDocTipo] = useState('');
     const [novaEtapaNome, setNovaEtapaNome] = useState('');
     const [uploading, setUploading] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [pendingUpload, setPendingUpload] = useState<{ etapaIdx: number; tipoDoc: string } | null>(null);
+    const [ultimoWebLink, setUltimoWebLink] = useState<{ etapaIdx: number; url: string } | null>(null);
 
     const handleToggleDoc = (etapaIdx: number, tipoDoc: string, atual: boolean) => {
         onUpdate(marcarDocumentoPronto(enviosStatus, etapaIdx, tipoDoc, !atual));
@@ -60,11 +63,11 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
     };
 
-    const [enviandoEmail, setEnviandoEmail] = useState(false);
+    const [enviandoEmailIdx, setEnviandoEmailIdx] = useState<number | null>(null);
 
-    const handleGerarEmail = async (etapa: EtapaEnvioStatus) => {
+    const handleGerarEmail = async (etapa: EtapaEnvioStatus, etapaIdx: number) => {
         if (!empresa.email) {
-            alert('Empresa sem email cadastrado.');
+            showToast('Empresa sem email cadastrado.', 'error');
             return;
         }
 
@@ -90,7 +93,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             if (!ok) return;
         }
 
-        setEnviandoEmail(true);
+        setEnviandoEmailIdx(etapaIdx);
         try {
             const { data, error } = await supabase.functions.invoke('send-email-empresa', {
                 body: {
@@ -102,12 +105,23 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             });
             if (error) throw error;
             if (data?.error) throw new Error(data.error);
-            alert(`Email enviado com sucesso! ${data?.anexos || 0} anexo(s).`);
+
+            const numAnexos = data?.anexos || 0;
+            const numDest = data?.destinatarios || 1;
+            showToast(`Email enviado para ${numDest} destinatário(s) com ${numAnexos} anexo(s)`, 'success');
+
+            // Marca a etapa como enviada automaticamente
+            onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
+
+            // Guarda o link do email enviado pra exibir botão "Ver email enviado"
+            if (data?.webLink) {
+                setUltimoWebLink({ etapaIdx, url: data.webLink });
+            }
         } catch (err: any) {
             console.error('Erro ao enviar email:', err);
-            alert(`Erro ao enviar email: ${err.message || err}`);
+            showToast(`Erro ao enviar email: ${err.message || err}`, 'error');
         } finally {
-            setEnviandoEmail(false);
+            setEnviandoEmailIdx(null);
         }
     };
 
@@ -373,41 +387,56 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 </div>
                             )}
 
-                            {/* Action buttons */}
-                            {!enviado && (
-                                <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                            {/* Action buttons — sempre visíveis para permitir reenvio */}
+                            <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+                                <button
+                                    onClick={() => completa && handleGerarEmail(etapa, etapaIdx)}
+                                    disabled={!completa || enviandoEmailIdx === etapaIdx}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '4px',
+                                        fontSize: '11px', fontWeight: 500,
+                                        color: completa ? '#d4a843' : 'var(--color-text-tertiary)',
+                                        background: completa ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.03)',
+                                        border: `1px solid ${completa ? 'rgba(212,168,67,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                                        borderRadius: '6px', padding: '5px 12px',
+                                        cursor: completa && enviandoEmailIdx !== etapaIdx ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
+                                    }}
+                                >
+                                    <Mail size={12} />
+                                    {enviandoEmailIdx === etapaIdx ? 'Enviando...' : enviado ? 'Reenviar Email' : 'Enviar Email'}
+                                </button>
+                                {!enviado && completa && (
                                     <button
-                                        onClick={() => completa && handleGerarEmail(etapa)}
-                                        disabled={!completa || enviandoEmail}
+                                        onClick={() => handleMarcarEnviada(etapaIdx)}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '4px',
-                                            fontSize: '11px', fontWeight: 500,
-                                            color: completa ? '#d4a843' : 'var(--color-text-tertiary)',
-                                            background: completa ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.03)',
-                                            border: `1px solid ${completa ? 'rgba(212,168,67,0.25)' : 'rgba(255,255,255,0.06)'}`,
-                                            borderRadius: '6px', padding: '5px 12px',
-                                            cursor: completa && !enviandoEmail ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
+                                            fontSize: '11px', fontWeight: 500, color: '#28A06A',
+                                            background: 'rgba(40,160,106,0.12)', border: '1px solid rgba(40,160,106,0.25)',
+                                            borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
+                                        }}
+                                    >
+                                        <Check size={12} />
+                                        Marcar enviado
+                                    </button>
+                                )}
+                                {ultimoWebLink && ultimoWebLink.etapaIdx === etapaIdx && (
+                                    <a
+                                        href={ultimoWebLink.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '4px',
+                                            fontSize: '11px', fontWeight: 500, color: '#3b82f6',
+                                            background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)',
+                                            borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
+                                            textDecoration: 'none',
                                         }}
                                     >
                                         <Mail size={12} />
-                                        {enviandoEmail ? 'Enviando...' : 'Enviar Email'}
-                                    </button>
-                                    {completa && (
-                                        <button
-                                            onClick={() => handleMarcarEnviada(etapaIdx)}
-                                            style={{
-                                                display: 'flex', alignItems: 'center', gap: '4px',
-                                                fontSize: '11px', fontWeight: 500, color: '#28A06A',
-                                                background: 'rgba(40,160,106,0.12)', border: '1px solid rgba(40,160,106,0.25)',
-                                                borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
-                                            }}
-                                        >
-                                            <Check size={12} />
-                                            Marcar enviado
-                                        </button>
-                                    )}
-                                </div>
-                            )}
+                                        Ver email enviado
+                                    </a>
+                                )}
+                            </div>
                         </div>
                     );
                 })}

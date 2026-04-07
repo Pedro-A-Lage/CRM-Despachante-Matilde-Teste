@@ -24,7 +24,7 @@ import { exec } from 'node:child_process';
 // ────────────────────────────────────────────────────────────
 const CLIENT_ID = '7359d62b-6f2f-467c-9d9e-1ac242f84432';
 const CLIENT_SECRET = 'hbj8Q~1sH4RaTYYD3KWeq7PLvQaYRNi_XIlDYc3g';
-const TENANT_ID = '7aabeeac-98e8-4b0f-8ebb-95155d5655c0';
+const TENANT_ID = 'consumers';
 // ────────────────────────────────────────────────────────────
 
 const PORT = 3000;
