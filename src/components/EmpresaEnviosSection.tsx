@@ -225,6 +225,20 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
                         Envios — <span style={{ color: empresa.cor }}>{empresa.nome}</span>
                     </h3>
+                    {enviosStatus.length > 0 && enviosStatus.every((e) => e.enviado) && (
+                        <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '4px',
+                            fontSize: '10px', fontWeight: 700, color: '#28A06A',
+                            background: 'rgba(40,160,106,0.15)',
+                            border: '1px solid rgba(40,160,106,0.4)',
+                            borderRadius: '99px', padding: '3px 10px',
+                            textTransform: 'uppercase', letterSpacing: '0.05em',
+                            boxShadow: '0 0 8px rgba(40,160,106,0.25)',
+                        }}>
+                            <CheckCircle2 size={11} strokeWidth={3} />
+                            Tudo Enviado
+                        </span>
+                    )}
                 </div>
                 <button
                     onClick={() => setEditando(!editando)}
