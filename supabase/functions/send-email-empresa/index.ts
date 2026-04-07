@@ -24,17 +24,16 @@ interface Anexo {
  */
 async function getAccessToken(): Promise<string> {
   const clientId = Deno.env.get('MS_CLIENT_ID');
-  const clientSecret = Deno.env.get('MS_CLIENT_SECRET');
   const tenantId = Deno.env.get('MS_TENANT_ID') || 'common';
   const refreshToken = Deno.env.get('MS_REFRESH_TOKEN');
 
-  if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error('Credenciais Outlook (MS_CLIENT_ID, MS_CLIENT_SECRET, MS_REFRESH_TOKEN) não configuradas no Supabase Secrets.');
+  if (!clientId || !refreshToken) {
+    throw new Error('Credenciais Outlook (MS_CLIENT_ID, MS_REFRESH_TOKEN) não configuradas no Supabase Secrets.');
   }
 
+  // Cliente público — NÃO envia client_secret
   const params = new URLSearchParams({
     client_id: clientId,
-    client_secret: clientSecret,
     refresh_token: refreshToken,
     grant_type: 'refresh_token',
     scope: 'offline_access Mail.Send',
@@ -69,14 +68,20 @@ serve(async (req) => {
   }
 
   try {
-    const { destinatarioEmail, assunto, corpo, anexos } = await req.json() as {
-      destinatarioEmail: string;
+    const { destinatarioEmail, destinatarioEmails, assunto, corpo, anexos } = await req.json() as {
+      destinatarioEmail?: string;
+      destinatarioEmails?: string[];
       assunto: string;
       corpo: string;
       anexos: Anexo[];
     };
 
-    if (!destinatarioEmail) throw new Error('E-mail destinatário não fornecido');
+    // Aceita string única OU array de emails
+    const listaEmails: string[] = (destinatarioEmails && destinatarioEmails.length > 0)
+      ? destinatarioEmails
+      : (destinatarioEmail ? destinatarioEmail.split(/[,;]/).map(e => e.trim()).filter(Boolean) : []);
+
+    if (listaEmails.length === 0) throw new Error('Nenhum e-mail destinatário fornecido');
     if (!assunto) throw new Error('Assunto não fornecido');
 
     // 1. Baixar todos os anexos
@@ -109,9 +114,9 @@ serve(async (req) => {
           contentType: 'Text',
           content: corpo,
         },
-        toRecipients: [
-          { emailAddress: { address: destinatarioEmail } },
-        ],
+        toRecipients: listaEmails.map((email) => ({
+          emailAddress: { address: email },
+        })),
         attachments: anexosBaixados.map((a) => ({
           '@odata.type': '#microsoft.graph.fileAttachment',
           name: a.nome,
@@ -123,7 +128,7 @@ serve(async (req) => {
     };
 
     // 4. Envia via Microsoft Graph
-    console.log(`Enviando email via Outlook para ${destinatarioEmail} com ${anexosBaixados.length} anexo(s)...`);
+    console.log(`Enviando email via Outlook para ${listaEmails.join(', ')} com ${anexosBaixados.length} anexo(s)...`);
     const sendResponse = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
       method: 'POST',
       headers: {
