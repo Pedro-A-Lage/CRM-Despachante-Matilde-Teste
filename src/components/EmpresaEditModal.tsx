@@ -74,7 +74,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [novoDocInputs, setNovoDocInputs] = useState<Record<number, string>>({});
   const [docLabels, setDocLabels] = useState<Record<string, string>>(empresa.documentosLabels || {});
 
-  // Reset form when empresa changes
+  // Reset form ONLY when modal opens (not on every empresa prop change)
   useEffect(() => {
     if (!open) return;
     setNome(empresa.nome || '');
@@ -88,7 +88,8 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     setEmailCorpo(empresa.emailCorpoTemplate || '');
     setNovoDocInputs({});
     setDocLabels(empresa.documentosLabels || {});
-  }, [open, empresa]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleAddEtapa = () => {
     setEtapas([...etapas, { ordem: etapas.length + 1, nome: '', documentos: [] }]);
