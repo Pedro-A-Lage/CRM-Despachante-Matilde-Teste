@@ -217,6 +217,13 @@ export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaC
     const r = await extractVehicleData(file);
 
     const limpar = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+
+    // Converte DD/MM/YYYY → YYYY-MM-DD (formato ISO exigido por <input type="date">)
+    const toIsoDate = (br: string): string => {
+        const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        return m ? `${m[3]}-${m[2]}-${m[1]}` : br;
+    };
+
     const cpfCnpjBruto = limpar(r.comprador?.cpfCnpj || r.cpfCnpjAdquirente || r.cpfCnpj);
     const cpfCnpjDigitos = cpfCnpjBruto.replace(/\D/g, '');
     const tipoCpfCnpj: 'CPF' | 'CNPJ' = cpfCnpjDigitos.length > 11 ? 'CNPJ' : 'CPF';
@@ -239,7 +246,7 @@ export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaC
         tipoVeiculo,
         municipioEmplacamento: limpar(r.comprador?.municipio),
         valorRecibo: limpar(r.valorRecibo),
-        dataAquisicao: limpar(r.dataAquisicao),
+        dataAquisicao: toIsoDate(limpar(r.dataAquisicao)),
         proprietario: {
             nome: limpar(r.comprador?.nome || r.nomeAdquirente || r.nomeProprietario),
             cpfCnpj: cpfCnpjDigitos,

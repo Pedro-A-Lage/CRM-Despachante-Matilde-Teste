@@ -359,6 +359,13 @@ export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> 
     const r = await extractVehicleData(file);
 
     const limpar = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+
+    // Converte DD/MM/YYYY → YYYY-MM-DD (formato ISO exigido por <input type="date">)
+    const toIsoDate = (br: string): string => {
+        const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        return m ? `${m[3]}-${m[2]}-${m[1]}` : br;
+    };
+
     const cpfCnpjComprador = limpar(r.comprador?.cpfCnpj || r.cpfCnpjAdquirente || r.cpfCnpj).replace(/\D/g, '');
     const cpfCnpjVendedor = limpar(r.vendedor?.cpfCnpj || r.cpfCnpjVendedor).replace(/\D/g, '');
 
@@ -368,7 +375,7 @@ export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> 
         chassi: limpar(r.chassi),
         renavam: limpar(r.renavam),
         valorRecibo: limpar(r.valorRecibo),
-        dataAquisicao: limpar(r.dataAquisicao),
+        dataAquisicao: toIsoDate(limpar(r.dataAquisicao)),
         municipioEmplacamento: limpar(r.comprador?.municipio),
         comprador: {
             nome: limpar(r.comprador?.nome || r.nomeAdquirente || r.nomeProprietario),
