@@ -207,67 +207,58 @@ async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt
     throw new Error('Gemini: máximo de tentativas excedido');
 }
 
+/**
+ * Versão SEM IA: usa o leitor de PDF (pdfParser) que extrai os campos por regex.
+ * Mantém a mesma API da versão antiga (DadosFichaCadastro) para não quebrar os call-sites.
+ * Muito mais rápido que o Gemini.
+ */
 export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaCadastro> {
-    const arrayBuffer = await file.arrayBuffer();
-    const dataBase64 = arrayBufferToBase64(arrayBuffer);
-    const mimeType = detectarMimeType(file);
-
-    const textoResposta = await chamarGeminiComRetry(dataBase64, mimeType, PROMPT_FICHA_CADASTRO);
-
-    let parsed: any;
-    try {
-        const jsonMatch = textoResposta.match(/\{[\s\S]*\}/);
-        parsed = JSON.parse(jsonMatch ? jsonMatch[0] : textoResposta);
-    } catch {
-        throw new Error(`Gemini retornou resposta inválida: ${textoResposta.slice(0, 200)}`);
-    }
+    const { extractVehicleData } = await import('./pdfParser');
+    const r = await extractVehicleData(file);
 
     const limpar = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const cpfCnpjBruto = limpar(r.comprador?.cpfCnpj || r.cpfCnpjAdquirente || r.cpfCnpj);
+    const cpfCnpjDigitos = cpfCnpjBruto.replace(/\D/g, '');
+    const tipoCpfCnpj: 'CPF' | 'CNPJ' = cpfCnpjDigitos.length > 11 ? 'CNPJ' : 'CPF';
 
-    const tipoCpfCnpj: 'CPF' | 'CNPJ' =
-        parsed.proprietario?.tipoCpfCnpj === 'CNPJ' ? 'CNPJ' :
-        (limpar(parsed.proprietario?.cpfCnpj).replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF');
-
-    // Normalizar tipoVeiculo para "carro" ou "moto"
-    const tipoVeiculoRaw = limpar(parsed.tipoVeiculo).toLowerCase();
-    const tipoVeiculo = (tipoVeiculoRaw.includes('moto') || tipoVeiculoRaw.includes('ciclomot')) ? 'moto' : 'carro';
+    const tipoVeicLower = (r.tipo || '').toLowerCase();
+    const tipoVeiculo: 'carro' | 'moto' =
+        (tipoVeicLower.includes('moto') || tipoVeicLower.includes('ciclomot')) ? 'moto' : 'carro';
 
     return {
-        // IA pode devolver "" quando o motivo for ambíguo. Não force fallback —
-        // o chamador (App.tsx) decide o tipo via servicoAtivo do storage.
-        tipoServico: limpar(parsed.tipoServico),
-        placa: limpar(parsed.placa),
-        chassi: limpar(parsed.chassi),
-        renavam: limpar(parsed.renavam),
-        marcaModelo: limpar(parsed.marcaModelo),
-        anoFabricacao: limpar(parsed.anoFabricacao),
-        anoModelo: limpar(parsed.anoModelo),
-        cor: limpar(parsed.cor) === '-' ? '' : limpar(parsed.cor),
-        categoria: limpar(parsed.categoria),
-        combustivel: limpar(parsed.combustivel),
+        tipoServico: limpar(r.tipoServicoDetectado),
+        placa: limpar(r.placa),
+        chassi: limpar(r.chassi),
+        renavam: limpar(r.renavam),
+        marcaModelo: limpar(r.marcaModelo),
+        anoFabricacao: limpar(r.anoFabricacao),
+        anoModelo: limpar(r.anoModelo),
+        cor: limpar(r.cor) === '-' ? '' : limpar(r.cor),
+        categoria: limpar(r.categoria),
+        combustivel: limpar(r.combustivel),
         tipoVeiculo,
-        municipioEmplacamento: limpar(parsed.municipioEmplacamento),
-        valorRecibo: limpar(parsed.valorRecibo),
-        dataAquisicao: limpar(parsed.dataAquisicao),
+        municipioEmplacamento: limpar(r.comprador?.municipio),
+        valorRecibo: limpar(r.valorRecibo),
+        dataAquisicao: limpar(r.dataAquisicao),
         proprietario: {
-            nome: limpar(parsed.proprietario?.nome),
-            cpfCnpj: limpar(parsed.proprietario?.cpfCnpj),
+            nome: limpar(r.comprador?.nome || r.nomeAdquirente || r.nomeProprietario),
+            cpfCnpj: cpfCnpjDigitos,
             tipoCpfCnpj,
-            docIdentidade: limpar(parsed.proprietario?.docIdentidade),
-            orgaoExpedidor: limpar(parsed.proprietario?.orgaoExpedidor),
-            ufOrgaoExpedidor: limpar(parsed.proprietario?.ufOrgaoExpedidor),
-            endereco: limpar(parsed.proprietario?.endereco),
-            numero: limpar(parsed.proprietario?.numero),
-            bairro: limpar(parsed.proprietario?.bairro),
-            municipio: limpar(parsed.proprietario?.municipio),
-            uf: limpar(parsed.proprietario?.uf),
-            cep: limpar(parsed.proprietario?.cep),
+            docIdentidade: limpar(r.comprador?.rg),
+            orgaoExpedidor: limpar(r.comprador?.orgaoExpedidor),
+            ufOrgaoExpedidor: limpar(r.comprador?.uf),
+            endereco: limpar(r.comprador?.endereco),
+            numero: limpar(r.comprador?.numero),
+            bairro: limpar(r.comprador?.bairro),
+            municipio: limpar(r.comprador?.municipio),
+            uf: limpar(r.comprador?.uf),
+            cep: limpar(r.comprador?.cep),
         },
         proprietarioAnterior: {
-            nome: limpar(parsed.proprietarioAnterior?.nome),
-            cpfCnpj: limpar(parsed.proprietarioAnterior?.cpfCnpj),
-            municipio: limpar(parsed.proprietarioAnterior?.municipio),
-            uf: limpar(parsed.proprietarioAnterior?.uf),
+            nome: limpar(r.vendedor?.nome || r.nomeVendedor),
+            cpfCnpj: limpar(r.vendedor?.cpfCnpj || r.cpfCnpjVendedor).replace(/\D/g, ''),
+            municipio: limpar(r.vendedor?.municipio),
+            uf: limpar(r.vendedor?.uf),
         },
     };
 }

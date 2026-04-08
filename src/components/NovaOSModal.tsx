@@ -344,7 +344,7 @@ function EtapaAnalisando({ arquivo, dadosIniciaisExtensao, onConcluido, onErro }
         let dadosExtraidos: DadosIniciaisOS = dadosIniciaisExtensao ?? {};
 
         if (arquivo) {
-          setStatus('IA lendo folha de cadastro...');
+          setStatus('Lendo folha de cadastro...');
           const resultado: DadosFichaCadastro = await extrairDadosFichaCadastro(arquivo);
           dadosExtraidos = {
             tipoServico: resultado.tipoServico || undefined,
@@ -358,7 +358,6 @@ function EtapaAnalisando({ arquivo, dadosIniciaisExtensao, onConcluido, onErro }
             combustivel: resultado.combustivel || undefined,
             categoria: resultado.categoria || undefined,
             dataAquisicao: resultado.dataAquisicao || undefined,
-            // tipoVeiculo já é 'carro' | 'moto' normalizado por extrairDadosFichaCadastro
             tipoVeiculo: resultado.tipoVeiculo as 'carro' | 'moto' || undefined,
             nomeCliente: resultado.proprietario?.nome || undefined,
             cpfCnpj: resultado.proprietario?.cpfCnpj || undefined,

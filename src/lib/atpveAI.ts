@@ -349,60 +349,54 @@ REGRAS GERAIS
 - Devolva APENAS o JSON, nada mais.
 `;
 
+/**
+ * Versão SEM IA: usa o leitor de PDF (pdfParser) que extrai os campos por regex.
+ * Mantém a mesma API (DadosDecalque) para não quebrar os call-sites.
+ * Muito mais rápido que o Gemini.
+ */
 export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> {
-    const arrayBuffer = await file.arrayBuffer();
-    const dataBase64 = arrayBufferToBase64(arrayBuffer);
-    const mimeType = detectarMimeType(file);
+    const { extractVehicleData } = await import('./pdfParser');
+    const r = await extractVehicleData(file);
 
-    const result = await model.generateContent([
-        { inlineData: { data: dataBase64, mimeType } },
-        { text: PROMPT_DECALQUE },
-    ]);
+    const limpar = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const cpfCnpjComprador = limpar(r.comprador?.cpfCnpj || r.cpfCnpjAdquirente || r.cpfCnpj).replace(/\D/g, '');
+    const cpfCnpjVendedor = limpar(r.vendedor?.cpfCnpj || r.cpfCnpjVendedor).replace(/\D/g, '');
 
-    const texto = result.response.text();
-
-    try {
-        const jsonMatch = texto.match(/\{[\s\S]*\}/);
-        const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : texto);
-        const limpar = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
-        return {
-            tipoServicoFolha: limpar(parsed.tipoServicoFolha),
-            placa: limpar(parsed.placa),
-            chassi: limpar(parsed.chassi),
-            renavam: limpar(parsed.renavam),
-            valorRecibo: limpar(parsed.valorRecibo),
-            dataAquisicao: limpar(parsed.dataAquisicao),
-            municipioEmplacamento: limpar(parsed.municipioEmplacamento),
-            comprador: {
-                nome: limpar(parsed.comprador?.nome),
-                cpfCnpj: limpar(parsed.comprador?.cpfCnpj),
-                tipoCpfCnpj: (parsed.comprador?.tipoCpfCnpj === 'CNPJ' ? 'CNPJ' : 'CPF') as 'CPF' | 'CNPJ',
-                rg: limpar(parsed.comprador?.rg),
-                orgaoExpedidor: limpar(parsed.comprador?.orgaoExpedidor),
-                uf: limpar(parsed.comprador?.uf),
-                endereco: limpar(parsed.comprador?.endereco),
-                numero: limpar(parsed.comprador?.numero),
-                cep: limpar(parsed.comprador?.cep),
-                bairro: limpar(parsed.comprador?.bairro),
-                municipio: limpar(parsed.comprador?.municipio),
-            },
-            vendedor: {
-                nome: limpar(parsed.vendedor?.nome),
-                cpfCnpj: limpar(parsed.vendedor?.cpfCnpj),
-                tipoCpfCnpj: (parsed.vendedor?.tipoCpfCnpj === 'CNPJ' ? 'CNPJ' : 'CPF') as 'CPF' | 'CNPJ',
-            },
-            veiculo: {
-                tipo: limpar(parsed.veiculo?.tipo),
-                marcaModelo: limpar(parsed.veiculo?.marcaModelo),
-                anoFabricacao: limpar(parsed.veiculo?.anoFabricacao),
-                anoModelo: limpar(parsed.veiculo?.anoModelo),
-                cor: limpar(parsed.veiculo?.cor),
-                combustivel: limpar(parsed.veiculo?.combustivel),
-            },
-        } satisfies DadosDecalque;
-    } catch {
-        throw new Error(`IA retornou resposta inválida para Decalque: ${texto.slice(0, 200)}`);
-    }
+    return {
+        tipoServicoFolha: limpar(r.tipoServicoDetectado),
+        placa: limpar(r.placa),
+        chassi: limpar(r.chassi),
+        renavam: limpar(r.renavam),
+        valorRecibo: limpar(r.valorRecibo),
+        dataAquisicao: limpar(r.dataAquisicao),
+        municipioEmplacamento: limpar(r.comprador?.municipio),
+        comprador: {
+            nome: limpar(r.comprador?.nome || r.nomeAdquirente || r.nomeProprietario),
+            cpfCnpj: cpfCnpjComprador,
+            tipoCpfCnpj: cpfCnpjComprador.length > 11 ? 'CNPJ' : 'CPF',
+            rg: limpar(r.comprador?.rg),
+            orgaoExpedidor: limpar(r.comprador?.orgaoExpedidor),
+            uf: limpar(r.comprador?.uf),
+            endereco: limpar(r.comprador?.endereco),
+            numero: limpar(r.comprador?.numero),
+            cep: limpar(r.comprador?.cep),
+            bairro: limpar(r.comprador?.bairro),
+            municipio: limpar(r.comprador?.municipio),
+        },
+        vendedor: {
+            nome: limpar(r.vendedor?.nome || r.nomeVendedor),
+            cpfCnpj: cpfCnpjVendedor,
+            tipoCpfCnpj: cpfCnpjVendedor.length > 11 ? 'CNPJ' : 'CPF',
+        },
+        veiculo: {
+            tipo: limpar(r.tipo),
+            marcaModelo: limpar(r.marcaModelo),
+            anoFabricacao: limpar(r.anoFabricacao),
+            anoModelo: limpar(r.anoModelo),
+            cor: limpar(r.cor),
+            combustivel: limpar(r.combustivel),
+        },
+    } satisfies DadosDecalque;
 }
 
 async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt: string, maxTentativas = 3): Promise<string> {

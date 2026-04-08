@@ -733,7 +733,7 @@ function ExtensionListener() {
                         const safeName = fileName || `atpve_${placa || Date.now()}.pdf`;
                         const file = new File([u8arr], safeName, { type: mime });
 
-                        setIaStatus('Matilde analisando Decalque/DAE...');
+                        setIaStatus('Lendo Decalque/DAE...');
                         const { extrairDecalqueChassi } = await import('./lib/atpveAI');
                         const decalque = await extrairDecalqueChassi(file);
                         // Se a IA identificou o serviço pelo cabeçalho da folha, ela vence o servicoAtivo do storage
@@ -872,7 +872,7 @@ function ExtensionListener() {
                         const file = new File([ia], safeName, { type: 'application/pdf' });
 
                         // IA extrai dados da ficha de cadastro
-                        setIaStatus('Matilde analisando Ficha de Cadastro...');
+                        setIaStatus('Lendo Ficha de Cadastro...');
                         const { extrairDadosFichaCadastro } = await import('./lib/fichaCadastroAI');
                         const ficha = await extrairDadosFichaCadastro(file);
                         console.log('[Matilde] Ficha PE extraída:', ficha);
@@ -1220,7 +1220,7 @@ function ExtensionListener() {
                         const file = new File([ia], safeName, { type: 'application/pdf' });
 
                         // IA extrai dados da ficha de cadastro
-                        setIaStatus('Matilde analisando Ficha de Cadastro...');
+                        setIaStatus('Lendo Ficha de Cadastro...');
                         const { extrairDadosFichaCadastro } = await import('./lib/fichaCadastroAI');
                         const ficha = await extrairDadosFichaCadastro(file);
                         console.log('[Matilde] Ficha extraída:', ficha);
@@ -1464,7 +1464,7 @@ function ExtensionListener() {
                         const file = new File([ia], safeName, { type: 'application/pdf' });
 
                         // IA extrai dados da Ficha de Cadastro/DAE
-                        setIaStatus('Matilde analisando Ficha de Cadastro...');
+                        setIaStatus('Lendo Ficha de Cadastro...');
                         const { extrairDadosFichaCadastro } = await import('./lib/fichaCadastroAI');
                         const ficha = await extrairDadosFichaCadastro(file);
                         console.log('[Matilde] Ficha Primeiro Emplacamento extraída:', ficha);
