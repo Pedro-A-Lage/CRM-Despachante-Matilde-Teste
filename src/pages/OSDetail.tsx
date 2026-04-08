@@ -91,6 +91,7 @@ import { getChargesByOS, getPaymentsByOS, marcarCustoPago, cancelarCobrancasDaOS
 import { EmpresaEnviosSection } from '../components/EmpresaEnviosSection';
 import { getEmpresa, getEmpresasAtivas, criarEnviosStatusFromEtapas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
+import { gerarComunicadoExtravio, gerarRequerimento2Via } from '../lib/gerarDocumentos2Via';
 
 // ===== FORMATADORES =====
 function formatCPF(value: string): string {
@@ -1122,7 +1123,7 @@ export default function OSDetail() {
                     {/* Tab Content */}
                     <div className="card" style={{ minHeight: 520 }}>
                         {activeTab === 'checklist' && (
-                            <ChecklistTab os={os} cliente={cliente} onRefresh={refresh} checklistComplete={checklistComplete} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
+                            <ChecklistTab os={os} cliente={cliente} veiculo={veiculo} onRefresh={refresh} checklistComplete={checklistComplete} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
                         )}
                         {activeTab === 'vistoria' && (
                             <VistoriaTab os={os} onRefresh={refresh} daePaga={checklistComplete} veiculo={veiculo} cliente={cliente} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
@@ -1933,14 +1934,34 @@ const CKColHeader = ({ label, right }: { label: string; right?: React.ReactNode 
     </div>
 );
 
-function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, onDirtyChange, onOpenViewer }: {
+function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistComplete, onDirtyChange, onOpenViewer }: {
     os: OrdemDeServico;
     cliente: Cliente | null;
+    veiculo: any;
     onRefresh: () => void;
     checklistComplete: boolean;
     onDirtyChange?: (dirty: boolean) => void;
     onOpenViewer: (url: string, title: string) => void;
 }) {
+    const temServico2ViaCrv = os.tipoServico === 'segunda_via' && !!veiculo && !!clienteProp;
+    const handleGerarComunicado = async () => {
+        if (!clienteProp || !veiculo) return;
+        try {
+            await gerarComunicadoExtravio(clienteProp, veiculo);
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao gerar Comunicado de Extravio: ' + (e instanceof Error ? e.message : String(e)));
+        }
+    };
+    const handleGerarRequerimento = async () => {
+        if (!clienteProp || !veiculo) return;
+        try {
+            await gerarRequerimento2Via(clienteProp, veiculo);
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao gerar Requerimento 2ª Via: ' + (e instanceof Error ? e.message : String(e)));
+        }
+    };
     const confirm = useConfirm();
     const [localChecklist, setLocalChecklist] = useState<ChecklistItem[]>(() => [...(os.checklist || [])]);
     const [observacoesGlobais, setObservacoesGlobais] = useState(os.checklistObservacoes || '');
@@ -2147,6 +2168,56 @@ function ChecklistTab({ os, cliente: clienteProp, onRefresh, checklistComplete, 
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            {temServico2ViaCrv && (
+                <div style={{
+                    padding: '10px 14px',
+                    borderRadius: 10,
+                    border: '1px solid var(--color-border)',
+                    background: 'rgba(59,130,246,0.08)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                        Documentos 2ª Via CRV
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <button
+                            type="button"
+                            onClick={handleGerarComunicado}
+                            style={{
+                                padding: '6px 12px',
+                                borderRadius: 6,
+                                border: '1px solid #2563eb',
+                                background: '#2563eb',
+                                color: '#fff',
+                                fontSize: 12,
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Gerar Comunicado de Extravio
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleGerarRequerimento}
+                            style={{
+                                padding: '6px 12px',
+                                borderRadius: 6,
+                                border: '1px solid #2563eb',
+                                background: '#2563eb',
+                                color: '#fff',
+                                fontSize: 12,
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Gerar Requerimento 2ª Via
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* ===== BANNER HEADER ===== */}
             <div style={{
