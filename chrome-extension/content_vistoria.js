@@ -139,20 +139,27 @@ console.log('[Matilde][Vistoria] Script de preenchimento de vistoria carregado.'
         var preenchidos = 0;
         var naoPreenchidos = [];
 
-        function tentar(nome, id, valor) {
+        function tentar(nome, ids, valor) {
             if (!valor) return;
-            var el = document.getElementById(id);
-            if (el && preencherCampo(el, valor)) { preenchidos++; console.log('[Matilde][Vistoria] ✓ ' + nome); }
-            else naoPreenchidos.push(nome);
+            var idsArr = Array.isArray(ids) ? ids : [ids];
+            for (var i = 0; i < idsArr.length; i++) {
+                var el = document.getElementById(idsArr[i]);
+                if (el && preencherCampo(el, valor)) {
+                    preenchidos++;
+                    console.log('[Matilde][Vistoria] ✓ ' + nome + ' (via #' + idsArr[i] + ')');
+                    return;
+                }
+            }
+            naoPreenchidos.push(nome);
         }
 
-        tentar('Placa', 'placa', dados.placa);
-        tentar('Chassi', 'chassi', dados.chassi);
-        tentar('CPF/CNPJ', 'cpf-cnpj-proprietario', dados.cpfCnpj);
-        tentar('Nome', 'nome-proprietario', dados.nome);
-        tentar('Telefone', 'telefone-proprietario', dados.telefone);
-        tentar('Email', 'email', dados.email);
-        tentar('Confirmar Email', 'email2', dados.email);
+        tentar('Placa', ['placa'], dados.placa);
+        tentar('Chassi', ['chassi'], dados.chassi);
+        tentar('CPF/CNPJ', ['cpf-cnpj-proprietario', 'cpf-cnpj-adquirente'], dados.cpfCnpj);
+        tentar('Nome', ['nome-proprietario'], dados.nome);
+        tentar('Telefone', ['telefone-proprietario'], dados.telefone);
+        tentar('Email', ['email'], dados.email);
+        tentar('Confirmar Email', ['email2'], dados.email);
 
         // Tipo Doc (select: 1=CPF, 2=CNPJ)
         var selectTipoDoc = document.getElementById('tipo-documento-proprietario-id');
