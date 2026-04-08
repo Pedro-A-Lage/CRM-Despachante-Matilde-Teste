@@ -161,17 +161,22 @@ function limparTexto(str: string | undefined): string | undefined {
 }
 
 function extrairCpfCnpj(text: string): string | undefined {
-    // CNPJ formatado: 00.000.000/0000-00
-    const cnpj = text.match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/);
-    if (cnpj) return cnpj[1];
+    // 1) CNPJ formatado: 00.000.000/0000-00
+    const cnpjFmt = text.match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/);
+    if (cnpjFmt) return cnpjFmt[1];
 
-    // CPF formatado: 000.000.000-00
-    const cpf = text.match(/(\d{3}\.\d{3}\.\d{3}-\d{2})/);
-    if (cpf) return cpf[1];
+    // 2) CPF formatado: 000.000.000-00
+    const cpfFmt = text.match(/(\d{3}\.\d{3}\.\d{3}-\d{2})/);
+    if (cpfFmt) return cpfFmt[1];
 
-    // CPF/CNPJ cru após label
-    const raw = text.match(/(?:CPF\/CNPJ|CPF|CNPJ)\s*:?\s*(\d{11}|\d{14})\b/i);
-    if (raw) return formatCpfCnpj(raw[1]!);
+    // 3) Cru após label — SEMPRE tenta 14 dígitos PRIMEIRO (senão pega só 11 do começo do CNPJ)
+    //    (?!\d) garante que não há mais dígitos depois, evitando match parcial.
+    const rawCnpj = text.match(/(?:CPF\/CNPJ|CNPJ)\s*:?\s*(\d{14})(?!\d)/i);
+    if (rawCnpj) return formatCpfCnpj(rawCnpj[1]!);
+
+    // 4) Cru 11 dígitos após label
+    const rawCpf = text.match(/(?:CPF\/CNPJ|CPF)\s*:?\s*(\d{11})(?!\d)/i);
+    if (rawCpf) return formatCpfCnpj(rawCpf[1]!);
 
     return undefined;
 }
