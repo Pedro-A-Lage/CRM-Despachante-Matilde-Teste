@@ -27,6 +27,7 @@ import type { TipoServico } from './types';
 import { temPermissao } from './lib/permissions';
 import NovaOSModal from './components/NovaOSModal';
 import { NovaOSModalContext, useNovaOSModalState, useNovaOSModal } from './hooks/useNovaOSModal';
+import { useToast } from './components/Toast';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { usuario, carregando } = useAuth();
@@ -44,7 +45,10 @@ function PermissionRoute({ children, permissao }: { children: React.ReactNode; p
 function ExtensionListener() {
     const navigate = useNavigate();
     const { open: openNovaOS } = useNovaOSModal();
+    const { showToast } = useToast();
     const [iaStatus, setIaStatus] = useState<string | null>(null); // mensagem de status da IA
+    const [telefoneModal, setTelefoneModal] = useState<{ open: boolean; cliente: any; osId: string } | null>(null);
+    const [telefoneInput, setTelefoneInput] = useState('');
 
     // Helper: busca veículo existente antes de criar (evita duplicatas)
     const buscarOuCriarVeiculo = async (dados: any) => {
@@ -181,51 +185,148 @@ function ExtensionListener() {
             else if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'CAPTURED_CONFIRMAR_DADOS') {
                 const payload = event.data.payload || {};
                 const { crmServico, dadosRicos } = payload;
-
+                if (!dadosRicos || (!dadosRicos.placa && !dadosRicos.chassi)) {
+                    console.warn('CAPTURED_CONFIRMAR_DADOS sem dadosRicos suficientes, ignorando.');
+                    return;
+                }
                 console.log('CRM recebeu CAPTURED_CONFIRMAR_DADOS da extensão:', payload);
 
                 try {
-                    // Se a extensão já mandou os dadosRicos parseados, usa direto
-                    if (dadosRicos && (dadosRicos.placa || dadosRicos.chassi || dadosRicos.cpfCnpj)) {
-                        const tipoServ = (dadosRicos.tipoServico || crmServico || 'transferencia') as TipoServico;
-                        openNovaOS({
-                            tipoServico: tipoServ,
-                            placa: dadosRicos.placa || undefined,
-                            chassi: dadosRicos.chassi || undefined,
-                            renavam: dadosRicos.renavam || undefined,
-                            marcaModelo: dadosRicos.marcaModelo || undefined,
-                            anoFabricacao: dadosRicos.anoFabricacao || undefined,
-                            anoModelo: dadosRicos.anoModelo || undefined,
-                            cor: dadosRicos.cor || undefined,
-                            combustivel: dadosRicos.combustivel || undefined,
-                            categoria: dadosRicos.categoria || undefined,
-                            tipoVeiculo: dadosRicos.tipoVeiculo || undefined,
-                            dataAquisicao: dadosRicos.dataAquisicao || undefined,
-                            nomeCliente: dadosRicos.nomeCliente || undefined,
-                            cpfCnpj: dadosRicos.cpfCnpj || undefined,
-                            tipoCpfCnpj: dadosRicos.tipoCpfCnpj || undefined,
-                            endereco: dadosRicos.endereco || undefined,
-                            numero: dadosRicos.numero || undefined,
-                            complemento: dadosRicos.complemento || undefined,
-                            bairro: dadosRicos.bairro || undefined,
-                            cep: dadosRicos.cep || undefined,
-                        });
-                    } else {
-                        // Fallback — payload antigo (só campos básicos)
-                        const { chassi, placa, cpfCnpj, nomeProprietario, cpfCnpjAdquirente, nomeAdquirente, cpfCnpjVendedor } = payload;
-                        const clienteCpfCnpj = cpfCnpjAdquirente || (cpfCnpj !== cpfCnpjVendedor ? cpfCnpj : null) || cpfCnpj;
-                        const clienteNome = nomeAdquirente || nomeProprietario || 'CLIENTE IMPORTADO DO DETRAN';
-                        const tipoServ = (crmServico as TipoServico) || 'transferencia';
-                        openNovaOS({
-                            tipoServico: tipoServ,
-                            placa: placa || undefined,
-                            chassi: chassi || undefined,
-                            nomeCliente: clienteNome,
-                            cpfCnpj: clienteCpfCnpj || undefined,
-                        });
+                    const {
+                        getClientes, saveCliente, saveVeiculo, saveOrdem,
+                        getVeiculoByPlacaOuChassi, getOrdensByVeiculo, addAuditEntry,
+                    } = await import('./lib/database');
+                    const { gerarChecklistDinamico } = await import('./lib/configService');
+
+                    const tipoServico = (dadosRicos.tipoServico || crmServico || 'transferencia') as TipoServico;
+                    const cpfCnpjNorm = (dadosRicos.cpfCnpj || '').replace(/\D/g, '');
+                    const placa = (dadosRicos.placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    const chassi = (dadosRicos.chassi || '').toUpperCase().trim();
+                    const renavam = (dadosRicos.renavam || '').replace(/\D/g, '');
+                    const nome = dadosRicos.nomeCliente || '';
+
+                    // === 1. CLIENTE ===
+                    let cliente: any = null;
+                    let clienteIsNew = false;
+                    if (cpfCnpjNorm) {
+                        const clientes = await getClientes();
+                        cliente = clientes.find((c: any) => (c.cpfCnpj || '').replace(/\D/g, '') === cpfCnpjNorm);
                     }
+                    if (!cliente && cpfCnpjNorm && nome) {
+                        const tipoPessoa = cpfCnpjNorm.length > 11 ? 'PJ' : 'PF';
+                        cliente = await saveCliente({
+                            tipo: tipoPessoa,
+                            nome,
+                            cpfCnpj: cpfCnpjNorm,
+                            telefones: [],
+                            email: '',
+                            endereco: dadosRicos.endereco || '',
+                            numero: dadosRicos.numero || '',
+                            complemento: dadosRicos.complemento || '',
+                            bairro: dadosRicos.bairro || '',
+                            cep: (dadosRicos.cep || '').replace(/\D/g, ''),
+                            municipio: '',
+                            uf: '',
+                            observacoes: `Cadastrado automaticamente via Detran — ${tipoServico}`,
+                            documentos: [],
+                        });
+                        clienteIsNew = true;
+                    }
+                    if (!cliente) {
+                        console.warn('Sem cliente — abortando criação automática.');
+                        return;
+                    }
+
+                    // === 2. VEÍCULO ===
+                    let veiculo: any = null;
+                    if (placa || chassi) {
+                        veiculo = await getVeiculoByPlacaOuChassi(placa, chassi);
+                    }
+                    if (veiculo) {
+                        // Veículo existe — se o cliente mudou, atualiza (possível troca de dono)
+                        if (veiculo.clienteId !== cliente.id) {
+                            veiculo = await saveVeiculo({
+                                ...veiculo,
+                                clienteId: cliente.id,
+                            });
+                            console.log('[Matilde] Veículo atualizado para novo dono:', cliente.nome);
+                        }
+                    } else {
+                        // Veículo novo
+                        veiculo = await saveVeiculo({
+                            placa,
+                            chassi,
+                            renavam,
+                            marcaModelo: dadosRicos.marcaModelo || '',
+                            anoFabricacao: dadosRicos.anoFabricacao || '',
+                            anoModelo: dadosRicos.anoModelo || '',
+                            cor: dadosRicos.cor || '',
+                            combustivel: dadosRicos.combustivel || '',
+                            categoria: dadosRicos.categoria || '',
+                            clienteId: cliente.id,
+                            documentos: [],
+                            observacoes: '',
+                        } as any);
+                    }
+
+                    // === 3. OS ativa existente? ===
+                    const statusFinalizadas = new Set(['concluida', 'entregue', 'cancelada']);
+                    const ordensDoVeiculo = await getOrdensByVeiculo(veiculo.id);
+                    let osExistente = ordensDoVeiculo.find((o: any) =>
+                        o.tipoServico === tipoServico && !statusFinalizadas.has(o.status)
+                    );
+
+                    let osFinal: any;
+                    let osJaExistia = false;
+                    if (osExistente) {
+                        osFinal = osExistente;
+                        osJaExistia = true;
+                        console.log('[Matilde] OS ativa encontrada — reaproveitando:', osFinal.numero || osFinal.id);
+                    } else {
+                        // Cria OS nova
+                        const tipoPessoa = cpfCnpjNorm.length > 11 ? 'PJ' : 'PF';
+                        const checklistBase = await gerarChecklistDinamico(tipoServico, tipoPessoa);
+                        osFinal = await saveOrdem({
+                            clienteId: cliente.id,
+                            veiculoId: veiculo.id,
+                            tipoServico,
+                            trocaPlaca: false,
+                            status: 'aguardando_documentacao',
+                            checklist: checklistBase,
+                            auditLog: [{
+                                id: crypto.randomUUID(),
+                                dataHora: new Date().toISOString(),
+                                usuario: 'Sistema',
+                                acao: `OS criada automaticamente via Detran (${tipoServico})`,
+                                detalhes: `Placa: ${placa} | Cliente: ${nome}`,
+                            }],
+                        } as any);
+                        await addAuditEntry(osFinal.id, 'criacao', `Criada via Detran /confirmar-dados`);
+                    }
+
+                    // === 4. Salva osId no storage da extensão (pra PDF anexar depois) ===
+                    window.postMessage({
+                        source: 'MATILDE_CRM',
+                        action: 'DEFINIR_OS_PRIMEIRO_EMPLACAMENTO',
+                        payload: { osId: osFinal.id },
+                    }, '*');
+
+                    // === 5. Toast ===
+                    const numeroOS = (osFinal as any).numero || osFinal.id.slice(0, 6);
+                    if (osJaExistia) {
+                        showToast(`OS #${numeroOS} já existia — o PDF será anexado nela.`, 'info');
+                    } else {
+                        showToast(`OS #${numeroOS} criada automaticamente.`, 'success');
+                    }
+
+                    // === 6. Se cliente é novo, pede telefone ===
+                    if (clienteIsNew) {
+                        setTelefoneModal({ open: true, cliente, osId: osFinal.id });
+                    }
+
                 } catch (error: any) {
                     console.error('Erro ao processar CAPTURED_CONFIRMAR_DADOS:', error);
+                    showToast('Erro ao criar OS automaticamente: ' + (error?.message || error), 'error');
                 }
             }
             else if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'CAPTURED_VISTORIA_ECV') {
@@ -537,7 +638,74 @@ function ExtensionListener() {
                 }
             }
             else if (event.data?.source === 'MATILDE_EXTENSION' && event.data?.type === 'CAPTURED_DAE_PDF') {
-                const { fileBase64, fileName, placa, chassi, servicoAtivo } = event.data.payload;
+                const { fileBase64, fileName, placa, chassi, servicoAtivo, osId: osIdFromPayload } = event.data.payload;
+
+                // NOVO FLUXO: se osId veio no payload, é porque a OS JÁ foi criada via
+                // captura de /confirmar-dados. Então só anexamos o PDF à OS existente.
+                if (osIdFromPayload && fileBase64) {
+                    console.log('[Matilde] CAPTURED_DAE_PDF com osId — anexando à OS existente:', osIdFromPayload);
+                    (async () => {
+                        try {
+                            const arr = fileBase64.split(',');
+                            const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/pdf';
+                            const bstr = atob(arr[1] || arr[0]);
+                            const u8arr = new Uint8Array(bstr.length);
+                            for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+                            const safeName = fileName || `ficha_${placa || Date.now()}.pdf`;
+                            const file = new File([u8arr], safeName, { type: mime });
+
+                            const { getOrdem, saveOrdem, addAuditEntry } = await import('./lib/database');
+                            const { uploadFileToSupabase } = await import('./lib/fileStorage');
+                            const { finalizarOS } = await import('./lib/osService');
+
+                            const ordem: any = await getOrdem(osIdFromPayload);
+                            if (!ordem) {
+                                console.warn('OS não encontrada no banco:', osIdFromPayload);
+                                showToast('OS não encontrada — criando nova via IA...', 'info');
+                                return; // Sai e deixa o fluxo antigo rodar? Não, return encerra.
+                            }
+
+                            const pdfUrl = await uploadFileToSupabase(file, `ordens/${ordem.id}/${safeName}`);
+
+                            // Vincula PDF ao primeiro item do checklist que bate com "ficha/dae/atpv/decalque"
+                            let pdfVinculado = false;
+                            const checklistAtualizado = (ordem.checklist || []).map((item: any) => {
+                                if (pdfVinculado) return item;
+                                const n = (item.nome || '').toLowerCase();
+                                if (n.includes('atpv') || n.includes('dae') || n.includes('decalque') || n.includes('ficha') || n.includes('cadastro')) {
+                                    pdfVinculado = true;
+                                    return { ...item, arquivo: pdfUrl, status: 'recebido', dataUpload: new Date().toISOString() };
+                                }
+                                return item;
+                            });
+                            if (!pdfVinculado && checklistAtualizado.length > 0) {
+                                const idx = checklistAtualizado.findIndex((i: any) => i.status === 'pendente');
+                                if (idx >= 0) {
+                                    checklistAtualizado[idx] = { ...checklistAtualizado[idx], arquivo: pdfUrl, status: 'recebido', dataUpload: new Date().toISOString() };
+                                }
+                            }
+
+                            await saveOrdem({ ...ordem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
+                            await addAuditEntry(ordem.id, 'upload', `PDF Detran anexado automaticamente: ${safeName}`);
+
+                            try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch {}
+
+                            // Limpa osId do storage da extensão
+                            window.postMessage({
+                                source: 'MATILDE_CRM',
+                                action: 'CLEANUP_PRIMEIRO_EMPLACAMENTO',
+                                payload: {},
+                            }, '*');
+
+                            showToast(`PDF anexado à OS #${ordem.numero || ordem.id.slice(0,6)}`, 'success');
+                        } catch (err: any) {
+                            console.error('Erro ao anexar PDF à OS existente:', err);
+                            showToast('Erro ao anexar PDF: ' + (err?.message || err), 'error');
+                        }
+                    })();
+                    return; // Pula o fluxo antigo (criação de OS via IA)
+                }
+                // Se não tem osId no payload, cai no fluxo antigo (cria OS nova via IA)
                 // Extensão captura o mesmo modal Decalque/DAE para múltiplos serviços.
                 // Usa servicoAtivo (vindo do storage da extensão) para distinguir o tipoServico real.
                 const tiposValidosDae = ['transferencia', 'alteracao_dados', 'mudanca_caracteristica', 'baixa'] as const;
@@ -1221,9 +1389,69 @@ function ExtensionListener() {
                 })();
             }
             else if (event.data?.source === 'MATILDE_EXTENSION' && event.data?.type === 'CAPTURED_PRIMEIRO_EMPLACAMENTO_PDF') {
-                const { fileBase64, fileName } = event.data.payload;
-                console.log('[Matilde] PDF Primeiro Emplacamento recebido:', { hasFile: !!fileBase64 });
+                const { fileBase64, fileName, osId: osIdFromPayload, placa: placaFromPayload } = event.data.payload;
+                console.log('[Matilde] PDF Primeiro Emplacamento recebido:', { hasFile: !!fileBase64, osId: osIdFromPayload });
                 if (!fileBase64) return;
+
+                // NOVO FLUXO: OS já foi criada via /confirmar-dados → anexa PDF à OS existente
+                if (osIdFromPayload) {
+                    (async () => {
+                        try {
+                            const byteString = atob(fileBase64.split(',').pop() || fileBase64);
+                            const ab = new ArrayBuffer(byteString.length);
+                            const ia = new Uint8Array(ab);
+                            for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+                            const safeName = fileName || `ficha_primeiro_emplacamento_${Date.now()}.pdf`;
+                            const file = new File([ia], safeName, { type: 'application/pdf' });
+
+                            const { getOrdem, saveOrdem, addAuditEntry } = await import('./lib/database');
+                            const { uploadFileToSupabase } = await import('./lib/fileStorage');
+                            const { finalizarOS } = await import('./lib/osService');
+
+                            const ordem: any = await getOrdem(osIdFromPayload);
+                            if (!ordem) {
+                                console.warn('OS não encontrada:', osIdFromPayload);
+                                showToast('OS não encontrada — use o fluxo manual.', 'error');
+                                return;
+                            }
+
+                            const pdfUrl = await uploadFileToSupabase(file, `ordens/${ordem.id}/${safeName}`);
+
+                            let pdfVinculado = false;
+                            const checklistAtualizado = (ordem.checklist || []).map((item: any) => {
+                                if (pdfVinculado) return item;
+                                const n = (item.nome || '').toLowerCase();
+                                if (n.includes('atpv') || n.includes('dae') || n.includes('decalque') || n.includes('ficha') || n.includes('cadastro')) {
+                                    pdfVinculado = true;
+                                    return { ...item, arquivo: pdfUrl, status: 'recebido', dataUpload: new Date().toISOString() };
+                                }
+                                return item;
+                            });
+                            if (!pdfVinculado && checklistAtualizado.length > 0) {
+                                const idx = checklistAtualizado.findIndex((i: any) => i.status === 'pendente');
+                                if (idx >= 0) {
+                                    checklistAtualizado[idx] = { ...checklistAtualizado[idx], arquivo: pdfUrl, status: 'recebido', dataUpload: new Date().toISOString() };
+                                }
+                            }
+
+                            await saveOrdem({ ...ordem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
+                            await addAuditEntry(ordem.id, 'upload', `Ficha Primeiro Emplacamento anexada automaticamente: ${safeName}`);
+                            try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch {}
+
+                            window.postMessage({
+                                source: 'MATILDE_CRM',
+                                action: 'CLEANUP_PRIMEIRO_EMPLACAMENTO',
+                                payload: {},
+                            }, '*');
+
+                            showToast(`PDF anexado à OS #${ordem.numero || ordem.id.slice(0,6)}`, 'success');
+                        } catch (err: any) {
+                            console.error('Erro ao anexar PDF Primeiro Emplacamento:', err);
+                            showToast('Erro ao anexar PDF: ' + (err?.message || err), 'error');
+                        }
+                    })();
+                    return; // Pula o fluxo antigo (IA + criação de OS)
+                }
 
                 // PDF chegou → IA analisa → cria OS automaticamente → abre modal em revisar
                 (async () => {
@@ -1380,8 +1608,91 @@ function ExtensionListener() {
         }, '*');
     }
 
+    const fecharTelefoneModal = () => { setTelefoneModal(null); setTelefoneInput(''); };
+    const salvarTelefoneCliente = async () => {
+        if (!telefoneModal?.cliente) return;
+        try {
+            const { saveCliente } = await import('./lib/database');
+            const telefoneLimpo = telefoneInput.replace(/\D/g, '');
+            if (telefoneLimpo.length < 10) {
+                showToast('Telefone inválido', 'error');
+                return;
+            }
+            await saveCliente({
+                ...telefoneModal.cliente,
+                telefones: [telefoneLimpo],
+            });
+            showToast('Telefone salvo!', 'success');
+            fecharTelefoneModal();
+        } catch (err: any) {
+            showToast('Erro ao salvar: ' + (err?.message || err), 'error');
+        }
+    };
+
     return (
         <>
+            {/* Modal pequeno: pede telefone quando cliente é novo */}
+            {telefoneModal?.open && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+                    zIndex: 100000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }} onClick={fecharTelefoneModal}>
+                    <div style={{
+                        background: 'linear-gradient(145deg, #1e2436, #16192a)',
+                        border: '1px solid rgba(212,168,67,0.3)',
+                        borderRadius: 14, padding: 24, width: 'min(92vw, 420px)',
+                        boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+                    }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ margin: 0, marginBottom: 16, color: '#d4a843', fontSize: 16, fontWeight: 700 }}>
+                            Novo Cliente — Informe o Telefone
+                        </h3>
+                        <div style={{ marginBottom: 12 }}>
+                            <label style={{ display: 'block', fontSize: 11, color: '#8a9ab8', marginBottom: 4 }}>Nome</label>
+                            <input type="text" value={telefoneModal.cliente?.nome || ''} readOnly style={{
+                                width: '100%', padding: '8px 12px', borderRadius: 7,
+                                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                color: '#aab4c8', fontSize: 13, boxSizing: 'border-box',
+                            }} />
+                        </div>
+                        <div style={{ marginBottom: 12 }}>
+                            <label style={{ display: 'block', fontSize: 11, color: '#8a9ab8', marginBottom: 4 }}>CPF/CNPJ</label>
+                            <input type="text" value={telefoneModal.cliente?.cpfCnpj || ''} readOnly style={{
+                                width: '100%', padding: '8px 12px', borderRadius: 7,
+                                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                color: '#aab4c8', fontSize: 13, boxSizing: 'border-box',
+                            }} />
+                        </div>
+                        <div style={{ marginBottom: 20 }}>
+                            <label style={{ display: 'block', fontSize: 11, color: '#d4a843', marginBottom: 4, fontWeight: 600 }}>Telefone *</label>
+                            <input
+                                type="tel" autoFocus
+                                value={telefoneInput}
+                                onChange={e => setTelefoneInput(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && salvarTelefoneCliente()}
+                                placeholder="(00) 00000-0000"
+                                style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 7,
+                                    background: 'rgba(212,168,67,0.08)', border: '1px solid rgba(212,168,67,0.35)',
+                                    color: '#fff', fontSize: 14, boxSizing: 'border-box', outline: 'none',
+                                }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                            <button onClick={fecharTelefoneModal} style={{
+                                padding: '8px 16px', borderRadius: 7, fontSize: 12, fontWeight: 600,
+                                background: 'transparent', color: '#8a9ab8',
+                                border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
+                            }}>Pular</button>
+                            <button onClick={salvarTelefoneCliente} style={{
+                                padding: '8px 16px', borderRadius: 7, fontSize: 12, fontWeight: 700,
+                                background: '#d4a843', color: '#000',
+                                border: 'none', cursor: 'pointer',
+                            }}>Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Banner flutuante: IA processando */}
             {iaStatus && (
                 <div style={{

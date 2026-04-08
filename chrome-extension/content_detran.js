@@ -165,7 +165,7 @@ async function tentarCapturarDecalque() {
     console.log('[Matilde][Diagnóstico] URL atual:', window.location.href);
     // Só atua em transferência e alteração de dados
     const ctx = await new Promise(resolve =>
-        chrome.storage.local.get(['matilde_servico_ativo', 'matilde_placa', 'matilde_chassi'], resolve)
+        chrome.storage.local.get(['matilde_servico_ativo', 'matilde_placa', 'matilde_chassi', 'matilde_osId'], resolve)
     );
 
     const servicosElegiveis = ['transferencia', 'alteracao_dados', 'mudanca_caracteristica', 'baixa'];
@@ -208,6 +208,7 @@ async function tentarCapturarDecalque() {
             placa: ctx.matilde_placa || '',
             chassi: ctx.matilde_chassi || '',
             servicoAtivo: ctx.matilde_servico_ativo,
+            osId: ctx.matilde_osId || null,
         }
     }, (resp) => {
         if (chrome.runtime.lastError) {
