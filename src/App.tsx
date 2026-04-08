@@ -179,33 +179,51 @@ function ExtensionListener() {
                 }
             }
             else if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'CAPTURED_CONFIRMAR_DADOS') {
-                const {
-                    chassi, placa, renavam, cpfCnpj, nomeProprietario,
-                    cpfCnpjAdquirente, nomeAdquirente, cpfCnpjVendedor,
-                    marcaModelo, servicoCategoria, crmServico, osId, confirmarDadosText
-                } = event.data.payload;
+                const payload = event.data.payload || {};
+                const { crmServico, dadosRicos } = payload;
 
-                console.log('CRM recebeu CAPTURED_CONFIRMAR_DADOS da extensão:', event.data.payload);
+                console.log('CRM recebeu CAPTURED_CONFIRMAR_DADOS da extensão:', payload);
 
                 try {
-                    const { extractVehicleDataFromText } = await import('./lib/pdfParser');
-                    const textExtraction = confirmarDadosText ? extractVehicleDataFromText(confirmarDadosText) : null;
-                    const finalDataAquisicao = textExtraction?.dataAquisicao || "";
-
-                    // Extrair dados do cliente para a revisão
-                    const clienteCpfCnpj = cpfCnpjAdquirente || (cpfCnpj !== cpfCnpjVendedor ? cpfCnpj : null) || cpfCnpjAdquirente || cpfCnpj;
-                    const clienteNome = nomeAdquirente || (nomeProprietario && !nomeProprietario.includes('ANTERIOR') ? nomeProprietario : null) || nomeAdquirente || nomeProprietario || "CLIENTE IMPORTADO DO DETRAN";
-
-                    // Abre NovaOSModal com os dados pré-preenchidos
-                    const tipoServConfirmar = (crmServico as TipoServico) || 'transferencia';
-                    openNovaOS({
-                        tipoServico: tipoServConfirmar,
-                        placa: placa || undefined,
-                        chassi: chassi || undefined,
-                        nomeCliente: clienteNome,
-                        cpfCnpj: clienteCpfCnpj || undefined,
-                    });
-
+                    // Se a extensão já mandou os dadosRicos parseados, usa direto
+                    if (dadosRicos && (dadosRicos.placa || dadosRicos.chassi || dadosRicos.cpfCnpj)) {
+                        const tipoServ = (dadosRicos.tipoServico || crmServico || 'transferencia') as TipoServico;
+                        openNovaOS({
+                            tipoServico: tipoServ,
+                            placa: dadosRicos.placa || undefined,
+                            chassi: dadosRicos.chassi || undefined,
+                            renavam: dadosRicos.renavam || undefined,
+                            marcaModelo: dadosRicos.marcaModelo || undefined,
+                            anoFabricacao: dadosRicos.anoFabricacao || undefined,
+                            anoModelo: dadosRicos.anoModelo || undefined,
+                            cor: dadosRicos.cor || undefined,
+                            combustivel: dadosRicos.combustivel || undefined,
+                            categoria: dadosRicos.categoria || undefined,
+                            tipoVeiculo: dadosRicos.tipoVeiculo || undefined,
+                            dataAquisicao: dadosRicos.dataAquisicao || undefined,
+                            nomeCliente: dadosRicos.nomeCliente || undefined,
+                            cpfCnpj: dadosRicos.cpfCnpj || undefined,
+                            tipoCpfCnpj: dadosRicos.tipoCpfCnpj || undefined,
+                            endereco: dadosRicos.endereco || undefined,
+                            numero: dadosRicos.numero || undefined,
+                            complemento: dadosRicos.complemento || undefined,
+                            bairro: dadosRicos.bairro || undefined,
+                            cep: dadosRicos.cep || undefined,
+                        });
+                    } else {
+                        // Fallback — payload antigo (só campos básicos)
+                        const { chassi, placa, cpfCnpj, nomeProprietario, cpfCnpjAdquirente, nomeAdquirente, cpfCnpjVendedor } = payload;
+                        const clienteCpfCnpj = cpfCnpjAdquirente || (cpfCnpj !== cpfCnpjVendedor ? cpfCnpj : null) || cpfCnpj;
+                        const clienteNome = nomeAdquirente || nomeProprietario || 'CLIENTE IMPORTADO DO DETRAN';
+                        const tipoServ = (crmServico as TipoServico) || 'transferencia';
+                        openNovaOS({
+                            tipoServico: tipoServ,
+                            placa: placa || undefined,
+                            chassi: chassi || undefined,
+                            nomeCliente: clienteNome,
+                            cpfCnpj: clienteCpfCnpj || undefined,
+                        });
+                    }
                 } catch (error: any) {
                     console.error('Erro ao processar CAPTURED_CONFIRMAR_DADOS:', error);
                 }

@@ -1277,18 +1277,237 @@ async function tentarCapturarSegundaViaPag2() {
 }
 
 // ════════════════════════════════════════════════════════════
-// INICIALIZAÇÃO — Primeiro Emplacamento + 2ª Via
+// CAPTURA UNIVERSAL — /confirmar-dados (qualquer serviço)
+// Detecta título, lê todos os <dl><dt>/<dd> e cria nova OS no CRM.
+// ════════════════════════════════════════════════════════════
+
+let _confirmarDadosCapturado = false;
+
+function _detectarServicoPorTitulo(titulo) {
+    const t = (titulo || '').toLowerCase();
+    if (t.includes('transferir propriedade') || t.includes('transferência') || t.includes('transferencia')) return 'transferencia';
+    if (t.includes('primeiro emplacamento')) return 'primeiro_emplacamento';
+    if (t.includes('2ª via') || t.includes('2a via') || t.includes('segunda via')) return 'segunda_via';
+    if (t.includes('alteração de dados') || t.includes('alteracao de dados')) return 'alteracao_dados';
+    if (t.includes('mudança de característica') || t.includes('mudanca de caracteristica') || t.includes('alteração de característica')) return 'mudanca_caracteristica';
+    if (t.includes('baixa')) return 'baixa';
+    return '';
+}
+
+function _normalizarTexto(s) {
+    return (s || '').trim().replace(/\s+/g, ' ');
+}
+
+function _normalizarChave(s) {
+    return _normalizarTexto(s)
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function _lerDlPairs(containerH2, dadosMap) {
+    // Dado um <h2>, encontra o próximo <dl> irmão e popula dadosMap[chave] = valor
+    let el = containerH2.nextElementSibling;
+    while (el && el.tagName !== 'H2' && el.tagName !== 'H3') {
+        const dl = el.tagName === 'DL' ? el : el.querySelector?.('dl');
+        if (dl) {
+            const dts = dl.querySelectorAll('dt');
+            dts.forEach((dt) => {
+                const dd = dt.nextElementSibling;
+                if (dd && dd.tagName === 'DD') {
+                    const chave = _normalizarChave(dt.textContent);
+                    const valor = _normalizarTexto(dd.textContent);
+                    if (chave && valor) dadosMap[chave] = valor;
+                }
+            });
+        }
+        el = el.nextElementSibling;
+    }
+}
+
+function _mapearCor(cor) {
+    // Remove código tipo "04 - BRANCA" → "BRANCA"
+    return (cor || '').replace(/^\d+\s*-\s*/, '').trim();
+}
+
+function _mapearTipoVeiculo(tipo) {
+    const t = (tipo || '').toLowerCase();
+    if (t.includes('moto') || t.includes('ciclomot')) return 'moto';
+    return 'carro';
+}
+
+function _apenasDigitos(s) {
+    return (s || '').replace(/\D/g, '');
+}
+
+async function tentarCapturarConfirmarDados() {
+    if (_confirmarDadosCapturado) return;
+
+    const url = window.location.href.toLowerCase();
+    if (!url.includes('/confirmar-dados')) return;
+
+    // Só roda se o usuário veio pelo CRM (Central de Serviços Detran MG)
+    const ctx = await new Promise(resolve =>
+        chrome.storage.local.get(['matilde_servico_ativo', 'matilde_osId'], resolve)
+    );
+    if (!ctx.matilde_servico_ativo) return;
+
+    // Pega o título do serviço
+    const tituloEl = document.querySelector('h5.titulo-servico-detran, .titulo-servicos-categoria');
+    const tituloTexto = tituloEl?.textContent?.trim() || '';
+    const servicoDetectado = _detectarServicoPorTitulo(tituloTexto);
+
+    // Varre todas as seções h2 e coleta os <dl><dt>/<dd>
+    // Usamos um objeto separado por seção pra distinguir endereço do proprietário vs. correspondência, etc.
+    const secoes = {};
+    const h2List = document.querySelectorAll('#content h2, .card-body h2');
+    if (h2List.length === 0) return; // Não é a página esperada ainda
+
+    h2List.forEach((h2) => {
+        const nomeSecao = _normalizarChave(h2.textContent);
+        const dadosSecao = {};
+        _lerDlPairs(h2, dadosSecao);
+        if (Object.keys(dadosSecao).length > 0) {
+            secoes[nomeSecao] = dadosSecao;
+        }
+    });
+
+    if (Object.keys(secoes).length === 0) return;
+
+    _confirmarDadosCapturado = true;
+    console.log('[Matilde][ConfirmarDados] Seções capturadas:', secoes);
+
+    // Helper pra buscar um campo em múltiplas seções
+    const buscarEm = (chavesSecao, nomeCampo) => {
+        for (const s of chavesSecao) {
+            const secao = secoes[s];
+            if (secao && secao[nomeCampo]) return secao[nomeCampo];
+        }
+        return '';
+    };
+
+    // --- Dados do Veículo ---
+    const secaoVeiculo = ['dados do veiculo'];
+    const placa = buscarEm(secaoVeiculo, 'placa');
+    const chassi = buscarEm(secaoVeiculo, 'chassi');
+    const renavam = _apenasDigitos(buscarEm(secaoVeiculo, 'renavam'));
+    const valorRecibo = buscarEm(secaoVeiculo, 'valor do recibo');
+    const dataAquisicao = buscarEm(secaoVeiculo, 'data de aquisicao');
+
+    // --- Adquirente (comprador) ---
+    const secaoAdq = ['dados do adquirinte/arrendatario', 'dados do adquirente/arrendatario', 'dados do adquirinte', 'dados do adquirente'];
+    const nomeAdquirente = buscarEm(secaoAdq, 'nome');
+    const tipoDocAdq = buscarEm(secaoAdq, 'tipo de documento');
+    const cpfCnpjAdquirenteRaw = buscarEm(secaoAdq, 'cpf ou cnpj') || buscarEm(secaoAdq, 'cpf/cnpj');
+    const cpfCnpjAdquirente = _apenasDigitos(cpfCnpjAdquirenteRaw);
+
+    // --- Endereço do Adquirente ---
+    const secaoEnd = ['endereco do adquirinte/arrendatario', 'endereco do adquirente/arrendatario', 'endereco do adquirente'];
+    const cep = _apenasDigitos(buscarEm(secaoEnd, 'cep'));
+    const logradouro = buscarEm(secaoEnd, 'logradouro');
+    const numero = buscarEm(secaoEnd, 'numero');
+    const complemento = buscarEm(secaoEnd, 'complemento');
+    const bairro = buscarEm(secaoEnd, 'bairro');
+
+    // --- Proprietário Anterior (vendedor) ---
+    const secaoVend = ['dados do proprietario anterior'];
+    const nomeVendedor = buscarEm(secaoVend, 'nome do revendedor/importador') || buscarEm(secaoVend, 'nome');
+    const cpfCnpjVendedor = _apenasDigitos(buscarEm(secaoVend, 'cpf/cnpj') || buscarEm(secaoVend, 'cpf ou cnpj'));
+
+    // --- Características do Veículo ---
+    const secaoCar = ['caracteristicas do veiculo'];
+    const tipoVeiculoTxt = buscarEm(secaoCar, 'tipo do veiculo');
+    const marcaModelo = buscarEm(secaoCar, 'marca/modelo');
+    const anoFabricacao = buscarEm(secaoCar, 'ano de fabricacao');
+    const anoModelo = buscarEm(secaoCar, 'ano do modelo');
+    const cor = _mapearCor(buscarEm(secaoCar, 'cor'));
+    const combustivel = buscarEm(secaoCar, 'combustivel');
+    const categoria = buscarEm(secaoCar, 'categoria');
+    const tipoVeiculo = _mapearTipoVeiculo(tipoVeiculoTxt);
+
+    // Toast de confirmação
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed; bottom: 24px; right: 24px; z-index: 999999;
+        display: flex; align-items: center; gap: 10px;
+        padding: 14px 20px; border-radius: 14px;
+        background: #d4a843; color: #000;
+        font-size: 14px; font-weight: 700;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        box-shadow: 0 8px 24px rgba(212,168,67,0.4);
+    `;
+    toast.innerHTML = `<span style="font-size:20px">📋</span><span>Matilde capturou os dados — criando OS...</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+
+    // Prioriza o serviço ativo do storage, cai no detectado pelo título
+    const crmServico = ctx.matilde_servico_ativo || servicoDetectado || 'transferencia';
+
+    const payload = {
+        // Identificação básica (já usada pelo handler atual)
+        crmServico,
+        servicoCategoria: tituloTexto,
+        osId: ctx.matilde_osId || '',
+        placa, chassi, renavam,
+        cpfCnpj: cpfCnpjAdquirente,
+        nomeProprietario: nomeAdquirente,
+        cpfCnpjAdquirente,
+        nomeAdquirente,
+        cpfCnpjVendedor,
+        nomeVendedor,
+        marcaModelo,
+        // Dados ricos pra pré-preencher o NovaOSModal
+        dadosRicos: {
+            tipoServico: crmServico,
+            placa, chassi, renavam,
+            marcaModelo,
+            anoFabricacao,
+            anoModelo,
+            cor,
+            combustivel,
+            categoria,
+            tipoVeiculo,
+            dataAquisicao,
+            valorRecibo,
+            nomeCliente: nomeAdquirente,
+            cpfCnpj: cpfCnpjAdquirente,
+            tipoCpfCnpj: tipoDocAdq && tipoDocAdq.toUpperCase().includes('CNPJ') ? 'CNPJ' : 'CPF',
+            endereco: logradouro,
+            numero,
+            complemento,
+            bairro,
+            cep,
+            // município/UF não vêm na pág 3; usuário preenche depois
+        },
+    };
+
+    chrome.runtime.sendMessage({
+        action: 'CAPTURED_CONFIRMAR_DADOS',
+        payload,
+    }, (resp) => {
+        if (chrome.runtime.lastError) {
+            console.error('[Matilde][ConfirmarDados] Erro ao enviar:', chrome.runtime.lastError.message);
+            _confirmarDadosCapturado = false; // permite retry
+        } else {
+            console.log('[Matilde][ConfirmarDados] Dados enviados ao CRM.', resp);
+        }
+    });
+}
+
+// ════════════════════════════════════════════════════════════
+// INICIALIZAÇÃO — Primeiro Emplacamento + 2ª Via + Confirmar Dados
 // ════════════════════════════════════════════════════════════
 
 (async () => {
     await tentarCapturarPrimeirEmplacamentoPag3();
     await tentarCapturarPrimeirEmplacamentoPag4();
     await tentarCapturarSegundaViaPag2();
+    await tentarCapturarConfirmarDados();
 })();
 
 const observerPrimEmplacamento = new MutationObserver(() => {
     tentarCapturarPrimeirEmplacamentoPag3();
     tentarCapturarPrimeirEmplacamentoPag4();
     tentarCapturarSegundaViaPag2();
+    tentarCapturarConfirmarDados();
 });
 observerPrimEmplacamento.observe(document.body, { childList: true, subtree: true });
