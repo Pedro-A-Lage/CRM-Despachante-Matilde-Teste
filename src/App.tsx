@@ -690,10 +690,10 @@ function ExtensionListener() {
 
                             try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch {}
 
-                            // Limpa osId do storage da extensão
+                            // Limpa storage da extensão (osId + servico_ativo + dados pendentes)
                             window.postMessage({
                                 source: 'MATILDE_CRM',
-                                action: 'CLEANUP_PRIMEIRO_EMPLACAMENTO',
+                                action: 'CLEANUP_CAPTURA',
                                 payload: {},
                             }, '*');
 
@@ -1440,7 +1440,7 @@ function ExtensionListener() {
 
                             window.postMessage({
                                 source: 'MATILDE_CRM',
-                                action: 'CLEANUP_PRIMEIRO_EMPLACAMENTO',
+                                action: 'CLEANUP_CAPTURA',
                                 payload: {},
                             }, '*');
 

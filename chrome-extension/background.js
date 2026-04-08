@@ -350,6 +350,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 
+    // Ação genérica: limpa TUDO do fluxo de captura (osId, servico_ativo, dados pendentes).
+    // Usada após anexar PDF à OS em QUALQUER serviço (transferência, primeiro emplacamento, etc.)
+    if (message.action === 'CLEANUP_CAPTURA') {
+        chrome.storage.local.remove([
+            'matilde_osId',
+            'matilde_servico_ativo',
+            'matilde_placa',
+            'matilde_chassi',
+        ], () => {
+            chrome.storage.session.remove([
+                'matilde_primeiro_emplacamento_dados',
+                'matilde_primeiro_emplacamento_osId',
+            ], () => {
+                console.log('[Matilde][Background] Storage limpo por CLEANUP_CAPTURA.');
+                sendResponse({ success: true });
+            });
+        });
+        return true;
+    }
+
     if (message.action === 'DEFINIR_OS_PRIMEIRO_EMPLACAMENTO') {
         const osId = message.payload?.osId || null;
         if (osId) {

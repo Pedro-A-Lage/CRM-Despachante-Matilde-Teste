@@ -1284,6 +1284,14 @@ async function tentarCapturarSegundaViaPag2() {
 
 let _confirmarDadosCapturado = false;
 
+// Reseta o flag quando o storage é limpo (ex: após CLEANUP_CAPTURA)
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.matilde_servico_ativo && !changes.matilde_servico_ativo.newValue) {
+        _confirmarDadosCapturado = false;
+        console.log('[Matilde][ConfirmarDados] Flag resetado (storage limpo).');
+    }
+});
+
 function _detectarServicoPorTitulo(titulo) {
     const t = (titulo || '').toLowerCase();
     if (t.includes('transferir propriedade') || t.includes('transferência') || t.includes('transferencia')) return 'transferencia';
