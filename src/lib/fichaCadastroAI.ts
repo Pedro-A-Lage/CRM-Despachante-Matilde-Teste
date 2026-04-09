@@ -208,11 +208,82 @@ async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt
 }
 
 /**
- * Versão SEM IA: usa o leitor de PDF (pdfParser) que extrai os campos por regex.
- * Mantém a mesma API da versão antiga (DadosFichaCadastro) para não quebrar os call-sites.
- * Muito mais rápido que o Gemini.
+ * Extrai dados da Ficha/Decalque do Detran.
+ * - PDF (application/pdf): usa pdfParser (regex, muito mais rápido).
+ * - Imagem (jpg/png/webp): usa Gemini (IA) — regex não funciona em foto.
  */
 export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaCadastro> {
+    const mime = detectarMimeType(file);
+    if (mime.startsWith('image/')) {
+        return extrairViaGemini(file, mime);
+    }
+    return extrairViaPdfParser(file);
+}
+
+async function extrairViaGemini(file: File, mimeType: string): Promise<DadosFichaCadastro> {
+    const buf = await file.arrayBuffer();
+    const b64 = arrayBufferToBase64(buf);
+    const raw = await chamarGeminiComRetry(b64, mimeType, PROMPT_FICHA_CADASTRO);
+
+    let parsed: any;
+    try {
+        parsed = JSON.parse(raw);
+    } catch {
+        const m = raw.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error('Gemini retornou JSON inválido');
+        parsed = JSON.parse(m[0]);
+    }
+
+    const s = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+    const prop = parsed.proprietario ?? {};
+    const ant = parsed.proprietarioAnterior ?? {};
+    const cpfCnpjDigitos = s(prop.cpfCnpj).replace(/\D/g, '');
+    const tipoCpfCnpj: 'CPF' | 'CNPJ' =
+        s(prop.tipoCpfCnpj) === 'CNPJ' || cpfCnpjDigitos.length > 11 ? 'CNPJ' : 'CPF';
+    const toIso = (br: string): string => {
+        const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        return m ? `${m[3]}-${m[2]}-${m[1]}` : br;
+    };
+
+    return {
+        tipoServico: s(parsed.tipoServico),
+        placa: s(parsed.placa).toUpperCase().replace(/[^A-Z0-9]/g, ''),
+        chassi: s(parsed.chassi).toUpperCase().replace(/\s/g, ''),
+        renavam: s(parsed.renavam).replace(/\D/g, ''),
+        marcaModelo: s(parsed.marcaModelo),
+        anoFabricacao: s(parsed.anoFabricacao),
+        anoModelo: s(parsed.anoModelo),
+        cor: s(parsed.cor) === '-' ? '' : s(parsed.cor),
+        categoria: s(parsed.categoria),
+        combustivel: s(parsed.combustivel),
+        tipoVeiculo: s(parsed.tipoVeiculo),
+        municipioEmplacamento: s(parsed.municipioEmplacamento),
+        valorRecibo: s(parsed.valorRecibo),
+        dataAquisicao: toIso(s(parsed.dataAquisicao)),
+        proprietario: {
+            nome: s(prop.nome),
+            cpfCnpj: cpfCnpjDigitos,
+            tipoCpfCnpj,
+            docIdentidade: s(prop.docIdentidade),
+            orgaoExpedidor: s(prop.orgaoExpedidor),
+            ufOrgaoExpedidor: s(prop.ufOrgaoExpedidor),
+            endereco: s(prop.endereco),
+            numero: s(prop.numero),
+            bairro: s(prop.bairro),
+            municipio: s(prop.municipio),
+            uf: s(prop.uf),
+            cep: s(prop.cep).replace(/\D/g, ''),
+        },
+        proprietarioAnterior: {
+            nome: s(ant.nome),
+            cpfCnpj: s(ant.cpfCnpj).replace(/\D/g, ''),
+            municipio: s(ant.municipio),
+            uf: s(ant.uf),
+        },
+    };
+}
+
+async function extrairViaPdfParser(file: File): Promise<DadosFichaCadastro> {
     const { extractVehicleData } = await import('./pdfParser');
     const r = await extractVehicleData(file);
 
