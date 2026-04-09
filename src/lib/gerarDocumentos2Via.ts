@@ -126,11 +126,12 @@ function consumirEspacosPosValor(
   const hits: Hit[] = [];
   let m: RegExpExecArray | null;
   while ((m = pairRe.exec(xml))) {
-    hits.push({ start: m.index, end: m.index + m[0].length, value: m[1] });
+    hits.push({ start: m.index, end: m.index + m[0].length, value: m[1] ?? '' });
   }
 
   for (let i = hits.length - 1; i >= 0; i--) {
     const h = hits[i];
+    if (!h) continue;
     // Quantidade de chars do valor já renderizado (ignorando espaços do próprio valor)
     let toConsume = [...h.value].length;
 
