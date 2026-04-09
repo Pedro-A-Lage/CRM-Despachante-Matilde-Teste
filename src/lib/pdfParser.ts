@@ -26,6 +26,8 @@ export interface DadosPessoa {
     bairro?: string;
     cep?: string;
     telefone?: string;
+    rg?: string;
+    orgaoExpedidor?: string;
 }
 
 export interface DadosExtraidos {
