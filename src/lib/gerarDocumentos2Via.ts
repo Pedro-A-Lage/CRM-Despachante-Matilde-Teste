@@ -1,6 +1,5 @@
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
-import { Document, Packer, Paragraph, TextRun, AlignmentType } from 'docx';
 import type { Cliente, Veiculo } from '../types';
 
 const MESES = [
@@ -24,6 +23,78 @@ function abrirBlobEmNovaAba(blob: Blob, nomeSugerido: string) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/**
+ * Após render do docxtemplater, percorre o XML do document.xml e, para cada
+ * par de marcadores MARK_IN/MARK_OUT envolvendo um valor, remove os marcadores
+ * e consome até N espaços (N = length do valor) à frente do MARK_OUT,
+ * atravessando múltiplos <w:t> se necessário. Preserva a largura visual do
+ * formulário (em vez de apenas acrescentar texto antes dos espaços existentes).
+ */
+function consumirEspacosPosValor(
+  xml: string,
+  markIn: string,
+  markOut: string,
+): string {
+  const pairRe = new RegExp(
+    markIn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+      '([\\s\\S]*?)' +
+      markOut.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    'g',
+  );
+
+  // Coletar ocorrências (do fim pro começo para não invalidar índices)
+  type Hit = { start: number; end: number; value: string };
+  const hits: Hit[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = pairRe.exec(xml))) {
+    hits.push({ start: m.index, end: m.index + m[0].length, value: m[1] });
+  }
+
+  for (let i = hits.length - 1; i >= 0; i--) {
+    const h = hits[i];
+    // Quantidade de chars do valor já renderizado (ignorando espaços do próprio valor)
+    let toConsume = [...h.value].length;
+
+    // 1) Remover marcadores: substituir o match por apenas o valor
+    xml = xml.slice(0, h.start) + h.value + xml.slice(h.end);
+
+    // 2) A partir do fim do valor, consumir espaços à frente, saltando tags XML
+    let cursor = h.start + h.value.length;
+    while (toConsume > 0 && cursor < xml.length) {
+      // Se estamos em uma tag, pulá-la
+      if (xml[cursor] === '<') {
+        const closeTag = xml.indexOf('>', cursor);
+        if (closeTag === -1) break;
+        cursor = closeTag + 1;
+        continue;
+      }
+      // Só consumimos dentro de conteúdo de texto: achar o próximo '<' limite
+      const nextTag = xml.indexOf('<', cursor);
+      const textEnd = nextTag === -1 ? xml.length : nextTag;
+      // Consumir espaços do começo desse trecho
+      let consumedHere = 0;
+      while (
+        cursor + consumedHere < textEnd &&
+        toConsume > 0 &&
+        (xml[cursor + consumedHere] === ' ' ||
+          xml[cursor + consumedHere] === '\u00A0')
+      ) {
+        consumedHere++;
+        toConsume--;
+      }
+      if (consumedHere > 0) {
+        xml = xml.slice(0, cursor) + xml.slice(cursor + consumedHere);
+        // cursor permanece; loop continua
+        continue;
+      }
+      // Primeiro caractere não-espaço: paramos de consumir
+      break;
+    }
+  }
+
+  return xml;
 }
 
 export async function gerarComunicadoExtravio(
@@ -72,61 +143,62 @@ export async function gerarRequerimento2Via(
   cliente: Cliente,
   veiculo: Veiculo,
 ): Promise<void> {
-  const dataStr = formatarDataExtenso();
-  const marcaModelo = veiculo.marcaModelo ?? '';
+  const resp = await fetch('/REQUERIMENTO.docx');
+  if (!resp.ok) {
+    throw new Error('Template REQUERIMENTO.docx não encontrado em /public');
+  }
+  const arrayBuffer = await resp.arrayBuffer();
+  const zip = new PizZip(arrayBuffer);
 
-  const p = (
-    text: string,
-    opts: { bold?: boolean; align?: (typeof AlignmentType)[keyof typeof AlignmentType] } = {},
-  ) =>
-    new Paragraph({
-      alignment: opts.align,
-      spacing: { after: 240 },
-      children: [new TextRun({ text, bold: opts.bold, size: 24 })],
-    });
+  // Marcadores sentinela improváveis de aparecer em texto natural.
+  const MARK_IN = '\u2063TAGIN\u2063';
+  const MARK_OUT = '\u2063TAGOUT\u2063';
 
-  const linhaEmBranco = () => new Paragraph({ children: [new TextRun('')] });
+  const wrap = (v: string) => `${MARK_IN}${v}${MARK_OUT}`;
 
-  const doc = new Document({
-    sections: [
-      {
-        properties: {},
-        children: [
-          p(`Itabira, ${dataStr}.`, { align: AlignmentType.RIGHT }),
-          linhaEmBranco(),
-          linhaEmBranco(),
-          p(`O infra ${cliente.nome ?? ''},`),
-          p(
-            `Residente, ${cliente.endereco ?? ''}, nº ${cliente.numero ?? ''}, Bairro ${cliente.bairro ?? ''},`,
-          ),
-          p(`Proprietário do veículo ${marcaModelo} de placa ${veiculo.placa ?? ''},`),
-          p(`Chassi: ${veiculo.chassi ?? ''},`),
-          p(
-            `Cor ${veiculo.cor ?? ''}, vem muito respeitosamente requerer autorização para que`,
-          ),
-          p('Seja emitida a Segunda Via do CRV do veículo acima descrito.', {
-            bold: true,
-          }),
-          linhaEmBranco(),
-          linhaEmBranco(),
-          linhaEmBranco(),
-          p('Termo em que pede deferimento.'),
-          linhaEmBranco(),
-          linhaEmBranco(),
-          p('_________________________________________', {
-            align: AlignmentType.CENTER,
-          }),
-          p('Assinatura do requerente', { align: AlignmentType.CENTER }),
-          linhaEmBranco(),
-          linhaEmBranco(),
-          p('Despacho da autoridade', { bold: true }),
-          p('( ) deferido        ( ) indeferido'),
-        ],
-      },
-    ],
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true,
+    nullGetter: () => '',
   });
 
-  const blob = await Packer.toBlob(doc);
+  // Observação: o template tem um typo "{numere}" para o número do endereço.
+  doc.render({
+    nome: wrap(cliente.nome ?? ''),
+    endereco: wrap(cliente.endereco ?? ''),
+    numero: wrap(cliente.numero ?? ''),
+    numere: wrap(cliente.numero ?? ''),
+    bairro: wrap(cliente.bairro ?? ''),
+    marca_modelo: wrap(veiculo.marcaModelo ?? ''),
+    placa: wrap(veiculo.placa ?? ''),
+    chassi: wrap(veiculo.chassi ?? ''),
+    cor: wrap(veiculo.cor ?? ''),
+  });
+
+  // Pós-processamento: remove marcadores e consome espaços equivalentes ao
+  // comprimento de cada valor preenchido.
+  const outZip = doc.getZip();
+  const docFile = outZip.file('word/document.xml');
+  if (!docFile) throw new Error('document.xml não encontrado no docx');
+  let xml = docFile.asText();
+
+  xml = consumirEspacosPosValor(xml, MARK_IN, MARK_OUT);
+
+  // Substitui "Itabira de de " pela data por extenso (o template original
+  // não tinha placeholder de data nesse parágrafo).
+  xml = xml.replace(
+    /Itabira de de/g,
+    `Itabira, ${formatarDataExtenso()}`,
+  );
+
+  outZip.file('word/document.xml', xml);
+
+  const blob = outZip.generate({
+    type: 'blob',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  });
+
   abrirBlobEmNovaAba(
     blob,
     `Requerimento_2Via_CRV_${veiculo.placa ?? 'veiculo'}.docx`,
