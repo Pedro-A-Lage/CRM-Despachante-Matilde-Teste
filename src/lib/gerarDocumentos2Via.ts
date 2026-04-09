@@ -14,7 +14,7 @@ function formatarDataExtenso(d: Date = new Date()): string {
   return `${dia} de ${mes} de ${ano}`;
 }
 
-function abrirBlobEmNovaAba(blob: Blob, nomeSugerido: string) {
+function baixarBlob(blob: Blob, nomeSugerido: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -23,6 +23,83 @@ function abrirBlobEmNovaAba(blob: Blob, nomeSugerido: string) {
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+/**
+ * Renderiza um .docx (Blob) num container HTML oculto via docx-preview e
+ * captura cada página renderizada em um PDF (A4 retrato). As libs são
+ * carregadas via dynamic import para não pesar no bundle inicial.
+ */
+async function docxBlobParaPdf(
+  docxBlob: Blob,
+  nomePdf: string,
+): Promise<void> {
+  const [{ renderAsync }, html2canvasMod, { jsPDF }] = await Promise.all([
+    import('docx-preview'),
+    import('html2canvas'),
+    import('jspdf'),
+  ]);
+  const html2canvas = (html2canvasMod as any).default || html2canvasMod;
+
+  // Container fora da tela — largura fixa (~A4 a 96dpi) para renderização estável.
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.left = '-10000px';
+  container.style.top = '0';
+  container.style.width = '794px'; // 210mm @ 96dpi
+  container.style.background = '#fff';
+  document.body.appendChild(container);
+
+  try {
+    await renderAsync(docxBlob, container, undefined, {
+      className: 'docx-pdf',
+      inWrapper: true,
+      ignoreWidth: false,
+      ignoreHeight: false,
+      breakPages: true,
+    });
+
+    // docx-preview cria um wrapper com uma ou mais "sections" representando páginas.
+    const wrapper = container.querySelector('.docx-wrapper') as HTMLElement | null;
+    const sections = wrapper
+      ? (Array.from(wrapper.children) as HTMLElement[])
+      : [container];
+
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'p' });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+
+    for (let i = 0; i < sections.length; i++) {
+      const canvas = await html2canvas(sections[i], {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const imgW = pageW;
+      const imgH = (canvas.height * imgW) / canvas.width;
+
+      if (i > 0) pdf.addPage();
+
+      if (imgH <= pageH) {
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
+      } else {
+        // Conteúdo excede altura A4 — fatiar em múltiplas páginas.
+        let remaining = imgH;
+        let offset = 0;
+        while (remaining > 0) {
+          pdf.addImage(imgData, 'JPEG', 0, -offset, imgW, imgH);
+          remaining -= pageH;
+          offset += pageH;
+          if (remaining > 0) pdf.addPage();
+        }
+      }
+    }
+
+    pdf.save(nomePdf);
+  } finally {
+    document.body.removeChild(container);
+  }
 }
 
 /**
@@ -133,9 +210,9 @@ export async function gerarComunicadoExtravio(
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 
-  abrirBlobEmNovaAba(
+  await docxBlobParaPdf(
     blob,
-    `Comunicado_Extravio_${veiculo.placa ?? 'veiculo'}.docx`,
+    `Comunicado_Extravio_${veiculo.placa ?? 'veiculo'}.pdf`,
   );
 }
 
@@ -199,8 +276,8 @@ export async function gerarRequerimento2Via(
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
 
-  abrirBlobEmNovaAba(
+  await docxBlobParaPdf(
     blob,
-    `Requerimento_2Via_CRV_${veiculo.placa ?? 'veiculo'}.docx`,
+    `Requerimento_2Via_CRV_${veiculo.placa ?? 'veiculo'}.pdf`,
   );
 }
