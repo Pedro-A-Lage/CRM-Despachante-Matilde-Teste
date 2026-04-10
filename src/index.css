@@ -57,6 +57,69 @@
     --input: 0 0% 0% / 0.1;
     --ring: 209 100% 44%;
     --radius: 0.5rem;
+
+    /* ===== Legacy var aliases → Notion tokens ===== */
+    /* bg */
+    --bg-body: var(--notion-bg);
+    --bg-surface: var(--notion-surface);
+    --bg-secondary: var(--notion-bg-alt);
+    --bg-primary: var(--notion-blue);
+    --bg-card: var(--notion-surface);
+    --bg-tertiary: var(--notion-bg-alt);
+    --color-black-primary: var(--notion-bg);
+    /* text */
+    --text-color: var(--notion-text);
+    --color-text-primary: var(--notion-text);
+    --color-text-secondary: var(--notion-text-secondary);
+    --color-text-tertiary: var(--notion-text-muted);
+    /* brand / semantic */
+    --color-primary: var(--notion-blue);
+    --color-primary-50: rgba(0,117,222,0.12);
+    --color-yellow-primary: var(--notion-blue);
+    --color-yellow-dark: var(--notion-blue-hover);
+    --color-success: var(--notion-green);
+    --color-error: var(--notion-orange);
+    --color-danger: var(--notion-orange);
+    --color-warning: #d97706;
+    --color-info: var(--notion-teal);
+    /* border */
+    --border-color: var(--notion-border);
+    /* spacing */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    /* typography */
+    --font-family: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    --font-display: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+    /* radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
+    /* shadow */
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: var(--shadow-card);
+    --shadow-lg: var(--shadow-deep);
+    /* transition */
+    --transition-fast: 150ms ease;
   }
 
   .dark {
@@ -102,6 +165,29 @@
     --border: 0 0% 100% / 0.1;
     --input: 0 0% 100% / 0.1;
     --ring: 209 78% 54%;
+
+    /* ===== Legacy var aliases (dark) ===== */
+    --bg-body: var(--notion-bg);
+    --bg-surface: var(--notion-surface);
+    --bg-secondary: var(--notion-bg-alt);
+    --bg-primary: var(--notion-blue);
+    --bg-card: var(--notion-surface);
+    --bg-tertiary: var(--notion-bg-alt);
+    --color-black-primary: var(--notion-bg);
+    --text-color: var(--notion-text);
+    --color-text-primary: var(--notion-text);
+    --color-text-secondary: var(--notion-text-secondary);
+    --color-text-tertiary: var(--notion-text-muted);
+    --color-primary: var(--notion-blue);
+    --color-primary-50: rgba(43,143,232,0.15);
+    --color-yellow-primary: var(--notion-blue);
+    --color-yellow-dark: var(--notion-blue-hover);
+    --color-success: var(--notion-green);
+    --color-error: var(--notion-orange);
+    --color-danger: var(--notion-orange);
+    --color-warning: #d97706;
+    --color-info: var(--notion-teal);
+    --border-color: var(--notion-border);
   }
 
   html {
