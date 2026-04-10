@@ -1203,6 +1203,21 @@ textarea:focus {
   flex-direction: column;
   gap: 8px;
 }
+/* Individual kanban card */
+.kanban-card,
+.kanban-column-content > div {
+  background: var(--notion-surface);
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 150ms;
+}
+.kanban-card:hover,
+.kanban-column-content > div:hover {
+  box-shadow: var(--shadow-deep);
+}
+
 .kanban-card-header {
   display: flex;
   align-items: center;

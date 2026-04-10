@@ -656,9 +656,9 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         fontWeight: 'var(--fw-semibold)',
                                                         padding: '2px 7px',
                                                         borderRadius: 'var(--radius-full)',
-                                                        background: 'var(--notion-blue)',
+                                                        background: 'rgba(0,117,222,0.08)',
                                                         color: 'var(--notion-blue)',
-                                                        border: '1px solid var(--notion-blue)',
+                                                        border: '1px solid rgba(0,117,222,0.2)',
                                                         letterSpacing: '0.02em',
                                                     }}>
                                                         {getServicoLabel(serviceLabels, os.tipoServico)}
