@@ -1001,12 +1001,12 @@ export default function OSDetail() {
                                     <FileText size={11} /> PDF
                                 </button>
                                 <label htmlFor="upload-pdf-detran-header" style={{
-                                    padding: '4px 8px', borderRadius: 8, cursor: 'pointer',
-                                    background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
-                                    color: 'var(--notion-purple, #9065B0)', fontWeight: 800, fontSize: 10,
-                                    display: 'flex', alignItems: 'center', gap: 3, textTransform: 'uppercase',
+                                    padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+                                    background: 'rgba(0,117,222,0.08)', border: '1px solid rgba(0,117,222,0.2)',
+                                    color: 'var(--notion-blue)', fontWeight: 800, fontSize: 10,
+                                    display: 'flex', alignItems: 'center', gap: 4, textTransform: 'uppercase',
                                 }}>
-                                    <Upload size={9} /> Trocar
+                                    <Upload size={10} /> Trocar
                                 </label>
                             </div>
                         ) : (
