@@ -307,13 +307,12 @@ function EtapaUpload({ onArquivoSelecionado, onManual, erro, fileInputRef, camer
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
       />
 
-      {/* Link preencher manualmente */}
+      {/* Botão preencher manualmente */}
       <button
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--notion-text-secondary)', fontSize: 14, textDecoration: 'underline' }}
+        style={{ ...btnSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         onClick={onManual}
       >
-        <Edit3 size={14} style={{ marginRight: 4 }} />
-        Preencher manualmente
+        <Edit3 size={18} /> Preencher manualmente
       </button>
 
       {erro && (
@@ -429,8 +428,32 @@ interface EtapaRevisaoProps {
 
 function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, onVoltar, onConfirmar }: EtapaRevisaoProps) {
   const serviceLabels = useServiceLabels();
+  const [buscandoCep, setBuscandoCep] = useState(false);
   const set = (key: keyof DadosIniciaisOS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...dados, [key]: e.target.value });
+
+  const buscarCep = async () => {
+    const cepLimpo = (dados.cep || '').replace(/\D/g, '');
+    if (cepLimpo.length !== 8) return;
+    setBuscandoCep(true);
+    try {
+      const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      const json = await resp.json();
+      if (!json.erro) {
+        onChange({
+          ...dados,
+          endereco: json.logradouro || dados.endereco || '',
+          bairro: json.bairro || dados.bairro || '',
+          municipio: json.localidade || dados.municipio || '',
+          uf: json.uf || dados.uf || '',
+        });
+      }
+    } catch (err) {
+      console.warn('Erro ao buscar CEP:', err);
+    } finally {
+      setBuscandoCep(false);
+    }
+  };
 
   // Busca cliente no banco quando CPF/CNPJ é editado (onBlur)
   const buscarClientePorCpfCnpj = async () => {
@@ -532,8 +555,8 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
             <input style={inputStyle} value={dados.telefone || ''} onChange={set('telefone')} />
           </div>
           <div style={fieldWrapStyle}>
-            <label style={labelStyle}>CEP</label>
-            <input style={inputStyle} value={dados.cep || ''} onChange={set('cep')} />
+            <label style={labelStyle}>CEP {buscandoCep && <Loader size={12} style={{ animation: 'spin 1s linear infinite', marginLeft: 4 }} />}</label>
+            <input style={inputStyle} value={dados.cep || ''} onChange={set('cep')} onBlur={buscarCep} placeholder="Digite e saia do campo" />
           </div>
           <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
             <label style={labelStyle}>Endereço</label>
