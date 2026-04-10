@@ -175,7 +175,7 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
         {/* Header */}
         <div style={headerStyle}>
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Nova Ordem de Serviço</span>
-          <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)' }}>
+          <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--notion-text-secondary)' }}>
             <X size={20} />
           </button>
         </div>
@@ -215,7 +215,7 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
           )}
           {etapa === 'salvando' && (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '3rem' }}>
-              <Loader size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-primary)' }} />
+              <Loader size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--notion-blue)' }} />
               <p style={{ margin: 0, fontWeight: 600 }}>Criando OS...</p>
               <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </div>
@@ -252,7 +252,7 @@ function EtapaUpload({ onArquivoSelecionado, onManual, erro, fileInputRef, camer
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '1.5rem' }}>
-      <p style={{ margin: 0, color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+      <p style={{ margin: 0, color: 'var(--notion-text-secondary)', textAlign: 'center' }}>
         Envie a folha de cadastro do Detran para preencher automaticamente
       </p>
 
@@ -267,19 +267,19 @@ function EtapaUpload({ onArquivoSelecionado, onManual, erro, fileInputRef, camer
           if (file) handleFile(file);
         }}
         style={{
-          border: `2px dashed ${arrastando ? 'var(--color-primary)' : 'var(--color-border)'}`,
+          border: `2px dashed ${arrastando ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
           borderRadius: 12,
           padding: '2.5rem',
           textAlign: 'center',
-          background: arrastando ? 'var(--color-primary-bg)' : 'transparent',
+          background: arrastando ? 'var(--notion-blue)' : 'transparent',
           transition: 'all 0.2s',
           cursor: 'pointer',
         }}
         onClick={() => fileInputRef.current?.click()}
       >
-        <Upload size={40} style={{ color: 'var(--color-text-secondary)', marginBottom: 12 }} />
+        <Upload size={40} style={{ color: 'var(--notion-text-secondary)', marginBottom: 12 }} />
         <p style={{ margin: 0, fontWeight: 600 }}>Arraste o PDF ou clique para selecionar</p>
-        <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-secondary)' }}>PDF ou imagem</p>
+        <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--notion-text-secondary)' }}>PDF ou imagem</p>
       </div>
 
       <input
@@ -309,7 +309,7 @@ function EtapaUpload({ onArquivoSelecionado, onManual, erro, fileInputRef, camer
 
       {/* Link preencher manualmente */}
       <button
-        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-secondary)', fontSize: 14, textDecoration: 'underline' }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--notion-text-secondary)', fontSize: 14, textDecoration: 'underline' }}
         onClick={onManual}
       >
         <Edit3 size={14} style={{ marginRight: 4 }} />
@@ -317,7 +317,7 @@ function EtapaUpload({ onArquivoSelecionado, onManual, erro, fileInputRef, camer
       </button>
 
       {erro && (
-        <div style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)', padding: '0.75rem 1rem', borderRadius: 8, fontSize: 14 }}>
+        <div style={{ background: 'var(--notion-orange)', color: 'var(--notion-orange)', padding: '0.75rem 1rem', borderRadius: 8, fontSize: 14 }}>
           {erro}
         </div>
       )}
@@ -410,7 +410,7 @@ function EtapaAnalisando({ arquivo, dadosIniciaisExtensao, onConcluido, onErro }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '3rem' }}>
-      <Loader size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--color-primary)' }} />
+      <Loader size={40} style={{ animation: 'spin 1s linear infinite', color: 'var(--notion-blue)' }} />
       <p style={{ margin: 0, fontWeight: 600 }}>{status}</p>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
@@ -498,7 +498,7 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
         <div style={secaoHeaderStyle}>
           Cliente
           {clienteExistente && (
-            <span style={{ marginLeft: 8, fontSize: 12, background: 'var(--color-info-bg)', color: 'var(--color-info)', padding: '2px 8px', borderRadius: 20 }}>
+            <span style={{ marginLeft: 8, fontSize: 12, background: 'rgba(55,114,255,0.1)', color: 'var(--notion-blue)', padding: '2px 8px', borderRadius: 20 }}>
               Cliente existente
             </span>
           )}
@@ -620,7 +620,7 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
 function EtapaSucesso({ osId, onVerOS, onFechar }: { osId: string; onVerOS: () => void; onFechar: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '3rem' }}>
-      <CheckCircle size={56} style={{ color: 'var(--color-success)' }} />
+      <CheckCircle size={56} style={{ color: 'var(--notion-green)' }} />
       <p style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>OS criada com sucesso!</p>
       <div style={{ display: 'flex', gap: 12 }}>
         <button style={btnSecondary} onClick={onFechar}>Fechar</button>
