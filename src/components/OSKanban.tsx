@@ -25,8 +25,8 @@ const KANBAN_COLUMNS: { id: StatusOS; label: string; color: string }[] = [
 ];
 
 const PRIORIDADE_CONFIG = {
-    critica: { color: 'var(--notion-orange)', bg: 'var(--notion-orange)', label: 'CRÍTICA', icon: Flame },
-    urgente: { color: 'var(--notion-orange)', bg: 'var(--notion-orange)', label: 'URGENTE', icon: AlertTriangle },
+    critica: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)', label: 'CRÍTICA', icon: Flame },
+    urgente: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)', label: 'URGENTE', icon: AlertTriangle },
     normal: { color: '', bg: '', label: '', icon: null },
 };
 

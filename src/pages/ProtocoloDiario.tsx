@@ -11,8 +11,8 @@ import {
 
 const TIPO_BADGE: Record<string, { color: string; bg: string; label: string; icon: any }> = {
     entrada: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)', label: 'Entrada', icon: ClipboardList },
-    reentrada: { color: 'var(--notion-orange)', bg: 'var(--notion-orange)', label: 'Reentrada', icon: RotateCcw },
-    sifap: { color: 'var(--notion-green)', bg: 'var(--notion-green)', label: 'SIFAP', icon: Shield },
+    reentrada: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)', label: 'Reentrada', icon: RotateCcw },
+    sifap: { color: '#059669', bg: 'rgba(5,150,105,0.1)', label: 'SIFAP', icon: Shield },
 };
 
 export default function ProtocoloDiario() {
@@ -332,13 +332,13 @@ export default function ProtocoloDiario() {
                             label: 'Reentradas',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'reentrada').length,
                             color: 'var(--notion-orange)',
-                            bg: 'var(--notion-orange)',
+                            bg: 'rgba(221,91,0,0.1)',
                         },
                         {
                             label: 'SIFAP',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'sifap' || p.sifap).length,
-                            color: 'var(--notion-green)',
-                            bg: 'var(--notion-green)',
+                            color: '#059669',
+                            bg: 'rgba(5,150,105,0.1)',
                         },
                         {
                             label: 'Avulsos',

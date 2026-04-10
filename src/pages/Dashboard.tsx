@@ -54,10 +54,10 @@ function loadAlertsConfig(): AlertsConfig {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
-    aguardando_documentacao: { color: 'var(--notion-orange)', bg: 'var(--notion-orange)' },
+    aguardando_documentacao: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
     vistoria: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
     delegacia: { color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)' },
-    doc_pronto: { color: 'var(--notion-green)', bg: 'var(--notion-green)' },
+    doc_pronto: { color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)' },
     entregue: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.1)' },
 };
 
@@ -135,7 +135,7 @@ export default function Dashboard() {
         const d = new Date(dataAgendamento + 'T12:00:00');
         d.setHours(0, 0, 0, 0);
         const diffDays = Math.round((d.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays === 0) return { label: 'Hoje', color: 'var(--notion-orange)', bg: 'var(--notion-orange)' };
+        if (diffDays === 0) return { label: 'Hoje', color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' };
         if (diffDays === 1) return { label: 'Amanhã', color: 'var(--notion-orange)', bg: 'rgba(235,87,87,0.1)' };
         return { label: `em ${diffDays}d`, color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' };
     }
@@ -281,16 +281,16 @@ export default function Dashboard() {
         { key: 'veiculos', icon: Car, value: veiculos.length, label: 'Veículos', color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)', link: '/veiculos' },
         { key: 'vistoria', icon: Calendar, value: emVistoria, label: 'Em Vistoria', color: 'var(--notion-green)', bg: 'rgba(6,182,212,0.1)', link: '/calendario-vistorias' },
         { key: 'delegacia', icon: MapPin, value: emDelegacia, label: 'Delegacia', color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)', link: '/ordens' },
-        { key: 'concluidos', icon: CheckCircle, value: concluidos, label: 'Concluídos', color: 'var(--notion-green)', bg: 'var(--notion-green)', link: '/ordens' },
-        { key: 'docs', icon: AlertCircle, value: aguardandoDocs, label: 'Aguardando Docs', color: 'var(--notion-orange)', bg: 'var(--notion-orange)', link: '/ordens' },
+        { key: 'concluidos', icon: CheckCircle, value: concluidos, label: 'Concluídos', color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)', link: '/ordens' },
+        { key: 'docs', icon: AlertCircle, value: aguardandoDocs, label: 'Aguardando Docs', color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)', link: '/ordens' },
     ];
 
     // Botões compactos do topo (ações rápidas visíveis sem scroll)
     const topQuickActions = [
-        { key: 'nova-os', label: 'Nova OS', icon: FileText, path: '/ordens', color: 'var(--notion-orange)', bg: 'var(--notion-orange)' },
+        { key: 'nova-os', label: 'Nova OS', icon: FileText, path: '/ordens', color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
         { key: 'novo-cliente', label: 'Novo Cliente', icon: Users, path: '/clientes/novo', color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
         { key: 'novo-veiculo', label: 'Novo Veículo', icon: Car, path: '/veiculos/novo', color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)' },
-        { key: 'ver-agenda', label: 'Ver Agenda', icon: Calendar, path: '/calendario-vistorias', color: 'var(--notion-green)', bg: 'var(--notion-green)' },
+        { key: 'ver-agenda', label: 'Ver Agenda', icon: Calendar, path: '/calendario-vistorias', color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)' },
     ];
 
     return (

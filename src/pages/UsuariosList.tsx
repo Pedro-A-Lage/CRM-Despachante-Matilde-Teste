@@ -21,8 +21,8 @@ const ROLES: { value: RoleUsuario; label: string }[] = [
 
 function roleBadge(role: RoleUsuario) {
     const styles: Record<RoleUsuario, { bg: string; color: string }> = {
-        admin: { bg: 'var(--notion-blue)', color: '#fff' },
-        gerente: { bg: 'var(--notion-orange)', color: '#fff' },
+        admin: { bg: 'rgba(0,117,222,0.1)', color: 'var(--notion-blue)' },
+        gerente: { bg: 'rgba(221,91,0,0.1)', color: 'var(--notion-orange)' },
         funcionario: { bg: 'var(--bg-surface, #334155)', color: 'var(--notion-text)' },
     };
     const label = ROLES.find(r => r.value === role)?.label ?? role;
