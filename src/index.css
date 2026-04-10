@@ -887,3 +887,479 @@ textarea:focus {
     gap: 12px;
   }
 }
+
+/* ============================================
+   NOTION COMPONENT CLASSES
+   Classes used in JSX that need definitions
+   ============================================ */
+
+/* --- Modal --- */
+.modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--notion-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--notion-surface);
+}
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--notion-text);
+  letter-spacing: -0.25px;
+}
+.modal-body {
+  padding: 20px 24px;
+  background: var(--notion-bg);
+  overflow-y: auto;
+  flex: 1;
+}
+.modal-footer {
+  padding: 14px 24px;
+  border-top: 1px solid var(--notion-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--notion-surface);
+}
+
+/* --- Forms --- */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.form-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--notion-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+  display: block;
+}
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--notion-surface);
+  color: var(--notion-text);
+  border: 1px solid var(--notion-border);
+  border-radius: 4px;
+  font-size: 0.94rem;
+  font-family: inherit;
+  transition: border-color 150ms;
+  outline: none;
+}
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--notion-blue-focus);
+  box-shadow: 0 0 0 2px rgba(0,117,222,0.15);
+}
+.form-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.form-select {
+  cursor: pointer;
+  appearance: auto;
+}
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--notion-text-muted);
+  margin-top: 4px;
+}
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 16px;
+}
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--notion-surface);
+  color: var(--notion-text);
+  border: 1px solid var(--notion-border);
+  border-radius: 4px;
+  font-size: 0.94rem;
+  font-family: inherit;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--notion-blue-focus);
+  box-shadow: 0 0 0 2px rgba(0,117,222,0.15);
+}
+
+/* --- Cards & Info --- */
+.card-body {
+  padding: 16px 20px;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.info-item-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--notion-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.info-item-value {
+  font-size: 0.94rem;
+  font-weight: 500;
+  color: var(--notion-text);
+}
+
+/* --- Page layouts --- */
+.page-header {
+  margin-bottom: 24px;
+}
+.page-header-subtitle {
+  font-size: 0.94rem;
+  color: var(--notion-text-secondary);
+  margin-top: 4px;
+}
+
+/* --- Dashboard --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* --- OS List --- */
+.oslist-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.oslist-statusbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* --- OS Detail --- */
+.os-header-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+.os-header-aside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.os-main-row {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+}
+.os-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.os-vehicle-sticky {
+  position: sticky;
+  top: 80px;
+}
+
+/* --- Search --- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--notion-surface);
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+}
+.search-bar input {
+  border: none;
+  background: transparent;
+  outline: none;
+  flex: 1;
+  color: var(--notion-text);
+  font-size: 0.94rem;
+}
+
+/* --- Kanban --- */
+.kanban-board {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  min-height: 400px;
+}
+.kanban-column {
+  min-width: 280px;
+  max-width: 320px;
+  flex-shrink: 0;
+  background: var(--notion-bg-alt);
+  border: 1px solid var(--notion-border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.kanban-column-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--notion-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.kanban-column-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--notion-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.kanban-column-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--notion-text-muted);
+  background: rgba(0,0,0,0.05);
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+.dark .kanban-column-count {
+  background: rgba(255,255,255,0.08);
+}
+.kanban-column-content {
+  padding: 8px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kanban-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.kanban-card-number {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--notion-text);
+}
+.kanban-card-date {
+  font-size: 0.75rem;
+  color: var(--notion-text-muted);
+}
+.kanban-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kanban-card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--notion-text-secondary);
+}
+.kanban-card-icon {
+  flex-shrink: 0;
+  color: var(--notion-text-muted);
+}
+
+/* --- Clientes --- */
+.clientes-card-grid,
+.veiculos-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.clientes-list-grid,
+.veiculos-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- Toggle group (OS status filter, etc) --- */
+.toggle-group {
+  display: inline-flex;
+  border: 1px solid var(--notion-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.toggle-group button {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--notion-text-secondary);
+  cursor: pointer;
+  transition: all 150ms;
+  border-right: 1px solid var(--notion-border);
+}
+.toggle-group button:last-child {
+  border-right: none;
+}
+.toggle-group button:hover {
+  background: rgba(0,0,0,0.03);
+}
+.dark .toggle-group button:hover {
+  background: rgba(255,255,255,0.05);
+}
+.toggle-group button.active,
+.toggle-group button[data-state="active"] {
+  background: var(--notion-blue);
+  color: white;
+}
+
+/* --- Empty state --- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--notion-text-muted);
+  text-align: center;
+}
+
+/* --- Loading --- */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* --- Toast --- */
+.toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast-message {
+  background: var(--notion-surface);
+  border: 1px solid var(--notion-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow-deep);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--notion-text);
+  font-size: 0.88rem;
+}
+.toast-icon {
+  flex-shrink: 0;
+}
+.toast-close {
+  cursor: pointer;
+  color: var(--notion-text-muted);
+  background: none;
+  border: none;
+  padding: 4px;
+}
+
+/* --- Finance --- */
+.finance-metodo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(0,0,0,0.05);
+  color: var(--notion-text-secondary);
+}
+.dark .finance-metodo-badge {
+  background: rgba(255,255,255,0.08);
+}
+.finance-popover {
+  position: absolute;
+  background: var(--notion-surface);
+  border: 1px solid var(--notion-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-deep);
+  padding: 16px;
+  z-index: 100;
+}
+
+/* --- Profile --- */
+.profile-text-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* --- Clickable --- */
+.clickable {
+  cursor: pointer;
+}
+.clickable:hover {
+  opacity: 0.8;
+}
+
+/* --- Calendar / Vistoria --- */
+.vc-desktop {
+  width: 100%;
+}
+.vc-mobile {
+  width: 100%;
+}
+.vc-day-cell {
+  min-height: 80px;
+  border: 1px solid var(--notion-border);
+  padding: 4px;
+  background: var(--notion-surface);
+  border-radius: 4px;
+}
+.vc-event {
+  font-size: 0.72rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+  margin-bottom: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* --- Sidebar group (supplement Layout.tsx <style>) --- */
+.sidebar-group {
+  margin-bottom: 2px;
+}
