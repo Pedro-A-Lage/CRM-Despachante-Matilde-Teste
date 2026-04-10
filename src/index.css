@@ -1108,9 +1108,18 @@ textarea:focus {
   gap: 8px;
 }
 .os-main-row {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 24px;
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+@media (max-width: 1080px) {
+  .os-main-row {
+    flex-wrap: wrap;
+  }
+  .os-vehicle-sticky {
+    width: 100% !important;
+    position: static !important;
+  }
 }
 .os-info-grid {
   display: grid;

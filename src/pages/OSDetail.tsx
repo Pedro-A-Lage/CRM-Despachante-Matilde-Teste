@@ -1065,7 +1065,7 @@ export default function OSDetail() {
             </div>
 
             {/* ===== TWO COLUMN LAYOUT ===== */}
-            <div className="os-main-row" style={{ display: 'flex', gap: 14, alignItems: 'flex-start', width: '100%', flexWrap: 'wrap' }}>
+            <div className="os-main-row" style={{ display: 'flex', gap: 20, alignItems: 'flex-start', width: '100%' }}>
 
                 {/* ===== LEFT COLUMN (main content) ===== */}
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -1247,7 +1247,7 @@ export default function OSDetail() {
                 </div>
 
                 {/* ===== RIGHT SIDEBAR ===== */}
-                <div className="os-vehicle-sticky" style={{ width: 300, maxWidth: 300, flexShrink: 0, position: 'sticky', top: 80, alignSelf: 'flex-start', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="os-vehicle-sticky" style={{ width: 320, flexShrink: 0, position: 'sticky', top: 80, alignSelf: 'flex-start', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
                     {/* ══ RESUMO DO CLIENTE ══ */}
                     <div style={{ background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 12, padding: '14px', overflow: 'hidden' }}>
