@@ -69,14 +69,14 @@ export default function Backup() {
                 </h3>
                 <div
                     style={{
-                        background: 'var(--color-warning-light)',
+                        background: 'var(--notion-orange)',
                         padding: 'var(--space-4)',
                         borderRadius: 'var(--radius-md)',
                         marginBottom: 'var(--space-4)',
                     }}
                 >
                     <p className="text-sm" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <AlertTriangle size={16} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
+                        <AlertTriangle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} />
                         <strong>Atenção:</strong> A restauração vai substituir TODOS os dados atuais.
                     </p>
                 </div>

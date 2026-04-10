@@ -10,9 +10,9 @@ import {
 } from 'lucide-react';
 
 const TIPO_BADGE: Record<string, { color: string; bg: string; label: string; icon: any }> = {
-    entrada: { color: 'var(--color-info)', bg: 'var(--color-info-bg)', label: 'Entrada', icon: ClipboardList },
-    reentrada: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)', label: 'Reentrada', icon: RotateCcw },
-    sifap: { color: 'var(--color-success)', bg: 'var(--color-success-bg)', label: 'SIFAP', icon: Shield },
+    entrada: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)', label: 'Entrada', icon: ClipboardList },
+    reentrada: { color: 'var(--notion-orange)', bg: 'var(--notion-orange)', label: 'Reentrada', icon: RotateCcw },
+    sifap: { color: 'var(--notion-green)', bg: 'var(--notion-green)', label: 'SIFAP', icon: Shield },
 };
 
 export default function ProtocoloDiario() {
@@ -212,8 +212,8 @@ export default function ProtocoloDiario() {
     if (loading) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 12 }}>
-                <Loader2 size={24} className="spin" style={{ color: 'var(--color-primary)' }} />
-                <span style={{ color: 'var(--color-text-secondary)', fontSize: 13 }}>Carregando protocolo...</span>
+                <Loader2 size={24} className="spin" style={{ color: 'var(--notion-blue)' }} />
+                <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13 }}>Carregando protocolo...</span>
             </div>
         );
     }
@@ -223,7 +223,7 @@ export default function ProtocoloDiario() {
 
             {/* ===== HEADER ===== */}
             <div style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                 borderRadius: 14, padding: '20px 24px', marginBottom: 20,
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
@@ -233,13 +233,13 @@ export default function ProtocoloDiario() {
                             background: 'rgba(245,158,11,0.12)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                            <FileText size={20} style={{ color: 'var(--color-primary)' }} />
+                            <FileText size={20} style={{ color: 'var(--notion-blue)' }} />
                         </div>
                         <div>
-                            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--color-text-primary)' }}>
+                            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--notion-text)' }}>
                                 Protocolo Diário
                             </h2>
-                            <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-tertiary)', textTransform: 'capitalize' }}>
+                            <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--notion-text-muted)', textTransform: 'capitalize' }}>
                                 {dataFormatada}
                             </p>
                         </div>
@@ -249,17 +249,17 @@ export default function ProtocoloDiario() {
                         {/* Date picker */}
                         <div style={{
                             display: 'flex', alignItems: 'center', gap: 6,
-                            background: 'var(--bg-body)', border: '1px solid var(--border-color)',
+                            background: 'var(--bg-body)', border: '1px solid var(--notion-border)',
                             borderRadius: 8, padding: '6px 12px',
                         }}>
-                            <Calendar size={14} style={{ color: 'var(--color-primary)' }} />
+                            <Calendar size={14} style={{ color: 'var(--notion-blue)' }} />
                             <input
                                 type="date"
                                 value={data}
                                 onChange={(e) => setData(e.target.value)}
                                 style={{
                                     background: 'transparent', border: 'none', outline: 'none',
-                                    fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)',
+                                    fontSize: 13, fontWeight: 600, color: 'var(--notion-text)',
                                     fontFamily: 'var(--font-family)', cursor: 'pointer',
                                 }}
                             />
@@ -269,8 +269,8 @@ export default function ProtocoloDiario() {
                             style={{
                                 display: 'flex', alignItems: 'center', gap: 6,
                                 padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                                background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
-                                color: 'var(--color-gray-900)', fontWeight: 700, fontSize: 12,
+                                background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
+                                color: 'var(--notion-bg)', fontWeight: 700, fontSize: 12,
                                 fontFamily: 'var(--font-family)',
                                 boxShadow: '0 2px 8px rgba(245,158,11,0.3)',
                             }}>
@@ -283,9 +283,9 @@ export default function ProtocoloDiario() {
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: 6,
                                     padding: '8px 14px', borderRadius: 10,
-                                    border: '1px solid var(--border-color)',
+                                    border: '1px solid var(--notion-border)',
                                     background: 'var(--bg-body)', cursor: 'pointer',
-                                    color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: 12,
+                                    color: 'var(--notion-text-secondary)', fontWeight: 600, fontSize: 12,
                                     fontFamily: 'var(--font-family)',
                                 }}>
                                 <Printer size={14} /> Imprimir
@@ -301,8 +301,8 @@ export default function ProtocoloDiario() {
                         background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)',
                         display: 'flex', alignItems: 'center', gap: 8,
                     }}>
-                        <ClipboardList size={14} style={{ color: 'var(--color-primary)' }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-primary)' }}>
+                        <ClipboardList size={14} style={{ color: 'var(--notion-blue)' }} />
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-blue)' }}>
                             {osParaProtocolo.length} processo(s) com entrada na delegacia{osComSifap.length > 0 ? ' e/ou SIFAP' : ''} nesta data.
                         </span>
                     </div>
@@ -319,36 +319,36 @@ export default function ProtocoloDiario() {
                         {
                             label: 'Total',
                             value: protocoloHoje.processos.length,
-                            color: 'var(--color-primary)',
+                            color: 'var(--notion-blue)',
                             bg: 'rgba(245,158,11,0.1)',
                         },
                         {
                             label: 'Entradas',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'entrada').length,
-                            color: 'var(--color-info)',
-                            bg: 'var(--color-info-bg)',
+                            color: 'var(--notion-blue)',
+                            bg: 'rgba(55,114,255,0.1)',
                         },
                         {
                             label: 'Reentradas',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'reentrada').length,
-                            color: 'var(--color-warning)',
-                            bg: 'var(--color-warning-bg)',
+                            color: 'var(--notion-orange)',
+                            bg: 'var(--notion-orange)',
                         },
                         {
                             label: 'SIFAP',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'sifap' || p.sifap).length,
-                            color: 'var(--color-success)',
-                            bg: 'var(--color-success-bg)',
+                            color: 'var(--notion-green)',
+                            bg: 'var(--notion-green)',
                         },
                         {
                             label: 'Avulsos',
                             value: protocoloHoje.processos.filter((p: any) => p.manual).length,
-                            color: 'var(--color-purple)',
-                            bg: 'var(--color-purple-bg)',
+                            color: 'var(--notion-purple, #9065B0)',
+                            bg: 'rgba(139,92,246,0.1)',
                         },
                     ].map(stat => (
                         <div key={stat.label} style={{
-                            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                            background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                             borderRadius: 12, padding: '14px 18px',
                             display: 'flex', alignItems: 'center', gap: 12,
                         }}>
@@ -361,7 +361,7 @@ export default function ProtocoloDiario() {
                                 {stat.value}
                             </div>
                             <span style={{
-                                fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)',
+                                fontSize: 11, fontWeight: 600, color: 'var(--notion-text-muted)',
                                 textTransform: 'uppercase', letterSpacing: '0.04em',
                             }}>{stat.label}</span>
                         </div>
@@ -372,24 +372,24 @@ export default function ProtocoloDiario() {
             {/* ===== PROTOCOLO - CARDS DOS PROCESSOS ===== */}
             {protocoloHoje ? (
                 <div style={{
-                    background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                    background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                     borderRadius: 14, overflow: 'hidden', marginBottom: 20,
                 }}>
                     {/* Header */}
                     <div style={{
                         padding: '14px 20px',
-                        borderBottom: '1px solid var(--border-color)',
+                        borderBottom: '1px solid var(--notion-border)',
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         background: 'rgba(245,158,11,0.04)',
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <FileText size={16} style={{ color: 'var(--color-primary)' }} />
-                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                            <FileText size={16} style={{ color: 'var(--notion-blue)' }} />
+                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
                                 Protocolo — {new Date(data + 'T12:00:00').toLocaleDateString('pt-BR')}
                             </span>
                         </div>
                         <span style={{
-                            fontSize: 11, fontWeight: 700, color: 'var(--color-primary)',
+                            fontSize: 11, fontWeight: 700, color: 'var(--notion-blue)',
                             background: 'rgba(245,158,11,0.12)', padding: '4px 10px', borderRadius: 6,
                         }}>
                             {protocoloHoje.processos.length} processo{protocoloHoje.processos.length !== 1 ? 's' : ''}
@@ -399,8 +399,8 @@ export default function ProtocoloDiario() {
                     {/* Lista de processos como cards */}
                     {protocoloHoje.processos.length === 0 ? (
                         <div style={{ padding: 40, textAlign: 'center' }}>
-                            <FileText size={32} style={{ color: 'var(--color-text-tertiary)', margin: '0 auto 12px', opacity: 0.3 }} />
-                            <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>Nenhum processo neste protocolo.</p>
+                            <FileText size={32} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 12px', opacity: 0.3 }} />
+                            <p style={{ fontSize: 13, color: 'var(--notion-text-muted)' }}>Nenhum processo neste protocolo.</p>
                         </div>
                     ) : (
                         <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -418,14 +418,14 @@ export default function ProtocoloDiario() {
                                         style={{
                                         display: 'flex', alignItems: 'center',
                                         background: 'var(--bg-body)', borderRadius: 10,
-                                        border: '1px solid var(--border-color)',
+                                        border: '1px solid var(--notion-border)',
                                         borderLeft: `4px solid ${tipoCfg.color}`,
                                         padding: '10px 14px', gap: 14,
                                         transition: 'border-color 0.15s, background 0.15s',
                                         cursor: p.osId ? 'pointer' : 'default',
                                     }}
                                         onMouseEnter={e => { if (p.osId) (e.currentTarget as HTMLElement).style.borderColor = tipoCfg.color; }}
-                                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-color)'; }}
+                                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--notion-border)'; }}
                                     >
                                         {/* Número */}
                                         <div style={{
@@ -434,9 +434,9 @@ export default function ProtocoloDiario() {
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         }}>
                                             {p.manual ? (
-                                                <UserPlus size={14} style={{ color: 'var(--color-purple)' }} />
+                                                <UserPlus size={14} style={{ color: 'var(--notion-purple, #9065B0)' }} />
                                             ) : (
-                                                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-info)' }}>
+                                                <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--notion-blue)' }}>
                                                     #{p.osNumero}
                                                 </span>
                                             )}
@@ -447,7 +447,7 @@ export default function ProtocoloDiario() {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
                                                 <span style={{
                                                     fontSize: 13, fontWeight: 700,
-                                                    color: 'var(--color-text-primary)',
+                                                    color: 'var(--notion-text)',
                                                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                                 }}>
                                                     {p.clienteNome}
@@ -455,14 +455,14 @@ export default function ProtocoloDiario() {
                                                 {p.manual && (
                                                     <span style={{
                                                         fontSize: 9, fontWeight: 700, padding: '1px 6px',
-                                                        borderRadius: 4, background: 'var(--color-purple-bg)',
-                                                        color: 'var(--color-purple)',
+                                                        borderRadius: 4, background: 'rgba(139,92,246,0.1)',
+                                                        color: 'var(--notion-purple, #9065B0)',
                                                     }}>AVULSO</span>
                                                 )}
                                             </div>
                                             <div style={{
                                                 display: 'flex', alignItems: 'center', gap: 12,
-                                                fontSize: 11, color: 'var(--color-text-tertiary)',
+                                                fontSize: 11, color: 'var(--notion-text-muted)',
                                             }}>
                                                 {p.veiculoPlaca && p.veiculoPlaca !== '—' && (
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: 3, fontWeight: 600 }}>
@@ -494,7 +494,7 @@ export default function ProtocoloDiario() {
                 </div>
             ) : (
                 <div style={{
-                    background: 'var(--bg-card)', border: '2px dashed var(--border-color)',
+                    background: 'var(--notion-surface)', border: '2px dashed var(--notion-border)',
                     borderRadius: 14, padding: 48, textAlign: 'center', marginBottom: 20,
                 }}>
                     <div style={{
@@ -502,12 +502,12 @@ export default function ProtocoloDiario() {
                         background: 'var(--bg-body)', margin: '0 auto 16px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                        <FileText size={24} style={{ color: 'var(--color-text-tertiary)', opacity: 0.4 }} />
+                        <FileText size={24} style={{ color: 'var(--notion-text-muted)', opacity: 0.4 }} />
                     </div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 6 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--notion-text)', marginBottom: 6 }}>
                         Nenhum protocolo para esta data
                     </h3>
-                    <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginBottom: 16 }}>
+                    <p style={{ fontSize: 12, color: 'var(--notion-text-muted)', marginBottom: 16 }}>
                         {osParaProtocolo.length > 0
                             ? `${osParaProtocolo.length} processo(s) disponíveis. Clique em "Gerar Protocolo" acima.`
                             : 'Registre entradas na delegacia nas OS para gerar o protocolo.'}
@@ -517,7 +517,7 @@ export default function ProtocoloDiario() {
 
             {/* ===== ADICIONAR AVULSO (collapsible) ===== */}
             <div style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                 borderRadius: 14, overflow: 'hidden', marginBottom: 20,
             }}>
                 <div
@@ -531,27 +531,27 @@ export default function ProtocoloDiario() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
                             width: 30, height: 30, borderRadius: 8,
-                            background: 'var(--color-purple-bg)',
+                            background: 'rgba(139,92,246,0.1)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                            <UserPlus size={14} style={{ color: 'var(--color-purple)' }} />
+                            <UserPlus size={14} style={{ color: 'var(--notion-purple, #9065B0)' }} />
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             Processo Avulso (sem OS)
                         </span>
                         {manualProcessos.length > 0 && (
                             <span style={{
                                 fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5,
-                                background: 'var(--color-purple-bg)', color: 'var(--color-purple)',
+                                background: 'rgba(139,92,246,0.1)', color: 'var(--notion-purple, #9065B0)',
                             }}>{manualProcessos.length}</span>
                         )}
                     </div>
-                    {showAvulso ? <ChevronUp size={18} style={{ color: 'var(--color-text-tertiary)' }} /> : <ChevronDown size={18} style={{ color: 'var(--color-text-tertiary)' }} />}
+                    {showAvulso ? <ChevronUp size={18} style={{ color: 'var(--notion-text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--notion-text-muted)' }} />}
                 </div>
 
                 {showAvulso && (
-                    <div style={{ padding: '0 20px 20px', borderTop: '1px solid var(--border-color)' }}>
-                        <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: '14px 0 12px' }}>
+                    <div style={{ padding: '0 20px 20px', borderTop: '1px solid var(--notion-border)' }}>
+                        <p style={{ fontSize: 11, color: 'var(--notion-text-muted)', margin: '14px 0 12px' }}>
                             Para protocolar processos que não possuem Ordem de Serviço no sistema.
                         </p>
 
@@ -563,7 +563,7 @@ export default function ProtocoloDiario() {
                                 { label: 'Renavam', value: mRenavam, set: setMRenavam, placeholder: 'Renavam', icon: Hash },
                             ].map(field => (
                                 <div key={field.label}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-gray-400)', marginBottom: 4 }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-muted)', marginBottom: 4 }}>
                                         <field.icon size={10} /> {field.label}
                                     </label>
                                     <input type="text" className="form-input" value={field.value}
@@ -572,7 +572,7 @@ export default function ProtocoloDiario() {
                                 </div>
                             ))}
                             <div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-gray-400)', marginBottom: 4 }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-muted)', marginBottom: 4 }}>
                                     <FileText size={10} /> Serviço
                                 </label>
                                 <select className="form-select" value={mServico} onChange={(e) => setMServico(e.target.value as TipoServico)}
@@ -584,7 +584,7 @@ export default function ProtocoloDiario() {
                                 </select>
                             </div>
                             <div>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-gray-400)', marginBottom: 4 }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-muted)', marginBottom: 4 }}>
                                     <ClipboardList size={10} /> Tipo
                                 </label>
                                 <select className="form-select" value={mTipoEntrada} onChange={(e) => setMTipoEntrada(e.target.value)}
@@ -601,8 +601,8 @@ export default function ProtocoloDiario() {
                                     display: 'flex', alignItems: 'center', gap: 6,
                                     padding: '8px 16px', borderRadius: 8, border: 'none',
                                     cursor: mNome.trim() ? 'pointer' : 'not-allowed',
-                                    background: mNome.trim() ? '#8B5CF6' : 'var(--border-color)',
-                                    color: mNome.trim() ? '#fff' : 'var(--color-text-tertiary)',
+                                    background: mNome.trim() ? '#8B5CF6' : 'var(--notion-border)',
+                                    color: mNome.trim() ? '#fff' : 'var(--notion-text-muted)',
                                     fontWeight: 700, fontSize: 12, fontFamily: 'var(--font-family)',
                                 }}>
                                 <Plus size={14} /> Adicionar
@@ -616,16 +616,16 @@ export default function ProtocoloDiario() {
                                     <div key={i} style={{
                                         display: 'flex', alignItems: 'center', gap: 10,
                                         padding: '8px 12px', borderRadius: 8,
-                                        background: 'var(--bg-body)', border: '1px solid var(--border-color)',
-                                        borderLeft: '3px solid var(--color-purple)',
+                                        background: 'var(--bg-body)', border: '1px solid var(--notion-border)',
+                                        borderLeft: '3px solid var(--notion-purple, #9065B0)',
                                     }}>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)', flex: 1 }}>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)', flex: 1 }}>
                                             {p.clienteNome}
                                         </span>
-                                        <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+                                        <span style={{ fontSize: 11, color: 'var(--notion-text-muted)' }}>
                                             {p.veiculoPlaca || '—'}
                                         </span>
-                                        <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>
+                                        <span style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>
                                             {getServicoLabel(serviceLabels, p.tipoServico)}
                                         </span>
                                         <div style={{ display: 'flex', gap: 2 }}>
@@ -637,7 +637,7 @@ export default function ProtocoloDiario() {
                                             }} title="Editar"
                                                 style={{
                                                     padding: 4, borderRadius: 5, border: 'none', cursor: 'pointer',
-                                                    background: 'transparent', color: 'var(--color-gray-500)',
+                                                    background: 'transparent', color: 'var(--notion-text-muted)',
                                                     display: 'flex', fontFamily: 'var(--font-family)',
                                                 }}>
                                                 <Edit2 size={12} />
@@ -645,7 +645,7 @@ export default function ProtocoloDiario() {
                                             <button onClick={() => removeManualProcesso(i)} title="Remover"
                                                 style={{
                                                     padding: 4, borderRadius: 5, border: 'none', cursor: 'pointer',
-                                                    background: 'transparent', color: 'var(--color-danger)',
+                                                    background: 'transparent', color: 'var(--notion-orange)',
                                                     display: 'flex', fontFamily: 'var(--font-family)',
                                                 }}>
                                                 <Trash2 size={12} />
@@ -662,16 +662,16 @@ export default function ProtocoloDiario() {
             {/* ===== PROTOCOLOS ANTERIORES ===== */}
             {protocolos.length > 1 && (
                 <div style={{
-                    background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                    background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                     borderRadius: 14, overflow: 'hidden',
                 }}>
                     <div style={{
                         padding: '14px 20px',
-                        borderBottom: '1px solid var(--border-color)',
+                        borderBottom: '1px solid var(--notion-border)',
                         display: 'flex', alignItems: 'center', gap: 10,
                     }}>
-                        <Clock size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                        <Clock size={14} style={{ color: 'var(--notion-text-muted)' }} />
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             Protocolos Anteriores
                         </span>
                     </div>
@@ -688,7 +688,7 @@ export default function ProtocoloDiario() {
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: 14,
                                         padding: '12px 20px', cursor: 'pointer',
-                                        borderBottom: idx < arr.length - 1 ? '1px solid var(--border-color)' : 'none',
+                                        borderBottom: idx < arr.length - 1 ? '1px solid var(--notion-border)' : 'none',
                                         transition: 'background 0.15s',
                                     }}
                                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(245,158,11,0.04)'; }}
@@ -696,24 +696,24 @@ export default function ProtocoloDiario() {
                                 >
                                     <div style={{
                                         width: 40, height: 40, borderRadius: 10,
-                                        background: 'var(--bg-body)', border: '1px solid var(--border-color)',
+                                        background: 'var(--bg-body)', border: '1px solid var(--notion-border)',
                                         display: 'flex', flexDirection: 'column',
                                         alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                                     }}>
-                                        <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>
+                                        <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--notion-text)', lineHeight: 1 }}>
                                             {new Date(p.data + 'T12:00:00').getDate()}
                                         </span>
-                                        <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-tertiary)', lineHeight: 1, marginTop: 1 }}>
+                                        <span style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', color: 'var(--notion-text-muted)', lineHeight: 1, marginTop: 1 }}>
                                             {new Date(p.data + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
                                         </span>
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)', textTransform: 'capitalize' }}>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)', textTransform: 'capitalize' }}>
                                             {new Date(p.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
                                         </span>
                                     </div>
                                     <span style={{
-                                        fontSize: 11, fontWeight: 700, color: 'var(--color-primary)',
+                                        fontSize: 11, fontWeight: 700, color: 'var(--notion-blue)',
                                         background: 'rgba(245,158,11,0.1)', padding: '3px 10px', borderRadius: 6,
                                     }}>
                                         {p.processos.length} processo{p.processos.length !== 1 ? 's' : ''}

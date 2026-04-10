@@ -105,12 +105,12 @@ export default function Configuracoes() {
     <div style={{ padding: '24px 32px', maxWidth: 1100, margin: '0 auto' }}>
       {/* Page header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-        <Settings size={24} color="var(--color-primary)" />
+        <Settings size={24} color="var(--notion-blue)" />
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--notion-text)', margin: 0 }}>
             Configurações de Serviços
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', margin: '4px 0 0' }}>
+          <p style={{ fontSize: 14, color: 'var(--notion-text-secondary)', margin: '4px 0 0' }}>
             Gerencie os tipos de serviço, documentos exigidos e configurações de custo.
           </p>
         </div>
@@ -130,7 +130,7 @@ export default function Configuracoes() {
         {/* ── Aba Serviços DETRAN ── */}
         <TabsContent value="servicos">
           <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
               Serviços cadastrados
             </h2>
             <Button onClick={openNew} size="sm">
@@ -140,7 +140,7 @@ export default function Configuracoes() {
           </div>
 
           {loading ? (
-            <p style={{ color: 'var(--color-text-tertiary)', textAlign: 'center', padding: 48 }}>
+            <p style={{ color: 'var(--notion-text-muted)', textAlign: 'center', padding: 48 }}>
               Carregando configurações...
             </p>
           ) : (
@@ -206,8 +206,8 @@ export default function Configuracoes() {
         <TabsContent value="empresas">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Building2 size={18} color="var(--color-primary)" />
-              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+              <Building2 size={18} color="var(--notion-blue)" />
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
                 Empresas Parceiras
               </h2>
             </div>
@@ -222,7 +222,7 @@ export default function Configuracoes() {
 
           {empresas.length === 0 ? (
             <div className="rounded-md border" style={{ padding: 48, textAlign: 'center' }}>
-              <p style={{ color: 'var(--color-text-tertiary)' }}>
+              <p style={{ color: 'var(--notion-text-muted)' }}>
                 Nenhuma empresa parceira cadastrada. Clique em "Nova Empresa" para começar.
               </p>
             </div>
@@ -257,7 +257,7 @@ export default function Configuracoes() {
                           {emp.nome}
                         </div>
                       </TableCell>
-                      <TableCell style={{ color: emp.email ? 'var(--color-text-secondary)' : 'var(--color-text-tertiary)' }}>
+                      <TableCell style={{ color: emp.email ? 'var(--notion-text-secondary)' : 'var(--notion-text-muted)' }}>
                         {emp.email || '—'}
                       </TableCell>
                       <TableCell>{emp.valorServico != null ? maskMoney(emp.valorServico) : '—'}</TableCell>
@@ -347,8 +347,8 @@ function PrecosServicoSection({
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <DollarSign size={18} color="var(--color-primary)" />
-        <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+        <DollarSign size={18} color="var(--notion-blue)" />
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
           Preços por Serviço
         </h2>
       </div>
@@ -480,8 +480,8 @@ function CustosFixosSection({ custos, onDataChanged }: { custos: PriceTableItem[
     <div>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <DollarSign size={18} color="var(--color-primary)" />
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+          <DollarSign size={18} color="var(--notion-blue)" />
+          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
             Custos Fixos
           </h2>
         </div>

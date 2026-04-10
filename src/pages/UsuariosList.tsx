@@ -21,9 +21,9 @@ const ROLES: { value: RoleUsuario; label: string }[] = [
 
 function roleBadge(role: RoleUsuario) {
     const styles: Record<RoleUsuario, { bg: string; color: string }> = {
-        admin: { bg: 'var(--color-primary)', color: '#fff' },
-        gerente: { bg: 'var(--color-warning, #f59e0b)', color: '#fff' },
-        funcionario: { bg: 'var(--bg-surface, #334155)', color: 'var(--color-text-primary)' },
+        admin: { bg: 'var(--notion-blue)', color: '#fff' },
+        gerente: { bg: 'var(--notion-orange)', color: '#fff' },
+        funcionario: { bg: 'var(--bg-surface, #334155)', color: 'var(--notion-text)' },
     };
     const label = ROLES.find(r => r.value === role)?.label ?? role;
     const s = styles[role];
@@ -92,7 +92,7 @@ function ModalNovoUsuario({ onClose, onSalvar }: ModalNovoProps) {
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                         {erro && (
-                            <div style={{ background: 'var(--color-danger, #ef4444)20', border: '1px solid var(--color-danger, #ef4444)', borderRadius: 8, padding: '8px 12px', color: 'var(--color-danger, #ef4444)', fontSize: '0.85rem' }}>
+                            <div style={{ background: 'var(--notion-orange)20', border: '1px solid var(--notion-orange)', borderRadius: 8, padding: '8px 12px', color: 'var(--notion-orange)', fontSize: '0.85rem' }}>
                                 {erro}
                             </div>
                         )}
@@ -171,11 +171,11 @@ function ModalResetarSenha({ usuario, onClose, onSalvar }: ModalSenhaProps) {
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+                        <p style={{ fontSize: '0.875rem', color: 'var(--notion-text-secondary)' }}>
                             Definir nova senha para <strong>{usuario.nome}</strong>. O usuário precisará trocar a senha no próximo login.
                         </p>
                         {erro && (
-                            <div style={{ background: 'var(--color-danger, #ef4444)20', border: '1px solid var(--color-danger, #ef4444)', borderRadius: 8, padding: '8px 12px', color: 'var(--color-danger, #ef4444)', fontSize: '0.85rem' }}>
+                            <div style={{ background: 'var(--notion-orange)20', border: '1px solid var(--notion-orange)', borderRadius: 8, padding: '8px 12px', color: 'var(--notion-orange)', fontSize: '0.85rem' }}>
                                 {erro}
                             </div>
                         )}
@@ -333,17 +333,17 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                     <button className="btn btn-ghost" onClick={onClose}><X size={18} /></button>
                 </div>
                 <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '70vh', overflowY: 'auto' }}>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', margin: 0 }}>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--notion-text-secondary)', margin: 0 }}>
                         Perfil: <strong>{roleLabel}</strong>. Permissões marcadas como "Padrão" seguem o perfil. Ative a personalização para sobrescrever.
                     </p>
                     {erro && (
-                        <div style={{ background: 'var(--color-danger, #ef4444)20', border: '1px solid var(--color-danger, #ef4444)', borderRadius: 8, padding: '8px 12px', color: 'var(--color-danger, #ef4444)', fontSize: '0.85rem' }}>
+                        <div style={{ background: 'var(--notion-orange)20', border: '1px solid var(--notion-orange)', borderRadius: 8, padding: '8px 12px', color: 'var(--notion-orange)', fontSize: '0.85rem' }}>
                             {erro}
                         </div>
                     )}
                     {SECOES.map(secao => (
                         <div key={secao.titulo}>
-                            <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                            <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                                 {secao.titulo}
                             </h4>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -361,7 +361,7 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                                                 padding: '6px 10px',
                                                 borderRadius: 6,
                                                 background: overridden ? 'var(--bg-surface, #1e293b)' : 'transparent',
-                                                border: overridden ? '1px solid var(--color-primary)' : '1px solid transparent',
+                                                border: overridden ? '1px solid var(--notion-blue)' : '1px solid transparent',
                                             }}
                                         >
                                             {/* Override toggle */}
@@ -373,8 +373,8 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                                                     width: 18,
                                                     height: 18,
                                                     borderRadius: 4,
-                                                    border: overridden ? '2px solid var(--color-primary)' : '2px solid var(--color-text-tertiary)',
-                                                    background: overridden ? 'var(--color-primary)' : 'transparent',
+                                                    border: overridden ? '2px solid var(--notion-blue)' : '2px solid var(--notion-text-muted)',
+                                                    background: overridden ? 'var(--notion-blue)' : 'transparent',
                                                     cursor: 'pointer',
                                                     display: 'flex',
                                                     alignItems: 'center',
@@ -396,15 +396,15 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                                                     checked={effective}
                                                     disabled={!overridden}
                                                     onChange={e => overridden && setOverrideValue(item.categoria, item.chave, e.target.checked)}
-                                                    style={{ accentColor: 'var(--color-primary)' }}
+                                                    style={{ accentColor: 'var(--notion-blue)' }}
                                                 />
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-primary)' }}>
+                                                <span style={{ fontSize: '0.85rem', color: 'var(--notion-text)' }}>
                                                     {item.label}
                                                 </span>
                                             </label>
 
                                             {/* Default indicator */}
-                                            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>
+                                            <span style={{ fontSize: '0.72rem', color: 'var(--notion-text-muted)', whiteSpace: 'nowrap' }}>
                                                 Padrão: {defaultVal ? 'Sim' : 'Não'}
                                             </span>
                                         </div>
@@ -495,10 +495,10 @@ export default function UsuariosList() {
             {/* Cabeçalho */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Users size={22} style={{ color: 'var(--color-primary)' }} />
+                    <Users size={22} style={{ color: 'var(--notion-blue)' }} />
                     <div>
                         <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Usuários do Sistema</h2>
-                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--notion-text-secondary)' }}>
                             {usuarios.length} usuário{usuarios.length !== 1 ? 's' : ''} cadastrado{usuarios.length !== 1 ? 's' : ''}
                         </p>
                     </div>
@@ -511,16 +511,16 @@ export default function UsuariosList() {
 
             {/* Erro */}
             {erro && (
-                <div style={{ background: 'var(--color-danger, #ef4444)20', border: '1px solid var(--color-danger, #ef4444)', borderRadius: 8, padding: '10px 14px', color: 'var(--color-danger, #ef4444)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                <div style={{ background: 'var(--notion-orange)20', border: '1px solid var(--notion-orange)', borderRadius: 8, padding: '10px 14px', color: 'var(--notion-orange)', marginBottom: '1rem', fontSize: '0.875rem' }}>
                     {erro}
                 </div>
             )}
 
             {/* Lista */}
             {carregando ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-secondary)' }}>Carregando...</div>
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-secondary)' }}>Carregando...</div>
             ) : usuarios.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-tertiary)', fontSize: '0.9rem' }}>
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-muted)', fontSize: '0.9rem' }}>
                     Nenhum usuário cadastrado.
                 </div>
             ) : (
@@ -533,8 +533,8 @@ export default function UsuariosList() {
                             <div
                                 key={u.id}
                                 style={{
-                                    background: 'var(--bg-card)',
-                                    border: ehProprio ? '1px solid var(--color-primary)' : '1px solid var(--border-color)',
+                                    background: 'var(--notion-surface)',
+                                    border: ehProprio ? '1px solid var(--notion-blue)' : '1px solid var(--notion-border)',
                                     borderRadius: 10,
                                     padding: '1rem 1.25rem',
                                     display: 'flex',
@@ -548,15 +548,15 @@ export default function UsuariosList() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                                         <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{u.nome}</span>
                                         {ehProprio && (
-                                            <span style={{ fontSize: '0.7rem', background: 'var(--color-primary)', color: '#fff', borderRadius: 20, padding: '1px 8px', fontWeight: 600 }}>
+                                            <span style={{ fontSize: '0.7rem', background: 'var(--notion-blue)', color: '#fff', borderRadius: 20, padding: '1px 8px', fontWeight: 600 }}>
                                                 Você
                                             </span>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--notion-text-muted)', marginTop: 2 }}>
                                         Criado em {formatDate(u.criadoEm)}
                                         {u.primeiroLogin && (
-                                            <span style={{ marginLeft: 8, color: 'var(--color-warning, #f59e0b)', fontWeight: 600 }}>
+                                            <span style={{ marginLeft: 8, color: 'var(--notion-orange)', fontWeight: 600 }}>
                                                 · Aguardando troca de senha
                                             </span>
                                         )}
@@ -635,7 +635,7 @@ export default function UsuariosList() {
                                     {/* Excluir */}
                                     <button
                                         className="btn btn-ghost"
-                                        style={{ padding: '6px 8px', color: ehProprio ? 'var(--color-text-tertiary)' : 'var(--color-danger, #ef4444)' }}
+                                        style={{ padding: '6px 8px', color: ehProprio ? 'var(--notion-text-muted)' : 'var(--notion-orange)' }}
                                         title={ehProprio ? 'Não é possível excluir sua própria conta' : 'Excluir usuário'}
                                         disabled={ehProprio}
                                         onClick={() => !ehProprio && handleExcluirComConfirmacao(u)}

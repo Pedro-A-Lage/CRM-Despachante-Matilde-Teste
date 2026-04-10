@@ -48,9 +48,9 @@ export default function Login() {
             <div style={{
                 width: '100%',
                 maxWidth: 400,
-                background: 'var(--bg-card)',
+                background: 'var(--notion-surface)',
                 borderRadius: 16,
-                border: '1px solid var(--border-color)',
+                border: '1px solid var(--notion-border)',
                 padding: '40px 32px',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
             }}>
@@ -64,7 +64,7 @@ export default function Login() {
                     <p style={{
                         margin: 0,
                         fontSize: '0.85rem',
-                        color: 'var(--color-text-tertiary)',
+                        color: 'var(--notion-text-muted)',
                         fontWeight: 500,
                     }}>
                         Faça login para continuar
@@ -78,7 +78,7 @@ export default function Login() {
                             display: 'block',
                             fontSize: '0.8rem',
                             fontWeight: 600,
-                            color: 'var(--color-text-secondary)',
+                            color: 'var(--notion-text-secondary)',
                             marginBottom: 6,
                         }}>
                             Usuário
@@ -94,9 +94,9 @@ export default function Login() {
                                 width: '100%',
                                 padding: '10px 14px',
                                 borderRadius: 10,
-                                border: '1px solid var(--border-color)',
+                                border: '1px solid var(--notion-border)',
                                 background: 'var(--bg-body)',
-                                color: 'var(--color-text-primary)',
+                                color: 'var(--notion-text)',
                                 fontSize: '0.95rem',
                                 outline: 'none',
                                 boxSizing: 'border-box',
@@ -110,7 +110,7 @@ export default function Login() {
                             display: 'block',
                             fontSize: '0.8rem',
                             fontWeight: 600,
-                            color: 'var(--color-text-secondary)',
+                            color: 'var(--notion-text-secondary)',
                             marginBottom: 6,
                         }}>
                             Senha
@@ -126,9 +126,9 @@ export default function Login() {
                                     width: '100%',
                                     padding: '10px 42px 10px 14px',
                                     borderRadius: 10,
-                                    border: '1px solid var(--border-color)',
+                                    border: '1px solid var(--notion-border)',
                                     background: 'var(--bg-body)',
-                                    color: 'var(--color-text-primary)',
+                                    color: 'var(--notion-text)',
                                     fontSize: '0.95rem',
                                     outline: 'none',
                                     boxSizing: 'border-box',
@@ -145,7 +145,7 @@ export default function Login() {
                                     background: 'none',
                                     border: 'none',
                                     cursor: 'pointer',
-                                    color: 'var(--color-text-tertiary)',
+                                    color: 'var(--notion-text-muted)',
                                     padding: 4,
                                 }}
                             >
@@ -159,8 +159,8 @@ export default function Login() {
                         <div style={{
                             padding: '10px 14px',
                             borderRadius: 10,
-                            background: 'var(--color-danger-bg)',
-                            color: 'var(--color-danger)',
+                            background: 'var(--notion-orange)',
+                            color: 'var(--notion-orange)',
                             fontSize: '0.85rem',
                             fontWeight: 600,
                             marginBottom: 16,
@@ -179,8 +179,8 @@ export default function Login() {
                             padding: '12px',
                             borderRadius: 10,
                             border: 'none',
-                            background: 'var(--color-primary)',
-                            color: 'var(--color-text-on-primary)',
+                            background: 'var(--notion-blue)',
+                            color: 'var(--notion-bg)',
                             fontSize: '0.95rem',
                             fontWeight: 700,
                             cursor: enviando ? 'not-allowed' : 'pointer',
