@@ -2852,7 +2852,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                 : { color: 'var(--notion-blue)', bg: 'rgba(59,130,246,0.12)', icon: <Calendar size={16} />, label: 'Agendada' };
             case 'reagendar': return { color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.12)', icon: <RotateCcw size={16} />, label: 'Reagendar' };
             case 'aprovada_apontamento': return { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', icon: <AlertTriangle size={16} />, label: 'Aprovada c/ Apontamento' };
-            default: return { color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.12)', icon: <Circle size={16} />, label: 'A Agendar' };
+            default: return { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', icon: <Circle size={16} />, label: 'A Agendar' };
         }
     };
 
@@ -2982,13 +2982,13 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
                                 padding: '5px 10px', borderRadius: 6, border: 'none',
                                 fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                                background: isActive ? info.bg : 'var(--notion-bg)',
+                                background: isActive ? info.bg : 'var(--notion-surface)',
                                 color: isActive ? info.color : 'var(--notion-text-secondary)',
                                 outline: isActive ? `2px solid ${info.color}` : '1px solid var(--notion-border)',
                                 transition: 'all 0.15s',
                             }}
                             onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = info.bg; e.currentTarget.style.color = info.color; }}}
-                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'var(--notion-bg)'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}}
+                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'var(--notion-surface)'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}}
                         >
                             {info.icon} {info.label}
                         </button>

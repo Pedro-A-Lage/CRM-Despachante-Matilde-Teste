@@ -409,44 +409,41 @@ export default function OSList() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                padding: '6px 8px',
-                                borderRadius: 8,
-                                border: `1px solid ${isActive ? card.color : card.borderColor}`,
-                                background: isActive
-                                    ? `linear-gradient(135deg, ${card.bgColor}, ${card.bgColor.replace('0.08', '0.16')})`
-                                    : card.bgColor,
+                                gap: 2,
+                                padding: '10px 12px',
+                                borderRadius: 10,
+                                border: isActive ? `1.5px solid ${card.color}` : '1.5px solid var(--notion-border)',
+                                background: isActive ? card.bgColor : 'transparent',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s cubic-bezier(.4,0,.2,1)',
-                                boxShadow: isActive ? `0 2px 10px ${card.color}33` : 'none',
+                                transition: 'all 0.15s ease',
                             }}
                             onMouseEnter={e => {
                                 if (!isActive) {
                                     e.currentTarget.style.borderColor = card.color;
-                                    e.currentTarget.style.boxShadow = `0 2px 10px ${card.color}22`;
+                                    e.currentTarget.style.background = card.bgColor;
                                 }
                             }}
                             onMouseLeave={e => {
                                 if (!isActive) {
-                                    e.currentTarget.style.borderColor = card.borderColor;
-                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.borderColor = 'var(--notion-border)';
+                                    e.currentTarget.style.background = 'transparent';
                                 }
                             }}
                         >
                             <span style={{
-                                fontSize: 9,
+                                fontSize: 11,
                                 fontWeight: 700,
-                                color: card.color,
+                                color: isActive ? card.color : 'var(--notion-text-secondary)',
                                 textTransform: 'uppercase' as const,
-                                letterSpacing: '0.05em',
-                                lineHeight: 1.2,
+                                letterSpacing: '0.04em',
                             }}>
                                 {card.label}
                             </span>
                             <span style={{
-                                fontSize: 18,
+                                fontSize: 22,
                                 fontWeight: 800,
                                 color: isActive ? card.color : 'var(--notion-text)',
-                                lineHeight: 1.2,
+                                lineHeight: 1.1,
                             }}>
                                 {count}
                             </span>
@@ -458,16 +455,16 @@ export default function OSList() {
                     <button
                         onClick={resetFilters}
                         style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 4,
-                            fontSize: '0.72rem', color: 'var(--notion-purple, #9065B0)',
-                            background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)',
-                            cursor: 'pointer', padding: '4px 10px', borderRadius: 6,
-                            fontWeight: 600, transition: 'all 0.2s', whiteSpace: 'nowrap' as const,
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            fontSize: '0.82rem', color: '#dc2626',
+                            background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.3)',
+                            cursor: 'pointer', padding: '6px 14px', borderRadius: 8,
+                            fontWeight: 600, transition: 'all 150ms', whiteSpace: 'nowrap' as const,
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(139,92,246,0.2)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(139,92,246,0.1)'}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,38,38,0.15)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(220,38,38,0.08)'}
                     >
-                        <X size={11} /> Limpar
+                        <X size={14} /> Limpar filtros
                     </button>
                 )}
                 </div>
@@ -476,30 +473,23 @@ export default function OSList() {
                     onClick={() => openNovaOSModal()}
                     className="btn btn-primary oslist-nova-btn"
                     style={{
-                        padding: '8px 18px',
-                        borderRadius: 8,
+                        padding: '10px 20px',
+                        borderRadius: 10,
                         fontWeight: 700,
                         display: 'flex',
                         alignItems: 'center',
                         gap: 6,
-                        background: 'linear-gradient(135deg, var(--notion-blue) 0%, var(--notion-blue-hover) 100%)',
+                        background: 'var(--notion-blue)',
                         color: '#fff',
-                        boxShadow: '0 2px 12px rgba(0,117,222,0.3)',
-                        transition: 'all 0.2s cubic-bezier(.4,0,.2,1)',
+                        transition: 'all 0.15s ease',
                         border: 'none',
                         cursor: 'pointer',
-                        fontSize: '0.82rem',
+                        fontSize: '0.85rem',
                         whiteSpace: 'nowrap' as const,
                         flexShrink: 0,
                     }}
-                    onMouseEnter={e => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,117,222,0.4)';
-                    }}
-                    onMouseLeave={e => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,117,222,0.3)';
-                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
                     <Plus size={16} strokeWidth={2.5} /> Nova OS
                 </button>
@@ -507,15 +497,13 @@ export default function OSList() {
 
             {/* Toolbar */}
             <div style={{
-                background: 'var(--notion-surface)',
                 border: '1px solid var(--notion-border)',
                 borderRadius: 10,
-                padding: '8px 12px',
+                padding: '10px 14px',
                 marginBottom: '12px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0px',
-                boxShadow: '0 1px 6px rgba(0,0,0,0.1)',
             }}>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                     {/* Search bar */}
@@ -620,22 +608,21 @@ export default function OSList() {
                     </div>
 
                     {/* Filters */}
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <Filter size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <select
                             className="form-select"
                             style={{
-                                width: 180,
-                                height: 34,
+                                width: 160,
+                                height: 36,
                                 borderRadius: 8,
-                                background: 'var(--notion-bg)',
+                                background: 'transparent',
                                 border: '1px solid var(--notion-border)',
-                                padding: '0 12px',
-                                fontSize: '0.84rem',
+                                padding: '0 10px',
+                                fontSize: '0.82rem',
                                 fontWeight: 600,
                                 color: statusFilter ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
-                                transition: 'border-color 0.2s',
+                                transition: 'border-color 0.15s',
                                 fontFamily: 'inherit',
                                 outline: 'none',
                                 appearance: 'auto' as any,
@@ -653,17 +640,17 @@ export default function OSList() {
                         <select
                             className="form-select"
                             style={{
-                                width: 180,
-                                height: 34,
+                                width: 160,
+                                height: 36,
                                 borderRadius: 8,
-                                background: 'var(--notion-bg)',
+                                background: 'transparent',
                                 border: '1px solid var(--notion-border)',
-                                padding: '0 12px',
-                                fontSize: '0.84rem',
+                                padding: '0 10px',
+                                fontSize: '0.82rem',
                                 fontWeight: 600,
                                 color: tipoFilter ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
-                                transition: 'border-color 0.2s',
+                                transition: 'border-color 0.15s',
                                 fontFamily: 'inherit',
                                 outline: 'none',
                                 appearance: 'auto' as any,
@@ -683,15 +670,15 @@ export default function OSList() {
 
                 {/* Filtro por empresa */}
                 {empresas.length > 0 && (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 8, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingTop: 10, borderTop: '1px solid var(--notion-border)', marginTop: 10, alignItems: 'center' }}>
                         <button
                             onClick={() => setEmpresaFilter('')}
                             style={{
-                                padding: '5px 12px',
+                                padding: '4px 10px',
                                 borderRadius: 6,
                                 fontSize: 12,
                                 fontWeight: 600,
-                                border: `1px solid ${empresaFilter === '' ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
+                                border: empresaFilter === '' ? '1.5px solid var(--notion-blue)' : '1.5px solid transparent',
                                 backgroundColor: empresaFilter === '' ? 'rgba(0,117,222,0.08)' : 'transparent',
                                 color: empresaFilter === '' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
@@ -706,12 +693,12 @@ export default function OSList() {
                                 onClick={() => setEmpresaFilter(emp.id)}
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: 5,
-                                    padding: '5px 12px',
+                                    padding: '4px 10px',
                                     borderRadius: 6,
                                     fontSize: 12,
                                     fontWeight: 600,
-                                    border: `1px solid ${empresaFilter === emp.id ? emp.cor : 'var(--notion-border)'}`,
-                                    backgroundColor: empresaFilter === emp.id ? `${emp.cor}20` : 'transparent',
+                                    border: empresaFilter === emp.id ? `1.5px solid ${emp.cor}` : '1.5px solid transparent',
+                                    backgroundColor: empresaFilter === emp.id ? `${emp.cor}15` : 'transparent',
                                     color: empresaFilter === emp.id ? emp.cor : 'var(--notion-text-secondary)',
                                     cursor: 'pointer',
                                     transition: 'all 0.15s ease',
@@ -732,15 +719,15 @@ export default function OSList() {
                         <button
                             onClick={() => setEmpresaFilter('particular')}
                             style={{
-                                padding: '5px 12px',
+                                padding: '4px 10px',
                                 borderRadius: 6,
                                 fontSize: 12,
                                 fontWeight: 600,
-                                border: `1px solid ${empresaFilter === 'particular' ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
+                                border: empresaFilter === 'particular' ? '1.5px solid var(--notion-blue)' : '1.5px solid transparent',
                                 backgroundColor: empresaFilter === 'particular' ? 'rgba(0,117,222,0.08)' : 'transparent',
                                 color: empresaFilter === 'particular' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
-                                transition: 'all 0.2s ease',
+                                transition: 'all 0.15s ease',
                             }}
                         >
                             Particulares
@@ -827,27 +814,21 @@ export default function OSList() {
                                 style={{
                                     marginTop: 8,
                                     padding: '10px 22px',
-                                    borderRadius: 10,
-                                    border: '1px solid var(--notion-border)',
-                                    background: 'var(--notion-bg-alt)',
-                                    color: 'var(--notion-text-secondary)',
+                                    borderRadius: 8,
+                                    border: '1px solid rgba(220,38,38,0.3)',
+                                    background: 'rgba(220,38,38,0.08)',
+                                    color: '#dc2626',
                                     fontWeight: 600,
                                     fontSize: '0.88rem',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 6,
-                                    transition: 'all 0.2s',
+                                    transition: 'all 150ms',
                                     fontFamily: 'inherit',
                                 }}
-                                onMouseEnter={e => {
-                                    e.currentTarget.style.background = 'rgba(0,0,0,0.06)';
-                                    e.currentTarget.style.color = 'var(--notion-text)';
-                                }}
-                                onMouseLeave={e => {
-                                    e.currentTarget.style.background = 'var(--notion-bg-alt)';
-                                    e.currentTarget.style.color = 'var(--notion-text-secondary)';
-                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,38,38,0.15)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'rgba(220,38,38,0.08)'}
                             >
                                 <X size={14} /> Limpar filtros
                             </button>
