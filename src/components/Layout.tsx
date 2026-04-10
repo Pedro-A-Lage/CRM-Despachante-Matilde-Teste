@@ -4,7 +4,6 @@ import {
     Users,
     Car,
     FileText,
-    Search,
     ClipboardList,
     MessageSquare,
     Database,
@@ -24,6 +23,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { temPermissao } from '../lib/permissions';
+import { useTheme } from '@/contexts/ThemeContext';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavItem {
     to: string;
@@ -103,22 +104,6 @@ function setStoredGroupState(key: string, open: boolean): void {
     }
 }
 
-function useTheme() {
-    const [theme, setTheme] = React.useState<'dark' | 'light'>(() => {
-        const saved = localStorage.getItem('theme');
-        return (saved === 'light' || saved === 'dark') ? saved : 'dark';
-    });
-
-    React.useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
-
-    return { theme, toggleTheme };
-}
-
 // --- Collapsible Group Component ---
 interface CollapsibleGroupProps {
     group: NavGroup;
@@ -183,7 +168,7 @@ export default function Layout({ children }: LayoutProps) {
     const searchInputRef = React.useRef<HTMLInputElement>(null);
     const profileRef = React.useRef<HTMLDivElement>(null);
     const location = useLocation();
-    const { theme, toggleTheme } = useTheme();
+    const { theme, toggle } = useTheme();
     const { usuario, logout } = useAuth();
 
     // Close profile dropdown on outside click
@@ -298,7 +283,7 @@ export default function Layout({ children }: LayoutProps) {
                             padding: '24px 16px',
                             textAlign: 'center',
                             fontSize: 12,
-                            color: 'var(--color-text-tertiary)',
+                            color: 'var(--notion-text-muted)',
                         }}>
                             Nenhum item encontrado
                         </div>
@@ -333,23 +318,7 @@ export default function Layout({ children }: LayoutProps) {
                     {/* Right side: Theme toggle + User profile */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         {/* Theme toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            title={theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-                            style={{
-                                background: 'rgba(255,255,255,0.06)',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                borderRadius: 8,
-                                padding: '6px 8px',
-                                cursor: 'pointer',
-                                color: 'var(--color-text-secondary)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                transition: 'all 0.15s',
-                            }}
-                        >
-                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                        </button>
+                        <ThemeToggle />
 
                         {/* User profile dropdown */}
                         {usuario && (
@@ -360,8 +329,8 @@ export default function Layout({ children }: LayoutProps) {
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
-                                        background: profileOpen ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
-                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        background: profileOpen ? 'var(--notion-surface)' : 'transparent',
+                                        border: '1px solid var(--notion-border)',
                                         borderRadius: 8,
                                         padding: '4px 10px 4px 4px',
                                         cursor: 'pointer',
@@ -385,14 +354,14 @@ export default function Layout({ children }: LayoutProps) {
                                         {usuario.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
                                     <div className="profile-text-block" style={{ textAlign: 'left', minWidth: 0 }}>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
                                             {usuario.nome}
                                         </div>
-                                        <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', textTransform: 'capitalize' }}>
+                                        <div style={{ fontSize: 10, color: 'var(--notion-text-muted)', textTransform: 'capitalize' }}>
                                             {usuario.role === 'admin' ? 'Admin' : usuario.role === 'gerente' ? 'Gerente' : 'Funcionário'}
                                         </div>
                                     </div>
-                                    <ChevronDown size={12} style={{ color: 'var(--color-text-tertiary)', transition: 'transform 0.15s', transform: profileOpen ? 'rotate(180deg)' : 'none' }} />
+                                    <ChevronDown size={12} style={{ color: 'var(--notion-text-muted)', transition: 'transform 0.15s', transform: profileOpen ? 'rotate(180deg)' : 'none' }} />
                                 </button>
 
                                 {/* Dropdown */}
@@ -403,15 +372,15 @@ export default function Layout({ children }: LayoutProps) {
                                         right: 0,
                                         marginTop: 6,
                                         width: 200,
-                                        background: 'var(--color-gray-800)',
-                                        border: '1px solid var(--color-gray-700)',
+                                        background: 'var(--notion-surface)',
+                                        border: '1px solid var(--notion-border)',
                                         borderRadius: 10,
-                                        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
                                         zIndex: 100,
                                         overflow: 'hidden',
                                     }}>
                                         {/* User info */}
-                                        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--color-gray-700)' }}>
+                                        <div style={{ padding: '12px 14px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                 <div style={{
                                                     width: 36,
@@ -428,8 +397,8 @@ export default function Layout({ children }: LayoutProps) {
                                                     {usuario.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>{usuario.nome}</div>
-                                                    <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)', textTransform: 'capitalize' }}>
+                                                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>{usuario.nome}</div>
+                                                    <div style={{ fontSize: 10, color: 'var(--notion-text-muted)', textTransform: 'capitalize' }}>
                                                         {usuario.role === 'admin' ? 'Administrador' : usuario.role === 'gerente' ? 'Gerente' : 'Funcionário'}
                                                     </div>
                                                 </div>
@@ -439,7 +408,7 @@ export default function Layout({ children }: LayoutProps) {
                                         {/* Menu items */}
                                         <div style={{ padding: '6px' }}>
                                             <button
-                                                onClick={() => { toggleTheme(); setProfileOpen(false); }}
+                                                onClick={() => { toggle(); setProfileOpen(false); }}
                                                 style={{
                                                     width: '100%',
                                                     display: 'flex',
@@ -451,7 +420,7 @@ export default function Layout({ children }: LayoutProps) {
                                                     border: 'none',
                                                     cursor: 'pointer',
                                                     fontSize: 12,
-                                                    color: 'var(--color-text-secondary)',
+                                                    color: 'var(--notion-text)',
                                                     textAlign: 'left',
                                                 }}
                                                 className="hover:bg-white/5"
@@ -460,7 +429,7 @@ export default function Layout({ children }: LayoutProps) {
                                                 {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
                                             </button>
 
-                                            <div style={{ height: 1, background: 'var(--color-gray-700)', margin: '4px 0' }} />
+                                            <div style={{ height: 1, background: 'var(--notion-border)', margin: '4px 0' }} />
 
                                             <button
                                                 onClick={() => { logout(); setProfileOpen(false); }}
@@ -513,13 +482,13 @@ export default function Layout({ children }: LayoutProps) {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.10em;
-          color: var(--color-text-tertiary);
+          color: var(--notion-text-muted);
           transition: color 140ms ease;
           font-family: inherit;
         }
 
         .sidebar-group-header:hover {
-          color: var(--color-text-secondary);
+          color: var(--notion-text);
         }
 
         .sidebar-group-title {
@@ -557,16 +526,9 @@ export default function Layout({ children }: LayoutProps) {
         .sidebar-divider {
           margin: 6px var(--space-4);
           border: none;
-          border-top: 1px solid rgba(255,255,255,0.06);
+          border-top: 1px solid var(--notion-border);
         }
 
-        [data-theme="light"] .sidebar-divider {
-          border-top-color: rgba(0,0,0,0.08);
-        }
-
-        [data-theme="light"] .sidebar-group-header:hover {
-          color: var(--color-text-primary);
-        }
       `}</style>
         </div>
     );
