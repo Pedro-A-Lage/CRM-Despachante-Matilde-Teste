@@ -128,7 +128,7 @@ export default function ConsultaProcessos() {
         <div>
             {loading && (
                 <div className="card mb-6" style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-                    <p style={{ color: 'var(--notion-text-muted)', fontSize: 'var(--font-size-lg)' }}>Carregando dados...</p>
+                    <p style={{ color: 'var(--notion-text-secondary)', fontSize: 'var(--font-size-lg)' }}>Carregando dados...</p>
                 </div>
             )}
             <div className={`page-header ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -276,7 +276,7 @@ export default function ConsultaProcessos() {
                                 }}>
                                     {/* Cliente */}
                                     <div className="flex items-center gap-2">
-                                        <User size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+                                        <User size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                                         <div>
                                             <p className="font-semibold text-sm" style={{ lineHeight: 1.3 }}>
                                                 {cliente?.nome || '—'}
@@ -287,7 +287,7 @@ export default function ConsultaProcessos() {
 
                                     {/* Veículo */}
                                     <div className="flex items-center gap-2">
-                                        <Car size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+                                        <Car size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                                         <div>
                                             <p className="font-semibold text-sm" style={{ lineHeight: 1.3 }}>
                                                 {veiculo?.placa || 'Sem placa'} {veiculo?.marcaModelo ? `— ${veiculo.marcaModelo}` : ''}
@@ -301,7 +301,7 @@ export default function ConsultaProcessos() {
 
                                     {/* Serviço + Progresso */}
                                     <div className="flex items-center gap-2">
-                                        <FileText size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+                                        <FileText size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                                         <div>
                                             <p className="font-semibold text-sm" style={{ lineHeight: 1.3 }}>
                                                 {getServicoLabel(serviceLabels, os.tipoServico)}

@@ -38,7 +38,7 @@ const STATUS_CHIP_COLOR: Record<string, string> = {
     vistoria:                'var(--notion-blue)',
     delegacia:               'var(--notion-purple, #9065B0)',
     doc_pronto:              'var(--notion-green)',
-    entregue:                'var(--notion-text-muted)',
+    entregue:                'var(--notion-text-secondary)',
 };
 
 // Left border colors for table rows by status
@@ -329,14 +329,14 @@ export default function OSList() {
                 fontWeight: 700,
                 textTransform: 'uppercase' as const,
                 letterSpacing: '0.06em',
-                color: sortConfig?.key === sortKey ? 'var(--notion-blue)' : 'var(--notion-text-muted)',
+                color: sortConfig?.key === sortKey ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                 borderBottom: '1px solid var(--notion-border)',
                 transition: 'color 0.2s',
                 whiteSpace: 'nowrap' as const,
             }}
             onClick={() => handleSort(sortKey)}
             onMouseEnter={e => { if (sortConfig?.key !== sortKey) e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
-            onMouseLeave={e => { if (sortConfig?.key !== sortKey) e.currentTarget.style.color = 'var(--notion-text-muted)'; }}
+            onMouseLeave={e => { if (sortConfig?.key !== sortKey) e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 {label}
@@ -529,7 +529,7 @@ export default function OSList() {
                         <Search size={15} style={{
                             position: 'absolute',
                             left: 10,
-                            color: 'var(--notion-text-muted)',
+                            color: 'var(--notion-text-secondary)',
                             pointerEvents: 'none',
                             transition: 'color 0.2s',
                         }} />
@@ -541,7 +541,7 @@ export default function OSList() {
                             style={{
                                 width: '100%',
                                 padding: '8px 12px 8px 36px',
-                                background: 'var(--bg-body)',
+                                background: 'var(--notion-bg)',
                                 border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 color: 'var(--notion-text)',
@@ -568,7 +568,7 @@ export default function OSList() {
                                     background: 'none',
                                     border: 'none',
                                     cursor: 'pointer',
-                                    color: 'var(--notion-text-muted)',
+                                    color: 'var(--notion-text-secondary)',
                                     padding: 4,
                                     borderRadius: 6,
                                     display: 'flex',
@@ -576,7 +576,7 @@ export default function OSList() {
                                     transition: 'color 0.15s',
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.color = 'var(--notion-text)'}
-                                onMouseLeave={e => e.currentTarget.style.color = 'var(--notion-text-muted)'}
+                                onMouseLeave={e => e.currentTarget.style.color = 'var(--notion-text-secondary)'}
                             >
                                 <X size={14} />
                             </button>
@@ -586,7 +586,7 @@ export default function OSList() {
                     {/* View toggle */}
                     <div style={{
                         display: 'flex',
-                        background: 'var(--bg-body)',
+                        background: 'var(--notion-bg)',
                         padding: 3,
                         borderRadius: 11,
                         border: '1px solid var(--notion-border)',
@@ -600,7 +600,7 @@ export default function OSList() {
                                     borderRadius: 7,
                                     border: 'none',
                                     background: view === v ? 'var(--notion-blue)' : 'transparent',
-                                    color: view === v ? '#fff' : 'var(--notion-text-muted)',
+                                    color: view === v ? '#fff' : 'var(--notion-text-secondary)',
                                     fontWeight: 700,
                                     fontSize: '0.82rem',
                                     cursor: 'pointer',
@@ -611,7 +611,7 @@ export default function OSList() {
                                     fontFamily: 'inherit',
                                 }}
                                 onMouseEnter={e => { if (view !== v) e.currentTarget.style.color = 'var(--notion-text)'; }}
-                                onMouseLeave={e => { if (view !== v) e.currentTarget.style.color = 'var(--notion-text-muted)'; }}
+                                onMouseLeave={e => { if (view !== v) e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                             >
                                 {v === 'kanban' ? <LayoutGrid size={15} /> : <List size={15} />}
                                 {v === 'kanban' ? 'Kanban' : 'Lista'}
@@ -621,19 +621,19 @@ export default function OSList() {
 
                     {/* Filters */}
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <Filter size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+                        <Filter size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                         <select
                             className="form-select"
                             style={{
                                 width: 180,
                                 height: 34,
                                 borderRadius: 8,
-                                background: 'var(--bg-body)',
+                                background: 'var(--notion-bg)',
                                 border: '1px solid var(--notion-border)',
                                 padding: '0 12px',
                                 fontSize: '0.84rem',
                                 fontWeight: 600,
-                                color: statusFilter ? 'var(--notion-text)' : 'var(--notion-text-muted)',
+                                color: statusFilter ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
                                 transition: 'border-color 0.2s',
                                 fontFamily: 'inherit',
@@ -656,12 +656,12 @@ export default function OSList() {
                                 width: 180,
                                 height: 34,
                                 borderRadius: 8,
-                                background: 'var(--bg-body)',
+                                background: 'var(--notion-bg)',
                                 border: '1px solid var(--notion-border)',
                                 padding: '0 12px',
                                 fontSize: '0.84rem',
                                 fontWeight: 600,
-                                color: tipoFilter ? 'var(--notion-text)' : 'var(--notion-text-muted)',
+                                color: tipoFilter ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
                                 transition: 'border-color 0.2s',
                                 fontFamily: 'inherit',
@@ -750,7 +750,7 @@ export default function OSList() {
 
                 {/* Filter count indicator */}
                 {hasActiveFilters && (
-                    <div style={{ paddingTop: 6, fontSize: '0.75rem', color: 'var(--notion-text-muted)' }}>
+                    <div style={{ paddingTop: 6, fontSize: '0.75rem', color: 'var(--notion-text-secondary)' }}>
                         Mostrando <strong style={{ color: 'var(--notion-text-secondary)' }}>{filtered.length}</strong> de {visibleBase.length}
                     </div>
                 )}
@@ -779,14 +779,14 @@ export default function OSList() {
                         justifyContent: 'center',
                         marginBottom: 8,
                     }}>
-                        <Inbox size={36} style={{ color: 'var(--notion-text-muted)' }} />
+                        <Inbox size={36} style={{ color: 'var(--notion-text-secondary)' }} />
                     </div>
                     {visibleBase.length === 0 ? (
                         <>
                             <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                                 Nenhuma OS cadastrada
                             </h3>
-                            <p style={{ margin: 0, color: 'var(--notion-text-muted)', fontSize: '0.9rem', maxWidth: 360 }}>
+                            <p style={{ margin: 0, color: 'var(--notion-text-secondary)', fontSize: '0.9rem', maxWidth: 360 }}>
                                 Comece criando a primeira Ordem de Servico para acompanhar seus processos.
                             </p>
                             <button
@@ -819,7 +819,7 @@ export default function OSList() {
                             <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                                 Nenhuma OS encontrada
                             </h3>
-                            <p style={{ margin: 0, color: 'var(--notion-text-muted)', fontSize: '0.9rem', maxWidth: 360 }}>
+                            <p style={{ margin: 0, color: 'var(--notion-text-secondary)', fontSize: '0.9rem', maxWidth: 360 }}>
                                 Tente remover ou ajustar os filtros aplicados.
                             </p>
                             <button
@@ -887,7 +887,7 @@ export default function OSList() {
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
                                     letterSpacing: '0.06em',
-                                    color: 'var(--notion-text-muted)',
+                                    color: 'var(--notion-text-secondary)',
                                     borderBottom: '1px solid var(--notion-border)',
                                 }}>Acoes</th>
                             </tr>
@@ -1121,27 +1121,27 @@ export default function OSList() {
                                                     </div>
                                                 ) : os.observacaoGeral ? (
                                                     <span style={{
-                                                        fontSize: '0.78rem', color: 'var(--notion-text-muted)', fontStyle: 'italic',
+                                                        fontSize: '0.78rem', color: 'var(--notion-text-secondary)', fontStyle: 'italic',
                                                         maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                                         display: 'block',
                                                     }} title={os.observacaoGeral}>
                                                         {os.observacaoGeral}
                                                     </span>
                                                 ) : (
-                                                    <span style={{ fontSize: '0.78rem', color: 'var(--notion-text-muted)' }}>—</span>
+                                                    <span style={{ fontSize: '0.78rem', color: 'var(--notion-text-secondary)' }}>—</span>
                                                 );
                                             })()}
                                         </td>
                                         <td data-label="Ult. Alteracao" style={{ padding: '14px 16px' }}>{(() => {
                                             const last = os.auditLog?.[os.auditLog.length - 1];
-                                            if (!last) return <span style={{ color: 'var(--notion-text-muted)', fontSize: '0.78rem' }}>—</span>;
+                                            if (!last) return <span style={{ color: 'var(--notion-text-secondary)', fontSize: '0.78rem' }}>—</span>;
                                             const dt = new Date(last.dataHora);
                                             const dateStr = dt.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' });
                                             const timeStr = dt.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
                                             return (
                                                 <div>
                                                     <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--notion-text)', whiteSpace: 'nowrap' }}>{last.acao}</div>
-                                                    <div style={{ fontSize: '0.7rem', color: 'var(--notion-text-muted)', marginTop: 2 }}>{dateStr} {timeStr}</div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--notion-text-secondary)', marginTop: 2 }}>{dateStr} {timeStr}</div>
                                                 </div>
                                             );
                                         })()}</td>

@@ -439,7 +439,7 @@ function DocumentSlot({
                 {uploaded ? (
                     <CheckCircle size={20} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
                 ) : (
-                    <File size={20} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+                    <File size={20} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                 )}
                 <div>
                     <p className="font-semibold text-sm">{label}</p>

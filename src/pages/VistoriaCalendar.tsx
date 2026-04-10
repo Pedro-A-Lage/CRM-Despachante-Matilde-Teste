@@ -332,7 +332,7 @@ export default function VistoriaCalendar() {
                         <span style={{
                             fontSize: 'var(--text-xs)',
                             fontWeight: 600,
-                            color: 'var(--notion-text-muted)',
+                            color: 'var(--notion-text-secondary)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em',
                         }}>{stat.label}</span>
@@ -442,7 +442,7 @@ function CalendarGrid({
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.08em',
-                        color: 'var(--notion-text-muted)',
+                        color: 'var(--notion-text-secondary)',
                     }}>
                         {name}
                     </div>
@@ -623,11 +623,11 @@ function ListView({
                 padding: 48,
                 textAlign: 'center',
             }}>
-                <CalendarIcon size={48} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 16px', opacity: 0.3 }} />
+                <CalendarIcon size={48} style={{ color: 'var(--notion-text-secondary)', margin: '0 auto 16px', opacity: 0.3 }} />
                 <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--notion-text)', marginBottom: 8 }}>
                     Nenhuma vistoria neste mês
                 </h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--notion-text-muted)' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--notion-text-secondary)' }}>
                     As vistorias agendadas aparecerão aqui automaticamente.
                 </p>
             </div>
@@ -682,7 +682,7 @@ function ListView({
                                     fontSize: 9,
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
-                                    color: isToday ? 'rgba(0,0,0,0.6)' : 'var(--notion-text-muted)',
+                                    color: isToday ? 'rgba(0,0,0,0.6)' : 'var(--notion-text-secondary)',
                                     lineHeight: 1,
                                     marginTop: 2,
                                 }}>
@@ -701,7 +701,7 @@ function ListView({
                                 </h3>
                                 <span style={{
                                     fontSize: 'var(--text-xs)',
-                                    color: 'var(--notion-text-muted)',
+                                    color: 'var(--notion-text-secondary)',
                                 }}>
                                     {grouped[dateStr]!.length} vistoria{grouped[dateStr]!.length > 1 ? 's' : ''}
                                 </span>
@@ -845,7 +845,7 @@ function VistoriaCard({ os, cliente, veiculo }: {
                     alignItems: 'center',
                     gap: 12,
                     fontSize: 'var(--text-xs)',
-                    color: 'var(--notion-text-muted)',
+                    color: 'var(--notion-text-secondary)',
                 }}>
                     {veiculo && (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
@@ -861,7 +861,7 @@ function VistoriaCard({ os, cliente, veiculo }: {
                         alignItems: 'center',
                         gap: 4,
                         fontSize: 11,
-                        color: 'var(--notion-text-muted)',
+                        color: 'var(--notion-text-secondary)',
                         marginTop: 2,
                     }}>
                         <MapPin size={11} style={{ flexShrink: 0 }} />
@@ -933,7 +933,7 @@ function DayDetailPanel({ day, vistorias, clientes, veiculos, onClose }: {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: 'var(--notion-text-muted)',
+                    color: 'var(--notion-text-secondary)',
                     fontSize: 'var(--text-lg)',
                     fontWeight: 700,
                     padding: '4px 8px',

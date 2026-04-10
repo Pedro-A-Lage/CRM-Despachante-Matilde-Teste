@@ -45,31 +45,34 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
             {open && (
                 <div
                     className="modal-overlay"
-                    style={{ zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
                 >
                     <div
                         onClick={e => e.stopPropagation()}
                         style={{
                             maxWidth: 420,
+                            width: '90%',
                             padding: 0,
                             overflow: 'hidden',
                             animation: 'fadeInUp 0.2s ease-out',
-                            background: 'var(--bg-primary)',
-                            borderRadius: 'var(--radius-lg)',
+                            background: 'var(--notion-surface)',
+                            borderRadius: 16,
                             border: '1px solid var(--notion-border)',
-                            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+                            boxShadow: 'var(--shadow-deep)',
                         }}
                     >
-                        <div style={{ padding: '32px 32px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                        <div style={{ padding: '24px 24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                             <div style={{
-                                background: options.danger ? 'var(--notion-orange)' : 'var(--notion-orange)',
+                                background: options.danger ? 'rgba(220,38,38,0.1)' : 'rgba(221,91,0,0.1)',
                                 borderRadius: '50%',
-                                padding: '16px',
+                                padding: '12px',
                                 marginBottom: '16px',
-                                color: options.danger ? 'var(--notion-orange)' : 'var(--notion-orange)',
-                                border: `2px solid ${options.danger ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 193, 7, 0.3)'}`,
+                                color: options.danger ? '#dc2626' : 'var(--notion-orange)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                             }}>
-                                <AlertTriangle size={32} />
+                                <AlertTriangle size={28} />
                             </div>
                             <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                                 {options.title || 'Atenção'}
@@ -79,29 +82,42 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                             </div>
                         </div>
                         <div style={{
-                            padding: '16px 32px',
-                            background: 'var(--bg-secondary)',
+                            padding: '16px 24px',
+                            background: 'var(--notion-bg-alt)',
                             display: 'flex',
                             gap: '12px',
                             justifyContent: 'center',
                             borderTop: '1px solid var(--notion-border)',
                         }}>
                             <button
-                                className="btn btn-secondary"
                                 onClick={handleCancel}
                                 autoFocus
-                                style={{ flex: 1, justifyContent: 'center', fontWeight: 600 }}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 16px',
+                                    fontWeight: 600,
+                                    fontSize: '0.9rem',
+                                    background: 'rgba(255,255,255,0.08)',
+                                    color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)',
+                                    borderRadius: 4,
+                                    cursor: 'pointer',
+                                }}
                             >
                                 {options.cancelText || 'Cancelar'}
                             </button>
                             <button
-                                className={`btn ${options.danger ? 'btn-danger' : 'btn-primary'}`}
                                 onClick={handleConfirm}
                                 style={{
                                     flex: 1,
-                                    justifyContent: 'center',
+                                    padding: '8px 16px',
                                     fontWeight: 600,
-                                    ...(options.danger ? { background: 'var(--notion-orange)', borderColor: 'var(--notion-orange)', color: 'var(--notion-text)' } : {}),
+                                    fontSize: '0.9rem',
+                                    background: options.danger ? '#dc2626' : 'var(--notion-blue)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: 4,
+                                    cursor: 'pointer',
                                 }}
                             >
                                 {options.confirmText || 'Confirmar'}

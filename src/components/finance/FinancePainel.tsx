@@ -450,7 +450,7 @@ export default function FinancePainel({
 
       {/* ===== BANNER HEADER ===== */}
       {(() => {
-        const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-muted)', marginBottom: 2 };
+        const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 2 };
         const bannerColor = isQuitado ? 'var(--notion-green)' : faltaReceber > 0 ? 'var(--notion-orange)' : 'var(--notion-orange)';
         const bannerBg = isQuitado ? 'rgba(16,185,129,0.08)' : faltaReceber > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)';
         const bannerBorder = isQuitado ? 'rgba(16,185,129,0.25)' : faltaReceber > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)';
@@ -479,7 +479,7 @@ export default function FinancePainel({
                   <span style={{ fontSize: 11, fontWeight: 800, color: bannerColor }}>
                     {statusLabel}
                   </span>
-                  <span style={{ fontSize: 10, color: 'var(--notion-text-muted)', fontWeight: 500 }}>
+                  <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
                     · {Math.round(progressoPct)}% recebido
                   </span>
                 </div>
@@ -539,10 +539,10 @@ export default function FinancePainel({
       })()}
 
       {/* ===== RECEBIMENTOS LIST (main card, checklist-style rows) ===== */}
-      <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
         <div style={{
           display: 'flex', alignItems: 'center', padding: '8px 12px',
-          borderBottom: '1px solid var(--notion-border)', background: 'var(--bg-body)',
+          borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)',
         }}>
           <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
             Recebimentos
@@ -566,7 +566,7 @@ export default function FinancePainel({
                   display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42,
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 {/* Status dot */}
@@ -604,7 +604,7 @@ export default function FinancePainel({
 
                 {/* Recebido por */}
                 {p.recebido_por && (
-                  <span style={{ fontSize: 12, color: 'var(--notion-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     por {p.recebido_por}
                   </span>
                 )}
@@ -802,10 +802,10 @@ export default function FinancePainel({
 
       {/* ===== CUSTOS LIST (admin only, checklist-style rows) ===== */}
       {isAdmin && !ocultarCustos && (
-        <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
           <div style={{
             display: 'flex', alignItems: 'center', padding: '8px 12px',
-            borderBottom: '1px solid var(--notion-border)', background: 'var(--bg-body)',
+            borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)',
           }}>
             <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
               Custos do Servico
@@ -845,7 +845,7 @@ export default function FinancePainel({
               const statusInfo = {
                 pago: { color: 'var(--notion-green)', bg: 'rgba(22,163,74,0.12)', label: 'Pago' },
                 a_pagar: { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' },
-                cancelado: { color: 'var(--notion-text-muted)', bg: 'rgba(107,114,128,0.12)', label: 'Cancelado' },
+                cancelado: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.12)', label: 'Cancelado' },
               }[c.status] ?? { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
 
               return (
@@ -875,7 +875,7 @@ export default function FinancePainel({
                         display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42,
                         transition: 'background 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       {/* Status dot */}
@@ -985,7 +985,7 @@ export default function FinancePainel({
           {charges.length > 0 && (
             <div style={{
               display: 'flex', alignItems: 'center', padding: '8px 12px',
-              borderTop: '1px solid var(--notion-border)', background: 'var(--bg-body)',
+              borderTop: '1px solid var(--notion-border)', background: 'var(--notion-bg)',
             }}>
               <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
                 Total Custos

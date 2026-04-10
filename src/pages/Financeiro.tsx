@@ -291,7 +291,7 @@ export default function Financeiro() {
                       labelStyle={{ color: 'var(--notion-text)', fontWeight: 600 }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="receita" name="Receita" fill="#f59e0b" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="receita" name="Receita" fill="var(--notion-blue)" radius={[3, 3, 0, 0]} />
                     <Bar dataKey="custos" name="Custos" fill="#ef4444" radius={[3, 3, 0, 0]} />
                     <Bar dataKey="honorarios" name="Honorários" fill="#22c55e" radius={[3, 3, 0, 0]} />
                   </BarChart>
@@ -311,8 +311,8 @@ export default function Financeiro() {
                         <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="gradPendente" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
+                        <stop offset="5%" stopColor="var(--notion-blue)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--notion-blue)" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
@@ -353,7 +353,7 @@ export default function Financeiro() {
                       type="monotone"
                       dataKey="pendente"
                       name="A Receber"
-                      stroke="#f59e0b"
+                      stroke="var(--notion-blue)"
                       strokeWidth={2}
                       fill="url(#gradPendente)"
                       stackId="2"
@@ -400,7 +400,7 @@ export default function Financeiro() {
                           <span style={{
                             display: 'inline-block',
                             background: 'rgba(245,158,11,0.12)',
-                            color: '#f59e0b',
+                            color: 'var(--notion-blue)',
                             borderRadius: 6,
                             padding: '2px 8px',
                             fontSize: 12,

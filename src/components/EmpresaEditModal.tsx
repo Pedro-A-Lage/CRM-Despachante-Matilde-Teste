@@ -14,7 +14,7 @@ import { Switch } from './ui/switch';
 const LABEL_STYLE: React.CSSProperties = {
   textTransform: 'none',
   fontSize: '11px',
-  color: 'var(--notion-text-muted)',
+  color: 'var(--notion-text-secondary)',
   fontWeight: 500,
 };
 
@@ -224,14 +224,14 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                       padding: 0,
                     }}
                   />
-                  <span style={{ fontSize: '11px', color: 'var(--notion-text-muted)' }}>{cor}</span>
+                  <span style={{ fontSize: '11px', color: 'var(--notion-text-secondary)' }}>{cor}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label style={LABEL_STYLE}>Status</Label>
                 <div className="flex items-center gap-2 pt-1">
                   <Switch checked={ativo} onCheckedChange={setAtivo} />
-                  <span style={{ fontSize: '11px', color: ativo ? '#28A06A' : 'var(--notion-text-muted)', fontWeight: 500 }}>
+                  <span style={{ fontSize: '11px', color: ativo ? '#28A06A' : 'var(--notion-text-secondary)', fontWeight: 500 }}>
                     {ativo ? 'Ativa' : 'Inativa'}
                   </span>
                 </div>
@@ -383,7 +383,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
             background: 'var(--notion-bg-alt)',
           }}
         >
-          <Button variant="ghost" onClick={onClose} style={{ fontSize: '12px', color: 'var(--notion-text-muted)' }}>
+          <Button variant="ghost" onClick={onClose} style={{ fontSize: '12px', color: 'var(--notion-text-secondary)' }}>
             Cancelar
           </Button>
           <Button
@@ -393,7 +393,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
               fontSize: '12px',
               fontWeight: 600,
               background: nome.trim() ? 'var(--notion-blue)' : 'var(--notion-border)',
-              color: nome.trim() ? '#fff' : 'var(--notion-text-muted)',
+              color: nome.trim() ? '#fff' : 'var(--notion-text-secondary)',
             }}
           >
             Salvar

@@ -85,7 +85,7 @@ export default function VeiculosList() {
             style={{ 
                 padding: '14px 16px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, 
                 color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', 
-                borderBottom: '1px solid var(--notion-border)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width,
+                borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width,
                 cursor: 'pointer', userSelect: 'none'
             }}
             onClick={() => handleSort(sortKey)}
@@ -169,7 +169,7 @@ export default function VeiculosList() {
                     onClick={() => setViewMode('cards')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'cards' ? 'var(--notion-purple, #9065B0)' : 'var(--bg-body)',
+                        background: viewMode === 'cards' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
                         color: viewMode === 'cards' ? '#fff' : 'var(--notion-text)',
                         border: viewMode === 'cards' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
@@ -190,7 +190,7 @@ export default function VeiculosList() {
                     onMouseLeave={e => {
                         if (viewMode !== 'cards') {
                             e.currentTarget.style.borderColor = 'var(--notion-border)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -200,7 +200,7 @@ export default function VeiculosList() {
                     onClick={() => setViewMode('list')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'list' ? 'var(--notion-purple, #9065B0)' : 'var(--bg-body)',
+                        background: viewMode === 'list' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
                         color: viewMode === 'list' ? '#fff' : 'var(--notion-text)',
                         border: viewMode === 'list' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
@@ -221,7 +221,7 @@ export default function VeiculosList() {
                     onMouseLeave={e => {
                         if (viewMode !== 'list') {
                             e.currentTarget.style.borderColor = 'var(--notion-border)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -359,7 +359,7 @@ export default function VeiculosList() {
                                     </div>
                                     <div style={{
                                         fontSize: '0.75rem',
-                                        color: 'var(--notion-text-muted)',
+                                        color: 'var(--notion-text-secondary)',
                                         marginTop: 2,
                                     }}>
                                         Placa
@@ -390,13 +390,13 @@ export default function VeiculosList() {
                             }}>
                                 <div style={{
                                     padding: '8px',
-                                    background: 'var(--bg-body)',
+                                    background: 'var(--notion-bg)',
                                     border: '1px solid var(--notion-border)',
                                     borderRadius: 8,
                                 }}>
                                     <div style={{
                                         fontSize: '0.7rem',
-                                        color: 'var(--notion-text-muted)',
+                                        color: 'var(--notion-text-secondary)',
                                         textTransform: 'uppercase',
                                         fontWeight: 600,
                                         marginBottom: 3,
@@ -412,13 +412,13 @@ export default function VeiculosList() {
                                 </div>
                                 <div style={{
                                     padding: '8px',
-                                    background: 'var(--bg-body)',
+                                    background: 'var(--notion-bg)',
                                     border: '1px solid var(--notion-border)',
                                     borderRadius: 8,
                                 }}>
                                     <div style={{
                                         fontSize: '0.7rem',
-                                        color: 'var(--notion-text-muted)',
+                                        color: 'var(--notion-text-secondary)',
                                         textTransform: 'uppercase',
                                         fontWeight: 600,
                                         marginBottom: 3,
@@ -545,7 +545,7 @@ export default function VeiculosList() {
                                     <SortableHeader label="Renavam" sortKey="renavam" />
                                     <SortableHeader label="Chassi" sortKey="chassi" />
                                     <SortableHeader label="Cliente" sortKey="cliente" />
-                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--notion-border)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width: 90 }}>Ações</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width: 90 }}>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>

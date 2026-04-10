@@ -23,7 +23,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
                 {title}
             </p>
             {description && (
-                <p style={{ fontSize: 12, color: 'var(--notion-text-muted)', margin: '0 0 16px', maxWidth: 280 }}>
+                <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', margin: '0 0 16px', maxWidth: 280 }}>
                     {description}
                 </p>
             )}

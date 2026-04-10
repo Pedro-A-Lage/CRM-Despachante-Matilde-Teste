@@ -200,12 +200,12 @@ export default function Emails() {
                 )}
 
                 {loading ? (
-                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-muted)' }}>
+                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                         <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
                         <p>Sincronizando com o Gmail (Marcador: Estampadora)...</p>
                     </div>
                 ) : emails.length === 0 ? (
-                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-muted)' }}>
+                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                         <Mail size={32} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
                         <p>Nenhuma mensagem encontrada neste marcador.</p>
                     </div>
@@ -223,23 +223,23 @@ export default function Emails() {
                                     gap: '6px',
                                     cursor: 'pointer',
                                     transition: 'background-color 0.2s',
-                                    background: 'var(--bg-secondary)',
+                                    background: 'var(--notion-bg-alt)',
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-primary)'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--notion-bg)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--notion-bg-alt)'}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div style={{ fontWeight: 600, color: 'var(--notion-blue)', fontSize: '0.95rem' }}>
                                         {email.from.replace(/<.*>/, '').trim()}
                                     </div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--notion-text-muted)' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--notion-text-secondary)' }}>
                                         {formatDate(email.date)}
                                     </div>
                                 </div>
                                 <div style={{ fontWeight: 500, color: 'var(--text-color)', fontSize: '0.9rem' }}>
                                     {email.subject}
                                 </div>
-                                <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {email.snippet}
                                 </div>
                             </div>
@@ -263,15 +263,15 @@ export default function Emails() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--notion-border)' }}>
                                 <div>
                                     <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-color)' }}>{selectedEmail.from.replace(/<.*>/, '').trim()}</div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-muted)', marginTop: '4px' }}>{selectedEmail.from.match(/<([^>]+)>/)?.[1] || selectedEmail.from}</div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', marginTop: '4px' }}>{selectedEmail.from.match(/<([^>]+)>/)?.[1] || selectedEmail.from}</div>
                                 </div>
-                                <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-muted)' }}>
+                                <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
                                     {formatDate(selectedEmail.date)}
                                 </div>
                             </div>
 
                             {loadingDetails ? (
-                                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-muted)' }}>
+                                <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                                     <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
                                     <p>Baixando mensagem do Google...</p>
                                 </div>
@@ -290,7 +290,7 @@ export default function Emails() {
 
                                     {emailDetails.attachments && emailDetails.attachments.length > 0 && (
                                         <div style={{ marginTop: '24px' }}>
-                                            <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--notion-text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <Paperclip size={16} /> Anexos ({emailDetails.attachments.length})
                                             </h4>
                                             
@@ -299,7 +299,7 @@ export default function Emails() {
                                                     <div key={att.attachmentId} style={{ 
                                                         display: 'flex', alignItems: 'center', gap: '12px', 
                                                         padding: '12px 16px', 
-                                                        background: 'var(--bg-secondary)', 
+                                                        background: 'var(--notion-bg-alt)', 
                                                         border: '1px solid var(--notion-border)',
                                                         borderRadius: '8px',
                                                         minWidth: '250px',
@@ -316,7 +316,7 @@ export default function Emails() {
                                                         </div>
                                                         <div style={{ flex: 1, minWidth: 0 }}>
                                                             <div style={{ fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={att.filename}>{att.filename}</div>
-                                                            <div style={{ fontSize: '0.75rem', color: 'var(--notion-text-muted)' }}>{(att.size / 1024).toFixed(1)} KB</div>
+                                                            <div style={{ fontSize: '0.75rem', color: 'var(--notion-text-secondary)' }}>{(att.size / 1024).toFixed(1)} KB</div>
                                                         </div>
                                                         <button 
                                                             className="btn btn-primary" 

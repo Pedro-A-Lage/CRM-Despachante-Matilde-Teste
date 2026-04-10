@@ -245,7 +245,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     onClick={() => setEditando(!editando)}
                     style={{
                         display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px',
-                        color: editando ? 'var(--notion-blue)' : 'var(--notion-text-muted)',
+                        color: editando ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                         background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '6px',
                     }}
                     className="hover:bg-surface/5 transition-colors"
@@ -271,7 +271,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <span style={{
                                         fontSize: '10px', fontWeight: 700,
-                                        color: enviado ? '#28A06A' : completa ? '#0075de' : 'var(--notion-text-muted)',
+                                        color: enviado ? '#28A06A' : completa ? '#0075de' : 'var(--notion-text-secondary)',
                                         background: enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(0,117,222,0.15)' : 'var(--notion-border)',
                                         borderRadius: '4px', padding: '2px 6px',
                                     }}>
@@ -327,12 +327,12 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                             {/* File info or upload */}
                                             {doc.arquivo_url ? (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    {isImage(doc.arquivo_nome || '') ? <Image size={11} style={{ color: 'var(--notion-text-muted)' }} /> : <FileText size={11} style={{ color: 'var(--notion-text-muted)' }} />}
+                                                    {isImage(doc.arquivo_nome || '') ? <Image size={11} style={{ color: 'var(--notion-text-secondary)' }} /> : <FileText size={11} style={{ color: 'var(--notion-text-secondary)' }} />}
                                                     <a
                                                         href={doc.arquivo_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        style={{ fontSize: '10px', color: 'var(--notion-text-muted)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                                        style={{ fontSize: '10px', color: 'var(--notion-text-secondary)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                                                         title={doc.arquivo_nome || ''}
                                                     >
                                                         {doc.arquivo_nome}
@@ -355,7 +355,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                                     style={{
                                                         display: 'flex', alignItems: 'center', gap: '3px',
                                                         fontSize: '10px', fontWeight: 500,
-                                                        color: isUploading ? 'var(--notion-text-muted)' : '#0075de',
+                                                        color: isUploading ? 'var(--notion-text-secondary)' : '#0075de',
                                                         background: 'rgba(0,117,222,0.08)',
                                                         border: '1px solid rgba(0,117,222,0.2)',
                                                         borderRadius: '4px', padding: '2px 6px', cursor: 'pointer',
@@ -410,7 +410,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '4px',
                                         fontSize: '11px', fontWeight: 500,
-                                        color: completa ? '#0075de' : 'var(--notion-text-muted)',
+                                        color: completa ? '#0075de' : 'var(--notion-text-secondary)',
                                         background: completa ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg-alt)',
                                         border: `1px solid ${completa ? 'rgba(0,117,222,0.2)' : 'var(--notion-border)'}`,
                                         borderRadius: '6px', padding: '5px 12px',

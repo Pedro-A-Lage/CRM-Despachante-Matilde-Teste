@@ -42,7 +42,7 @@ export default function Login() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'var(--bg-body)',
+            background: 'var(--notion-bg)',
             padding: 20,
         }}>
             <div style={{
@@ -64,7 +64,7 @@ export default function Login() {
                     <p style={{
                         margin: 0,
                         fontSize: '0.85rem',
-                        color: 'var(--notion-text-muted)',
+                        color: 'var(--notion-text-secondary)',
                         fontWeight: 500,
                     }}>
                         Faça login para continuar
@@ -95,7 +95,7 @@ export default function Login() {
                                 padding: '10px 14px',
                                 borderRadius: 10,
                                 border: '1px solid var(--notion-border)',
-                                background: 'var(--bg-body)',
+                                background: 'var(--notion-bg)',
                                 color: 'var(--notion-text)',
                                 fontSize: '0.95rem',
                                 outline: 'none',
@@ -127,7 +127,7 @@ export default function Login() {
                                     padding: '10px 42px 10px 14px',
                                     borderRadius: 10,
                                     border: '1px solid var(--notion-border)',
-                                    background: 'var(--bg-body)',
+                                    background: 'var(--notion-bg)',
                                     color: 'var(--notion-text)',
                                     fontSize: '0.95rem',
                                     outline: 'none',
@@ -145,7 +145,7 @@ export default function Login() {
                                     background: 'none',
                                     border: 'none',
                                     cursor: 'pointer',
-                                    color: 'var(--notion-text-muted)',
+                                    color: 'var(--notion-text-secondary)',
                                     padding: 4,
                                 }}
                             >

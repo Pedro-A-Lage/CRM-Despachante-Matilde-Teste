@@ -38,7 +38,7 @@ const CONDICAO_OPTIONS = [
 const LABEL_STYLE: React.CSSProperties = {
   textTransform: 'none',
   fontSize: '11px',
-  color: 'var(--notion-text-muted)',
+  color: 'var(--notion-text-secondary)',
   fontWeight: 500,
 };
 
@@ -233,14 +233,14 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
             >
               <TabsTrigger
                 value="config"
-                className="flex-1 data-[state=active]:bg-[#0075de] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[var(--notion-text-muted)] data-[state=inactive]:bg-transparent"
+                className="flex-1 data-[state=active]:bg-[#0075de] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[var(--notion-text-secondary)] data-[state=inactive]:bg-transparent"
                 style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 600, padding: '6px 8px' }}
               >
                 ⚙ Configurações
               </TabsTrigger>
               <TabsTrigger
                 value="docs"
-                className="flex-1 data-[state=active]:bg-[#0075de] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[var(--notion-text-muted)] data-[state=inactive]:bg-transparent"
+                className="flex-1 data-[state=active]:bg-[#0075de] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[var(--notion-text-secondary)] data-[state=inactive]:bg-transparent"
                 style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 600, padding: '6px 8px' }}
               >
                 📄 Documentos
@@ -578,7 +578,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                 variant="outline"
                 onClick={onClose}
                 disabled={saving}
-                style={{ borderColor: 'var(--notion-border)', color: 'var(--notion-text-muted)', fontSize: '12px' }}
+                style={{ borderColor: 'var(--notion-border)', color: 'var(--notion-text-secondary)', fontSize: '12px' }}
               >
                 Cancelar
               </Button>

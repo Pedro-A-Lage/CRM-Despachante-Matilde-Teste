@@ -148,7 +148,7 @@ function FabricaConfigModal({ fabricas, onClose, onSaved }: FabricaConfigModalPr
   }
 
   const inputStyle: React.CSSProperties = {
-    background: 'var(--bg-secondary)',
+    background: 'var(--notion-bg-alt)',
     border: '1px solid var(--notion-border)',
     borderRadius: 6,
     padding: '4px 8px',
@@ -173,7 +173,7 @@ function FabricaConfigModal({ fabricas, onClose, onSaved }: FabricaConfigModalPr
     >
       <div
         style={{
-          background: 'var(--bg-primary)',
+          background: 'var(--notion-bg)',
           borderRadius: 12,
           padding: 24,
           boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
@@ -223,7 +223,7 @@ function FabricaConfigModal({ fabricas, onClose, onSaved }: FabricaConfigModalPr
                   <button onClick={() => saveEdit(f)} disabled={saving} style={{ background: '#10B981', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#fff' }}>
                     <Check size={14} />
                   </button>
-                  <button onClick={cancelEdit} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--notion-border)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: 'var(--notion-text-secondary)' }}>
+                  <button onClick={cancelEdit} style={{ background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: 'var(--notion-text-secondary)' }}>
                     <X size={14} />
                   </button>
                 </div>
@@ -257,7 +257,7 @@ function FabricaConfigModal({ fabricas, onClose, onSaved }: FabricaConfigModalPr
               <button onClick={saveNew} disabled={saving} style={{ background: '#10B981', border: 'none', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#fff' }}>
                 <Check size={14} />
               </button>
-              <button onClick={() => { setAddingNew(false); setError(null); }} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--notion-border)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: 'var(--notion-text-secondary)' }}>
+              <button onClick={() => { setAddingNew(false); setError(null); }} style={{ background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: 'var(--notion-text-secondary)' }}>
                 <X size={14} />
               </button>
             </div>
@@ -400,7 +400,7 @@ function PedidoModal({ pedido, fabrica, saldo, empresas, onClose, onSaved }: Ped
   }
 
   const inputStyle: React.CSSProperties = {
-    background: 'var(--bg-secondary)',
+    background: 'var(--notion-bg-alt)',
     border: '1px solid var(--notion-border)',
     borderRadius: 8,
     padding: '8px 12px',
@@ -428,7 +428,7 @@ function PedidoModal({ pedido, fabrica, saldo, empresas, onClose, onSaved }: Ped
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ background: 'var(--bg-primary)', borderRadius: 12, padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', width: '100%', maxWidth: 520, maxHeight: '90vh', overflow: 'auto' }}>
+      <div style={{ background: 'var(--notion-bg)', borderRadius: 12, padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.4)', width: '100%', maxWidth: 520, maxHeight: '90vh', overflow: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
           <h2 style={{ margin: 0, fontSize: 18, color: 'var(--notion-text)' }}>
@@ -458,7 +458,7 @@ function PedidoModal({ pedido, fabrica, saldo, empresas, onClose, onSaved }: Ped
                   padding: '10px 16px',
                   border: `2px solid ${form.tipoVeiculo === tipo ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
                   borderRadius: 8,
-                  background: form.tipoVeiculo === tipo ? 'var(--notion-blue)' : 'var(--bg-secondary)',
+                  background: form.tipoVeiculo === tipo ? 'var(--notion-blue)' : 'var(--notion-bg-alt)',
                   color: form.tipoVeiculo === tipo ? '#fff' : 'var(--notion-text-secondary)',
                   cursor: 'pointer',
                   display: 'flex',
@@ -548,7 +548,7 @@ function PedidoModal({ pedido, fabrica, saldo, empresas, onClose, onSaved }: Ped
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '10px 20px', border: '1px solid var(--notion-border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--notion-text)', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={onClose} style={{ padding: '10px 20px', border: '1px solid var(--notion-border)', borderRadius: 8, background: 'var(--notion-bg-alt)', color: 'var(--notion-text)', cursor: 'pointer', fontSize: 14 }}>
             Cancelar
           </button>
           <button onClick={handleSave} disabled={saving} style={{ padding: '10px 20px', border: 'none', borderRadius: 8, background: 'var(--notion-blue)', color: '#fff', cursor: saving ? 'not-allowed' : 'pointer', fontSize: 14, fontWeight: 500, opacity: saving ? 0.7 : 1 }}>
@@ -714,7 +714,7 @@ export default function ControlePlacas() {
         <div style={{ display: 'flex', gap: 10 }}>
           <button
             onClick={() => setShowFabricaModal(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', border: '1px solid var(--notion-border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--notion-text)', cursor: 'pointer', fontSize: 14 }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', border: '1px solid var(--notion-border)', borderRadius: 8, background: 'var(--notion-bg-alt)', color: 'var(--notion-text)', cursor: 'pointer', fontSize: 14 }}
           >
             <Settings size={15} /> Fábricas
           </button>
@@ -729,14 +729,14 @@ export default function ControlePlacas() {
       </div>
 
       {/* Saldo card */}
-      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--notion-border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+      <div style={{ background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 13, color: 'var(--notion-text-secondary)', fontWeight: 600 }}>Fábrica:</span>
           <div style={{ position: 'relative' }}>
             <select
               value={selectedFabricaId}
               onChange={(e) => setSelectedFabricaId(e.target.value)}
-              style={{ appearance: 'none', background: 'var(--bg-primary)', border: '1px solid var(--notion-border)', borderRadius: 8, padding: '6px 32px 6px 12px', color: 'var(--notion-text)', fontSize: 14, cursor: 'pointer', minWidth: 160 }}
+              style={{ appearance: 'none', background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 8, padding: '6px 32px 6px 12px', color: 'var(--notion-text)', fontSize: 14, cursor: 'pointer', minWidth: 160 }}
             >
               {fabricasAtivas.length === 0 && <option value="">Nenhuma fábrica</option>}
               {fabricasAtivas.map(f => <option key={f.id} value={f.id}>{f.nome}</option>)}
@@ -776,7 +776,7 @@ export default function ControlePlacas() {
           <select
             value={filterEmpresa}
             onChange={(e) => setFilterEmpresa(e.target.value)}
-            style={{ appearance: 'none', background: 'var(--bg-secondary)', border: '1px solid var(--notion-border)', borderRadius: 8, padding: '7px 32px 7px 12px', color: 'var(--notion-text)', fontSize: 13, cursor: 'pointer' }}
+            style={{ appearance: 'none', background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', borderRadius: 8, padding: '7px 32px 7px 12px', color: 'var(--notion-text)', fontSize: 13, cursor: 'pointer' }}
           >
             <option value="todas">Todas as Empresas</option>
             <option value="particular">Particular</option>
@@ -788,7 +788,7 @@ export default function ControlePlacas() {
           <select
             value={filterTipo}
             onChange={(e) => setFilterTipo(e.target.value)}
-            style={{ appearance: 'none', background: 'var(--bg-secondary)', border: '1px solid var(--notion-border)', borderRadius: 8, padding: '7px 32px 7px 12px', color: 'var(--notion-text)', fontSize: 13, cursor: 'pointer' }}
+            style={{ appearance: 'none', background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', borderRadius: 8, padding: '7px 32px 7px 12px', color: 'var(--notion-text)', fontSize: 13, cursor: 'pointer' }}
           >
             <option value="todos">Todos os Tipos</option>
             <option value="carro">Carro</option>
@@ -808,11 +808,11 @@ export default function ControlePlacas() {
           Nenhum pedido encontrado.
         </div>
       ) : (
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--notion-border)', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 12, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: 'var(--bg-secondary)' }}>
+                <tr style={{ background: 'var(--notion-bg-alt)' }}>
                   <th style={thStyle}>Data</th>
                   <th style={thStyle}>OS</th>
                   <th style={thStyle}>Empresa</th>
@@ -829,7 +829,7 @@ export default function ControlePlacas() {
                   const saldoAposColor = p.saldoApos > 0 ? '#10B981' : p.saldoApos < 0 ? '#EF4444' : 'var(--notion-text-secondary)';
                   return (
                     <tr key={p.id} style={{ transition: 'background 0.1s' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--notion-bg-alt)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
                       {/* Data */}

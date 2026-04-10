@@ -81,7 +81,7 @@ export default function ClientesList() {
             style={{ 
                 padding: '14px 16px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, 
                 color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', 
-                borderBottom: '1px solid var(--notion-border)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width,
+                borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width,
                 cursor: 'pointer', userSelect: 'none'
             }}
             onClick={() => handleSort(sortKey)}
@@ -164,7 +164,7 @@ export default function ClientesList() {
                     onClick={() => setViewMode('cards')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'cards' ? 'var(--notion-purple, #9065B0)' : 'var(--bg-body)',
+                        background: viewMode === 'cards' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
                         color: viewMode === 'cards' ? '#fff' : 'var(--notion-text)',
                         border: viewMode === 'cards' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
@@ -185,7 +185,7 @@ export default function ClientesList() {
                     onMouseLeave={e => {
                         if (viewMode !== 'cards') {
                             e.currentTarget.style.borderColor = 'var(--notion-border)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -195,7 +195,7 @@ export default function ClientesList() {
                     onClick={() => setViewMode('list')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'list' ? 'var(--notion-purple, #9065B0)' : 'var(--bg-body)',
+                        background: viewMode === 'list' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
                         color: viewMode === 'list' ? '#fff' : 'var(--notion-text)',
                         border: viewMode === 'list' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
@@ -216,7 +216,7 @@ export default function ClientesList() {
                     onMouseLeave={e => {
                         if (viewMode !== 'list') {
                             e.currentTarget.style.borderColor = 'var(--notion-border)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -344,7 +344,7 @@ export default function ClientesList() {
                                 </span>
                                 <span style={{
                                     fontSize: '0.75rem',
-                                    color: 'var(--notion-text-muted)',
+                                    color: 'var(--notion-text-secondary)',
                                     fontWeight: 500,
                                 }}>
                                     {new Date(c.criadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
@@ -366,7 +366,7 @@ export default function ClientesList() {
                             {/* CPF/CNPJ */}
                             <div style={{
                                 padding: '10px 12px',
-                                background: 'var(--bg-body)',
+                                background: 'var(--notion-bg)',
                                 border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 marginBottom: '12px',
@@ -401,7 +401,7 @@ export default function ClientesList() {
                                     </div>
                                 )}
                                 {!c.telefones[0] && !(c as any).endereco && (
-                                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--notion-text-muted)', fontStyle: 'italic' }}>
+                                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
                                         Sem informações adicionais
                                     </p>
                                 )}
@@ -517,13 +517,13 @@ export default function ClientesList() {
                                     <SortableHeader label="Cliente" sortKey="nome" />
                                     <SortableHeader label="CPF/CNPJ" sortKey="documento" />
                                     <SortableHeader label="Telefone" sortKey="telefone" />
-                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--notion-border)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width: 120 }}>Ações</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width: 120 }}>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtered.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 13 }}>
+                                        <td colSpan={5} style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--notion-text-secondary)', fontSize: 13 }}>
                                             <User size={32} style={{ opacity: 0.2, display: 'block', margin: '0 auto 10px' }} />
                                             {search ? 'Nenhum cliente encontrado para essa busca.' : 'Nenhum cliente cadastrado.'}
                                         </td>

@@ -161,7 +161,7 @@ export default function PainelEmpresas() {
     if (loading) {
         return (
             <div style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto' }}>
-                <p style={{ color: 'var(--notion-text-muted)', textAlign: 'center', padding: 48 }}>Carregando...</p>
+                <p style={{ color: 'var(--notion-text-secondary)', textAlign: 'center', padding: 48 }}>Carregando...</p>
             </div>
         );
     }
@@ -216,7 +216,7 @@ export default function PainelEmpresas() {
                                 background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
                                 borderRadius: 10, padding: '12px 14px',
                             }}>
-                                <div style={{ fontSize: 10, color: 'var(--notion-text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+                                <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
                                     {stat.label}
                                 </div>
                                 <div style={{ fontSize: 20, fontWeight: 700, color: stat.color }}>
@@ -229,7 +229,7 @@ export default function PainelEmpresas() {
                     {/* OS List */}
                     {osEmpresa.length === 0 ? (
                         <div style={{ background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 10, padding: 48, textAlign: 'center' }}>
-                            <p style={{ color: 'var(--notion-text-muted)', fontSize: 14 }}>Nenhuma OS vinculada a {empresa.nome}.</p>
+                            <p style={{ color: 'var(--notion-text-secondary)', fontSize: 14 }}>Nenhuma OS vinculada a {empresa.nome}.</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -256,8 +256,8 @@ export default function PainelEmpresas() {
                                             className="hover:bg-surface/[0.02] transition-colors"
                                         >
                                             {expanded
-                                                ? <ChevronDown size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
-                                                : <ChevronRight size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+                                                ? <ChevronDown size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                                : <ChevronRight size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                                             }
 
                                             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-blue)', minWidth: 55 }}>
@@ -270,7 +270,7 @@ export default function PainelEmpresas() {
 
                                             {/* NF inline */}
                                             <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                                <span style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>NF:</span>
+                                                <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>NF:</span>
                                                 <input
                                                     type="text"
                                                     value={fin?.numero_nf || ''}
@@ -323,7 +323,7 @@ export default function PainelEmpresas() {
 
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); navigate(`/ordens/${os.id}`); }}
-                                                style={{ color: 'var(--notion-text-muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+                                                style={{ color: 'var(--notion-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
                                                 title="Abrir OS"
                                             >
                                                 <ExternalLink size={13} />
@@ -340,28 +340,28 @@ export default function PainelEmpresas() {
                                                 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                                                         <DollarSign size={12} style={{ color: 'var(--notion-blue)' }} />
-                                                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--notion-text-muted)' }}>
+                                                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--notion-text-secondary)' }}>
                                                             Financeiro
                                                         </span>
                                                     </div>
 
                                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 }}>
                                                         <div>
-                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>Custos</div>
+                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>Custos</div>
                                                             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>{formatMoney(custos)}</div>
                                                         </div>
                                                         <div>
-                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>Honorário</div>
+                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>Honorário</div>
                                                             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>{formatMoney(honorario)}</div>
                                                         </div>
                                                         <div>
-                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>Adiantado</div>
-                                                            <div style={{ fontSize: 13, fontWeight: 600, color: adiantado > 0 ? '#C84040' : 'var(--notion-text-muted)' }}>
+                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>Adiantado</div>
+                                                            <div style={{ fontSize: 13, fontWeight: 600, color: adiantado > 0 ? '#C84040' : 'var(--notion-text-secondary)' }}>
                                                                 {adiantado > 0 ? formatMoney(adiantado) : '—'}
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>Total empresa</div>
+                                                            <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>Total empresa</div>
                                                             <div style={{ fontSize: 13, fontWeight: 700, color: recebido ? '#28A06A' : '#C88010' }}>
                                                                 {formatMoney(total)}
                                                             </div>
@@ -372,7 +372,7 @@ export default function PainelEmpresas() {
                                                     <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                                                         {/* Nota Fiscal */}
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            <span style={{ fontSize: 10, color: 'var(--notion-text-muted)' }}>NF:</span>
+                                                            <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>NF:</span>
                                                             <input
                                                                 type="text"
                                                                 value={fin?.numero_nf || ''}
@@ -416,7 +416,7 @@ export default function PainelEmpresas() {
                                                                 onClick={() => handleDesmarcarRecebido(os)}
                                                                 style={{
                                                                     display: 'flex', alignItems: 'center', gap: 4,
-                                                                    fontSize: 11, fontWeight: 500, color: 'var(--notion-text-muted)',
+                                                                    fontSize: 11, fontWeight: 500, color: 'var(--notion-text-secondary)',
                                                                     background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)',
                                                                     borderRadius: 6, padding: '4px 10px', cursor: 'pointer',
                                                                 }}
@@ -446,7 +446,7 @@ export default function PainelEmpresas() {
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                         <span style={{
                                                                             fontSize: 9, fontWeight: 700,
-                                                                            color: etapa.enviado ? '#28A06A' : completa ? '#0075de' : 'var(--notion-text-muted)',
+                                                                            color: etapa.enviado ? '#28A06A' : completa ? '#0075de' : 'var(--notion-text-secondary)',
                                                                             background: etapa.enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(0,117,222,0.15)' : 'var(--notion-border)',
                                                                             borderRadius: 3, padding: '1px 5px',
                                                                         }}>{etapa.etapa}</span>
@@ -459,7 +459,7 @@ export default function PainelEmpresas() {
                                                                     ) : completa ? (
                                                                         <span style={{ fontSize: 10, color: '#0075de', fontWeight: 500 }}>Pronto p/ enviar</span>
                                                                     ) : (
-                                                                        <span style={{ fontSize: 10, color: 'var(--notion-text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                                        <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', gap: 3 }}>
                                                                             <Clock size={10} /> Aguardando docs
                                                                         </span>
                                                                     )}
@@ -471,7 +471,7 @@ export default function PainelEmpresas() {
                                                                                 ? <CheckCircle2 size={11} style={{ color: '#28A06A' }} />
                                                                                 : <Circle size={11} style={{ color: 'var(--notion-text-secondary)' }} />
                                                                             }
-                                                                            <span style={{ fontSize: 11, color: doc.pronto ? 'var(--notion-text-secondary)' : 'var(--notion-text-muted)' }}>
+                                                                            <span style={{ fontSize: 11, color: doc.pronto ? 'var(--notion-text-secondary)' : 'var(--notion-text-secondary)' }}>
                                                                                 {docLabel(doc.tipo)}
                                                                             </span>
                                                                         </div>

@@ -283,7 +283,7 @@ export default function Layout({ children }: LayoutProps) {
                             padding: '24px 16px',
                             textAlign: 'center',
                             fontSize: 12,
-                            color: 'var(--notion-text-muted)',
+                            color: 'var(--notion-text-secondary)',
                         }}>
                             Nenhum item encontrado
                         </div>
@@ -357,11 +357,11 @@ export default function Layout({ children }: LayoutProps) {
                                         <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>
                                             {usuario.nome}
                                         </div>
-                                        <div style={{ fontSize: 10, color: 'var(--notion-text-muted)', textTransform: 'capitalize' }}>
+                                        <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)', textTransform: 'capitalize' }}>
                                             {usuario.role === 'admin' ? 'Admin' : usuario.role === 'gerente' ? 'Gerente' : 'Funcionário'}
                                         </div>
                                     </div>
-                                    <ChevronDown size={12} style={{ color: 'var(--notion-text-muted)', transition: 'transform 0.15s', transform: profileOpen ? 'rotate(180deg)' : 'none' }} />
+                                    <ChevronDown size={12} style={{ color: 'var(--notion-text-secondary)', transition: 'transform 0.15s', transform: profileOpen ? 'rotate(180deg)' : 'none' }} />
                                 </button>
 
                                 {/* Dropdown */}
@@ -398,7 +398,7 @@ export default function Layout({ children }: LayoutProps) {
                                                 </div>
                                                 <div>
                                                     <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>{usuario.nome}</div>
-                                                    <div style={{ fontSize: 10, color: 'var(--notion-text-muted)', textTransform: 'capitalize' }}>
+                                                    <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)', textTransform: 'capitalize' }}>
                                                         {usuario.role === 'admin' ? 'Administrador' : usuario.role === 'gerente' ? 'Gerente' : 'Funcionário'}
                                                     </div>
                                                 </div>
@@ -482,7 +482,7 @@ export default function Layout({ children }: LayoutProps) {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.10em;
-          color: var(--notion-text-muted);
+          color: var(--notion-text-secondary);
           transition: color 140ms ease;
           font-family: inherit;
         }

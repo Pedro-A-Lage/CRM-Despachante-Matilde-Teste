@@ -373,7 +373,7 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                                                     width: 18,
                                                     height: 18,
                                                     borderRadius: 4,
-                                                    border: overridden ? '2px solid var(--notion-blue)' : '2px solid var(--notion-text-muted)',
+                                                    border: overridden ? '2px solid var(--notion-blue)' : '2px solid var(--notion-text-secondary)',
                                                     background: overridden ? 'var(--notion-blue)' : 'transparent',
                                                     cursor: 'pointer',
                                                     display: 'flex',
@@ -404,7 +404,7 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                                             </label>
 
                                             {/* Default indicator */}
-                                            <span style={{ fontSize: '0.72rem', color: 'var(--notion-text-muted)', whiteSpace: 'nowrap' }}>
+                                            <span style={{ fontSize: '0.72rem', color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap' }}>
                                                 Padrão: {defaultVal ? 'Sim' : 'Não'}
                                             </span>
                                         </div>
@@ -520,7 +520,7 @@ export default function UsuariosList() {
             {carregando ? (
                 <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-secondary)' }}>Carregando...</div>
             ) : usuarios.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-muted)', fontSize: '0.9rem' }}>
+                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-secondary)', fontSize: '0.9rem' }}>
                     Nenhum usuário cadastrado.
                 </div>
             ) : (
@@ -553,7 +553,7 @@ export default function UsuariosList() {
                                             </span>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--notion-text-muted)', marginTop: 2 }}>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--notion-text-secondary)', marginTop: 2 }}>
                                         Criado em {formatDate(u.criadoEm)}
                                         {u.primeiroLogin && (
                                             <span style={{ marginLeft: 8, color: 'var(--notion-orange)', fontWeight: 600 }}>
@@ -635,7 +635,7 @@ export default function UsuariosList() {
                                     {/* Excluir */}
                                     <button
                                         className="btn btn-ghost"
-                                        style={{ padding: '6px 8px', color: ehProprio ? 'var(--notion-text-muted)' : 'var(--notion-orange)' }}
+                                        style={{ padding: '6px 8px', color: ehProprio ? 'var(--notion-text-secondary)' : 'var(--notion-orange)' }}
                                         title={ehProprio ? 'Não é possível excluir sua própria conta' : 'Excluir usuário'}
                                         disabled={ehProprio}
                                         onClick={() => !ehProprio && handleExcluirComConfirmacao(u)}

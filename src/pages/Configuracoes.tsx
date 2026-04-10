@@ -140,7 +140,7 @@ export default function Configuracoes() {
           </div>
 
           {loading ? (
-            <p style={{ color: 'var(--notion-text-muted)', textAlign: 'center', padding: 48 }}>
+            <p style={{ color: 'var(--notion-text-secondary)', textAlign: 'center', padding: 48 }}>
               Carregando configurações...
             </p>
           ) : (
@@ -222,7 +222,7 @@ export default function Configuracoes() {
 
           {empresas.length === 0 ? (
             <div className="rounded-md border" style={{ padding: 48, textAlign: 'center' }}>
-              <p style={{ color: 'var(--notion-text-muted)' }}>
+              <p style={{ color: 'var(--notion-text-secondary)' }}>
                 Nenhuma empresa parceira cadastrada. Clique em "Nova Empresa" para começar.
               </p>
             </div>
@@ -257,7 +257,7 @@ export default function Configuracoes() {
                           {emp.nome}
                         </div>
                       </TableCell>
-                      <TableCell style={{ color: emp.email ? 'var(--notion-text-secondary)' : 'var(--notion-text-muted)' }}>
+                      <TableCell style={{ color: emp.email ? 'var(--notion-text-secondary)' : 'var(--notion-text-secondary)' }}>
                         {emp.email || '—'}
                       </TableCell>
                       <TableCell>{emp.valorServico != null ? maskMoney(emp.valorServico) : '—'}</TableCell>

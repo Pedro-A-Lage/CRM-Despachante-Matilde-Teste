@@ -58,7 +58,7 @@ export default function TrocarSenhaModal() {
         padding: '12px 44px 12px 16px',
         borderRadius: 12,
         border: `2px solid ${hasValue ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
-        background: 'var(--bg-body)',
+        background: 'var(--notion-surface)',
         color: 'var(--notion-text)',
         fontSize: '0.95rem',
         outline: 'none',
@@ -84,7 +84,7 @@ export default function TrocarSenhaModal() {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        color: 'var(--notion-text-muted)',
+        color: 'var(--notion-text-secondary)',
         padding: 4,
         display: 'flex',
     };
@@ -170,7 +170,7 @@ export default function TrocarSenhaModal() {
                         margin: '20px 0',
                     }}>
                         <div style={{ flex: 1, height: 1, background: 'var(--notion-border)' }} />
-                        <KeyRound size={14} style={{ color: 'var(--notion-text-muted)' }} />
+                        <KeyRound size={14} style={{ color: 'var(--notion-text-secondary)' }} />
                         <div style={{ flex: 1, height: 1, background: 'var(--notion-border)' }} />
                     </div>
 
@@ -258,8 +258,8 @@ export default function TrocarSenhaModal() {
                             border: 'none',
                             background: (senhaValida && senhasIguais && senhaAtual)
                                 ? 'linear-gradient(135deg, var(--notion-blue) 0%, var(--notion-blue-hover) 100%)'
-                                : 'var(--bg-secondary)',
-                            color: (senhaValida && senhasIguais && senhaAtual) ? 'var(--notion-text)' : 'var(--notion-text-muted)',
+                                : 'var(--notion-bg-alt)',
+                            color: (senhaValida && senhasIguais && senhaAtual) ? 'white' : 'var(--notion-text-secondary)',
                             fontSize: '1rem',
                             fontWeight: 700,
                             cursor: (enviando || !senhaValida || !senhasIguais || !senhaAtual) ? 'not-allowed' : 'pointer',

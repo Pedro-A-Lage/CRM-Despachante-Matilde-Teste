@@ -58,7 +58,7 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
     vistoria: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
     delegacia: { color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)' },
     doc_pronto: { color: 'var(--notion-green)', bg: 'var(--notion-green)' },
-    entregue: { color: 'var(--notion-text-muted)', bg: 'rgba(107,114,128,0.1)' },
+    entregue: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.1)' },
 };
 
 export default function Dashboard() {
@@ -191,7 +191,7 @@ export default function Dashboard() {
 
     // ── Pie Chart: OS por Status ─────────────────────────────────
     const PIE_COLORS: Record<string, string> = {
-        aguardando_documentacao: '#f59e0b',
+        aguardando_documentacao: 'var(--notion-blue)',
         vistoria: '#06b6d4',
         delegacia: '#6366f1',
         doc_pronto: '#22c55e',
@@ -426,7 +426,7 @@ export default function Dashboard() {
                             key: 'pendente',
                             label: 'Pendente a receber',
                             value: pendenteMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                            color: '#f59e0b',
+                            color: 'var(--notion-blue)',
                             bg: 'rgba(245,158,11,0.1)',
                         },
                     ] : []),
@@ -564,7 +564,7 @@ export default function Dashboard() {
                         OS por Status
                     </h3>
                     {pieData.length === 0 ? (
-                        <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-text-muted)', fontSize: '0.85rem' }}>
+                        <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-text-secondary)', fontSize: '0.85rem' }}>
                             Nenhuma OS cadastrada
                         </div>
                     ) : (
@@ -762,7 +762,7 @@ export default function Dashboard() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                             {displayedOrdens.map((os) => {
                                 const cliente = clientes.find((c) => c.id === os.clienteId);
-                                const sc = STATUS_CONFIG[os.status] || { color: 'var(--notion-text-muted)', bg: 'rgba(107,114,128,0.1)' };
+                                const sc = STATUS_CONFIG[os.status] || { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.1)' };
                                 const isHovered = hoveredOS === os.id;
 
                                 return (
@@ -863,7 +863,7 @@ export default function Dashboard() {
                                             {/* Date */}
                                             <div style={{
                                                 fontSize: '0.75rem',
-                                                color: 'var(--notion-text-muted)',
+                                                color: 'var(--notion-text-secondary)',
                                                 fontWeight: 500,
                                             }}>
                                                 {new Date(os.dataAbertura).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
@@ -930,7 +930,7 @@ export default function Dashboard() {
                                                 gap: 10,
                                                 padding: '10px 12px',
                                                 borderRadius: 10,
-                                                background: 'var(--bg-secondary)',
+                                                background: 'var(--notion-bg-alt)',
                                                 border: '1px solid var(--notion-border)',
                                                 cursor: 'pointer',
                                                 transition: 'border-color 0.15s',
@@ -1059,8 +1059,8 @@ export default function Dashboard() {
                                 padding: '32px 20px',
                                 textAlign: 'center',
                             }}>
-                                <Calendar size={28} style={{ color: 'var(--notion-text-muted)', opacity: 0.4, display: 'block', margin: '0 auto 10px' }} />
-                                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--notion-text-muted)', fontWeight: 500 }}>
+                                <Calendar size={28} style={{ color: 'var(--notion-text-secondary)', opacity: 0.4, display: 'block', margin: '0 auto 10px' }} />
+                                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
                                     Nenhuma vistoria hoje
                                 </p>
                             </div>
@@ -1071,13 +1071,13 @@ export default function Dashboard() {
                                     const veiculo = veiculos.find((v) => v.id === os.veiculoId);
                                     const vInfo = os.vistoria!;
                                     const statusVistoria: Record<string, { color: string; label: string }> = {
-                                        agendar: { color: 'var(--notion-text-muted)', label: 'A Agendar' },
+                                        agendar: { color: 'var(--notion-text-secondary)', label: 'A Agendar' },
                                         agendada: { color: 'var(--notion-blue)', label: 'Agendada' },
                                         reprovada: { color: 'var(--notion-orange)', label: 'Reprovada' },
                                         aprovada_apontamento: { color: 'var(--notion-orange)', label: 'Aprovada c/ Apt.' },
                                         aprovada: { color: 'var(--notion-green)', label: 'Aprovada' },
                                     };
-                                    const sv = statusVistoria[vInfo.status] || { color: 'var(--notion-text-muted)', label: vInfo.status };
+                                    const sv = statusVistoria[vInfo.status] || { color: 'var(--notion-text-secondary)', label: vInfo.status };
                                     return (
                                         <div
                                             key={os.id}
@@ -1087,7 +1087,7 @@ export default function Dashboard() {
                                                 gap: 10,
                                                 padding: '10px 12px',
                                                 borderRadius: 10,
-                                                background: 'var(--bg-body)',
+                                                background: 'var(--notion-bg)',
                                                 border: '1px solid var(--notion-border)',
                                                 cursor: 'pointer',
                                                 transition: 'border-color 0.15s',
@@ -1249,12 +1249,12 @@ export default function Dashboard() {
                                             border: 'none',
                                             cursor: 'pointer',
                                             textAlign: 'left',
-                                            color: alertsConfig[item.key] ? 'var(--notion-text)' : 'var(--notion-text-muted)',
+                                            color: alertsConfig[item.key] ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
                                             fontSize: '0.82rem',
                                             fontWeight: alertsConfig[item.key] ? 600 : 400,
                                             transition: 'background 0.1s',
                                         }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-secondary)'; }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-bg-alt)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                                     >
                                         <div style={{
@@ -1394,7 +1394,7 @@ export default function Dashboard() {
                         <div style={{
                             padding: '28px 20px',
                             textAlign: 'center',
-                            color: 'var(--notion-text-muted)',
+                            color: 'var(--notion-text-secondary)',
                             fontSize: '0.9rem',
                         }}>
                             Nenhum alerta no momento 🎉

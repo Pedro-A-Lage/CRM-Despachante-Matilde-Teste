@@ -21,7 +21,7 @@ export function LoadingSpinner({ size = 32, color = 'var(--notion-blue)', label,
                 }}
             />
             {label && (
-                <span style={{ fontSize: 12, color: 'var(--notion-text-muted)', fontWeight: 500 }}>
+                <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
                     {label}
                 </span>
             )}

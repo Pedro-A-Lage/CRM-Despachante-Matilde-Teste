@@ -84,7 +84,7 @@ export default function HelpTooltip({ text, position = 'top' }: HelpTooltipProps
                 size={12}
                 style={{
                     opacity: 0.6,
-                    color: 'var(--notion-text-muted)',
+                    color: 'var(--notion-text-secondary)',
                     display: 'block',
                     flexShrink: 0,
                 }}

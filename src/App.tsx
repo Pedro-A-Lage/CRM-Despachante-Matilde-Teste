@@ -1647,7 +1647,7 @@ function ExtensionListener() {
                             Novo Cliente — Informe o Telefone
                         </h3>
                         <div style={{ marginBottom: 12 }}>
-                            <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-muted)', marginBottom: 4 }}>Nome</label>
+                            <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 4 }}>Nome</label>
                             <input type="text" value={telefoneModal.cliente?.nome || ''} readOnly style={{
                                 width: '100%', padding: '8px 12px', borderRadius: 7,
                                 background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
@@ -1655,7 +1655,7 @@ function ExtensionListener() {
                             }} />
                         </div>
                         <div style={{ marginBottom: 12 }}>
-                            <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-muted)', marginBottom: 4 }}>CPF/CNPJ</label>
+                            <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 4 }}>CPF/CNPJ</label>
                             <input type="text" value={telefoneModal.cliente?.cpfCnpj || ''} readOnly style={{
                                 width: '100%', padding: '8px 12px', borderRadius: 7,
                                 background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
@@ -1680,7 +1680,7 @@ function ExtensionListener() {
                         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                             <button onClick={fecharTelefoneModal} style={{
                                 padding: '8px 16px', borderRadius: 7, fontSize: 12, fontWeight: 600,
-                                background: 'transparent', color: 'var(--notion-text-muted)',
+                                background: 'transparent', color: 'var(--notion-text-secondary)',
                                 border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer',
                             }}>Pular</button>
                             <button onClick={salvarTelefoneCliente} style={{

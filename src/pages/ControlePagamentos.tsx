@@ -212,7 +212,7 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
           </span>
         </div>
         {charge.categoria === 'vistoria' && charge.vistoria_local && (
-          <div style={{ fontSize: 11, color: 'var(--notion-text-muted)', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginTop: 2 }}>
             📍 {charge.vistoria_local}
           </div>
         )}
@@ -784,7 +784,7 @@ export default function ControlePagamentos() {
               left: 10,
               top: '50%',
               transform: 'translateY(-50%)',
-              color: 'var(--notion-text-muted)',
+              color: 'var(--notion-text-secondary)',
               pointerEvents: 'none',
             }}
           />
@@ -822,14 +822,14 @@ export default function ControlePagamentos() {
 
         {/* Date range */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Calendar size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
+          <Calendar size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
           <input
             type="date"
             value={dataInicio}
             onChange={e => setDataInicio(e.target.value)}
             style={{ ...inputStyle, width: 140 }}
           />
-          <span style={{ color: 'var(--notion-text-muted)', fontSize: 13 }}>ate</span>
+          <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13 }}>ate</span>
           <input
             type="date"
             value={dataFim}

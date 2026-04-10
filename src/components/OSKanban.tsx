@@ -21,7 +21,7 @@ const KANBAN_COLUMNS: { id: StatusOS; label: string; color: string }[] = [
     { id: 'vistoria', label: 'Vistoria', color: 'var(--notion-blue)' },
     { id: 'delegacia', label: 'Delegacia', color: 'var(--notion-blue)' },
     { id: 'doc_pronto', label: 'Doc. Pronto', color: 'var(--notion-green)' },
-    { id: 'entregue', label: 'Entregue', color: 'var(--notion-text-muted)' },
+    { id: 'entregue', label: 'Entregue', color: 'var(--notion-text-secondary)' },
 ];
 
 const PRIORIDADE_CONFIG = {
@@ -282,7 +282,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                     <Search size={12} style={{
                         position: 'absolute', left: 8,
-                        color: 'var(--notion-text-muted)', pointerEvents: 'none',
+                        color: 'var(--notion-text-secondary)', pointerEvents: 'none',
                     }} />
                     <input
                         type="text"
@@ -412,7 +412,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                         }}>
                             <div style={{
                                 fontSize: 'var(--text-xs)', fontWeight: 'var(--fw-semibold)',
-                                color: 'var(--notion-text-muted)', marginBottom: 6,
+                                color: 'var(--notion-text-secondary)', marginBottom: 6,
                                 padding: '0 4px',
                             }}>
                                 Colunas visíveis
@@ -439,8 +439,8 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                     }} />
                                     {col.label}
                                     {visibleColumns[col.id] === false
-                                        ? <EyeOff size={10} style={{ marginLeft: 'auto', color: 'var(--notion-text-muted)' }} />
-                                        : <Eye size={10} style={{ marginLeft: 'auto', color: 'var(--notion-text-muted)' }} />
+                                        ? <EyeOff size={10} style={{ marginLeft: 'auto', color: 'var(--notion-text-secondary)' }} />
+                                        : <Eye size={10} style={{ marginLeft: 'auto', color: 'var(--notion-text-secondary)' }} />
                                     }
                                 </label>
                             ))}
@@ -454,7 +454,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                 display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-3)',
                 padding: 'var(--space-2) var(--space-4)',
                 fontSize: 'var(--text-xs)',
-                color: 'var(--notion-text-muted)',
+                color: 'var(--notion-text-secondary)',
             }}>
                 <span style={{ fontWeight: 'var(--fw-semibold)', color: 'var(--notion-text-secondary)' }}>Status:</span>
                 {KANBAN_COLUMNS.map(col => (
@@ -524,7 +524,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                     </h3>
                                     {totalValue > 0 && (
                                         <div style={{
-                                            fontSize: 10, color: 'var(--notion-text-muted)',
+                                            fontSize: 10, color: 'var(--notion-text-secondary)',
                                             marginTop: 2,
                                         }}>
                                             {formatBRL(totalValue)}
@@ -607,7 +607,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         onClick={(e) => toggleCard(os.id, e)}
                                                         style={{
                                                             background: 'none', border: 'none', cursor: 'pointer',
-                                                            padding: '0 2px', color: 'var(--notion-text-muted)',
+                                                            padding: '0 2px', color: 'var(--notion-text-secondary)',
                                                             display: 'flex', alignItems: 'center',
                                                         }}
                                                         title={isExpanded ? 'Recolher' : 'Expandir'}
@@ -686,7 +686,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
 
                                                 {/* Checklist summary */}
                                                 {os.checklist && os.checklist.length > 0 && (
-                                                    <div className="kanban-card-row mt-1" style={{ color: 'var(--notion-text-muted)' }}>
+                                                    <div className="kanban-card-row mt-1" style={{ color: 'var(--notion-text-secondary)' }}>
                                                         <FileText size={12} className="kanban-card-icon" />
                                                         <span className="kanban-card-text text-xs">
                                                             Docs: {os.checklist.filter(i => i.status === 'recebido').length}/{os.checklist.length}
@@ -711,7 +711,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                 {/* Observação (compact, no pendência) */}
                                                 {os.observacaoGeral && !hasPendencia && !isExpanded && (
                                                     <div style={{
-                                                        marginTop: 4, fontSize: 10, color: 'var(--notion-text-muted)',
+                                                        marginTop: 4, fontSize: 10, color: 'var(--notion-text-secondary)',
                                                         fontStyle: 'italic', lineHeight: 1.3,
                                                         overflow: 'hidden', textOverflow: 'ellipsis',
                                                         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const,
@@ -733,8 +733,8 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                             const lastEntrada = os.delegacia?.entradas?.slice(-1)[0];
                                                             return lastEntrada ? (
                                                                 <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
-                                                                    <User size={11} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
-                                                                    <span style={{ color: 'var(--notion-text-muted)' }}>Resp.:</span>
+                                                                    <User size={11} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                                                    <span style={{ color: 'var(--notion-text-secondary)' }}>Resp.:</span>
                                                                     <span style={{ color: 'var(--notion-text-secondary)' }}>
                                                                         {lastEntrada.responsavel}
                                                                     </span>
@@ -744,8 +744,8 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         {/* Valor */}
                                                         {(os.valorServico ?? 0) > 0 && (
                                                             <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
-                                                                <FileText size={11} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
-                                                                <span style={{ color: 'var(--notion-text-muted)' }}>Valor:</span>
+                                                                <FileText size={11} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                                                <span style={{ color: 'var(--notion-text-secondary)' }}>Valor:</span>
                                                                 <span style={{ color: 'var(--notion-green)', fontWeight: 'var(--fw-semibold)' }}>
                                                                     {formatBRL(os.valorServico!)}
                                                                 </span>
@@ -753,8 +753,8 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         )}
                                                         {/* Data criação */}
                                                         <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
-                                                            <Clock size={11} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
-                                                            <span style={{ color: 'var(--notion-text-muted)' }}>Abertura:</span>
+                                                            <Clock size={11} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                                            <span style={{ color: 'var(--notion-text-secondary)' }}>Abertura:</span>
                                                             <span style={{ color: 'var(--notion-text-secondary)' }}>
                                                                 {new Date(os.dataAbertura).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                                                             </span>
@@ -763,7 +763,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         {prazoReagendamento && (
                                                             <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
                                                                 <Clock size={11} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} />
-                                                                <span style={{ color: 'var(--notion-text-muted)' }}>Prazo reagend.:</span>
+                                                                <span style={{ color: 'var(--notion-text-secondary)' }}>Prazo reagend.:</span>
                                                                 <span style={{ color: 'var(--notion-orange)', fontWeight: 'var(--fw-semibold)' }}>
                                                                     {new Date(prazoReagendamento).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                                                                 </span>
@@ -772,7 +772,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         {/* Observação geral */}
                                                         {os.observacaoGeral && (
                                                             <div style={{
-                                                                marginTop: 2, fontSize: 10, color: 'var(--notion-text-muted)',
+                                                                marginTop: 2, fontSize: 10, color: 'var(--notion-text-secondary)',
                                                                 fontStyle: 'italic', lineHeight: 1.3,
                                                             }}>
                                                                 {os.observacaoGeral}
@@ -790,7 +790,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                     <div style={{
                                         display: 'flex', flexDirection: 'column', alignItems: 'center',
                                         justifyContent: 'center', padding: 'var(--space-8)',
-                                        color: 'var(--notion-text-muted)',
+                                        color: 'var(--notion-text-secondary)',
                                         gap: 'var(--space-2)',
                                     }}>
                                         <FileText size={24} style={{ opacity: 0.3 }} />
