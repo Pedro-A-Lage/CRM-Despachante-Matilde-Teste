@@ -149,7 +149,7 @@ export default function VistoriaCalendar() {
                     .vc-desktop { display: block !important; }
                     .vc-mobile { display: none !important; }
                 }
-                .vc-day-cell:hover { background: var(--notion-blue) !important; }
+                .vc-day-cell:hover { background: rgba(0,117,222,0.04) !important; }
                 .vc-event:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
             `}</style>
 
@@ -474,9 +474,9 @@ function CalendarGrid({
                                     cursor: 'pointer',
                                     opacity: isCurrentMonth ? 1 : 0.35,
                                     background: isSelected
-                                        ? 'var(--notion-blue)'
+                                        ? 'rgba(0,117,222,0.06)'
                                         : isToday
-                                            ? 'rgba(255,193,7,0.04)'
+                                            ? 'rgba(0,117,222,0.03)'
                                             : 'transparent',
                                     transition: 'background 0.15s ease',
                                     position: 'relative',
@@ -508,7 +508,7 @@ function CalendarGrid({
                                             fontSize: 10,
                                             fontWeight: 700,
                                             color: 'var(--notion-blue)',
-                                            background: 'var(--notion-blue)',
+                                            background: 'rgba(0,117,222,0.1)',
                                             padding: '2px 6px',
                                             borderRadius: 8,
                                         }}>
