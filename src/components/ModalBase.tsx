@@ -62,7 +62,7 @@ export const secaoHeaderStyle: React.CSSProperties = {
     background: 'var(--notion-bg-alt)',
     fontWeight: 700,
     fontSize: '0.88rem',
-    color: 'var(--color-yellow-primary, #E8960A)',
+    color: 'var(--notion-blue)',
     borderBottom: '1px solid var(--notion-border)',
     display: 'flex', alignItems: 'center', gap: 7,
     textTransform: 'uppercase', letterSpacing: '0.05em',
@@ -106,7 +106,7 @@ export const selectStyle: React.CSSProperties = {
 
 export const btnPrimary: React.CSSProperties = {
     padding: '8px 16px',
-    background: 'var(--color-success, #10B981)',
+    background: 'var(--notion-green)',
     color: 'white',
     border: 'none',
     borderRadius: 8,
@@ -119,9 +119,9 @@ export const btnPrimary: React.CSSProperties = {
 
 export const btnSecondary: React.CSSProperties = {
     padding: '8px 16px',
-    background: 'var(--bg-tertiary, #1E2130)',
-    color: 'var(--color-text-primary, #E8E6E0)',
-    border: '1px solid var(--border-color, #252838)',
+    background: 'var(--notion-bg-alt)',
+    color: 'var(--notion-text)',
+    border: '1px solid var(--notion-border)',
     borderRadius: 8,
     fontSize: '0.9rem',
     fontWeight: 600,
@@ -148,7 +148,7 @@ export interface FieldProps {
 export const Field: React.FC<FieldProps> = ({ label, children, required, obrigatorio, value, onChange, placeholder, span }) => (
     <div style={{ ...fieldWrapStyle, ...(span ? { gridColumn: '1 / -1' } : {}) }}>
         <label style={labelStyle}>
-            {label}{(required || obrigatorio) && <span style={{ color: 'var(--color-error, #EF4444)' }}> *</span>}
+            {label}{(required || obrigatorio) && <span style={{ color: 'var(--notion-orange)' }}> *</span>}
         </label>
         {children ?? (
             <input
@@ -202,14 +202,14 @@ export const FieldGridDate: React.FC<{
     };
     return (
         <div style={{ ...fieldWrapStyle, ...(span ? { gridColumn: '1 / -1' } : {}) }}>
-            <label style={{ ...labelStyle, ...(vazio ? { color: 'var(--color-warning, #d97706)' } : {}) }}>
-                {label}{obrigatorio && <span style={{ color: 'var(--color-error, #EF4444)' }}> *</span>}
+            <label style={{ ...labelStyle, ...(vazio ? { color: 'var(--notion-orange)' } : {}) }}>
+                {label}{obrigatorio && <span style={{ color: 'var(--notion-orange)' }}> *</span>}
             </label>
             <input
                 type="date"
                 style={{
                     ...inputStyle,
-                    ...(vazio ? { borderColor: 'var(--color-warning, #d97706)', background: '#fffbeb' } : {}),
+                    ...(vazio ? { borderColor: 'var(--notion-orange)', background: '#fffbeb' } : {}),
                 }}
                 value={toInputValue(value)}
                 onChange={e => onUpdate(path, e.target.value)}
@@ -235,7 +235,7 @@ export interface FieldGridMaskedProps {
 export const FieldGridMasked: React.FC<FieldGridMaskedProps> = ({ label, path, value, onUpdate, span, obrigatorio, onAfterUpdate, disabled, placeholder }) => (
     <div style={{ ...fieldWrapStyle, ...(span ? { gridColumn: '1 / -1' } : {}) }}>
         <label style={labelStyle}>
-            {label}{obrigatorio && <span style={{ color: 'var(--color-error, #EF4444)' }}> *</span>}
+            {label}{obrigatorio && <span style={{ color: 'var(--notion-orange)' }}> *</span>}
         </label>
         <input
             style={inputStyle}
@@ -254,8 +254,8 @@ export const FieldGridMasked: React.FC<FieldGridMaskedProps> = ({ label, path, v
 // Error/success styles
 export const errorBoxStyle: React.CSSProperties = {
     background: 'rgba(239, 68, 68, 0.1)',
-    border: '1px solid var(--color-error, #EF4444)',
-    color: 'var(--color-error, #EF4444)',
+    border: '1px solid var(--notion-orange)',
+    color: 'var(--notion-orange)',
     borderRadius: 8,
     padding: '10px 14px',
     fontSize: '0.85rem',
@@ -264,8 +264,8 @@ export const errorBoxStyle: React.CSSProperties = {
 
 export const successMsgStyle: React.CSSProperties = {
     background: 'rgba(16, 185, 129, 0.1)',
-    border: '1px solid var(--color-success, #10B981)',
-    color: 'var(--color-success, #10B981)',
+    border: '1px solid var(--notion-green)',
+    color: 'var(--notion-green)',
     borderRadius: 8,
     padding: '10px 14px',
     fontSize: '0.85rem',
@@ -349,7 +349,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 <div style={headerStyle}>
-                    <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text-primary, #E8E6E0)' }}>
+                    <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                         {title}
                     </h2>
                     <button
@@ -357,7 +357,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                         style={{
                             background: 'none',
                             border: 'none',
-                            color: 'var(--color-text-secondary, #9A9890)',
+                            color: 'var(--notion-text-secondary)',
                             cursor: 'pointer',
                             fontSize: '1.5rem',
                             padding: 0,
@@ -369,7 +369,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                             borderRadius: 4,
                             transition: 'background 0.15s',
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-tertiary, #1E2130)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--notion-bg-alt)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
                     >
                         ×

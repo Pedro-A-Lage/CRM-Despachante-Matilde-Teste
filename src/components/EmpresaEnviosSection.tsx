@@ -212,8 +212,8 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
     return (
         <div style={{
-            background: 'var(--color-gray-900)',
-            border: '1px solid var(--color-gray-700)',
+            background: 'var(--notion-bg)',
+            border: '1px solid var(--notion-border)',
             borderRadius: '12px',
             padding: '16px',
         }}>
@@ -223,7 +223,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Building2 size={18} style={{ color: empresa.cor }} />
-                    <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+                    <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
                         Envios — <span style={{ color: empresa.cor }}>{empresa.nome}</span>
                     </h3>
                     {enviosStatus.length > 0 && enviosStatus.every((e) => e.enviado) && (
@@ -245,10 +245,10 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     onClick={() => setEditando(!editando)}
                     style={{
                         display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px',
-                        color: editando ? '#d4a843' : 'var(--color-text-tertiary)',
+                        color: editando ? '#d4a843' : 'var(--notion-text-muted)',
                         background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '6px',
                     }}
-                    className="hover:bg-white/5 transition-colors"
+                    className="hover:bg-surface/5 transition-colors"
                 >
                     <Edit2 size={12} />
                     {editando ? 'Concluir' : 'Editar'}
@@ -261,7 +261,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     const completa = etapaCompleta(etapa);
                     const enviado = etapa.enviado;
 
-                    const borderColor = enviado ? 'rgba(40,160,106,0.3)' : completa ? 'rgba(212,168,67,0.3)' : 'var(--color-gray-700)';
+                    const borderColor = enviado ? 'rgba(40,160,106,0.3)' : completa ? 'rgba(212,168,67,0.3)' : 'var(--notion-border)';
                     const bgColor = enviado ? 'rgba(40,160,106,0.06)' : completa ? 'rgba(212,168,67,0.06)' : 'rgba(255,255,255,0.02)';
 
                     return (
@@ -271,13 +271,13 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <span style={{
                                         fontSize: '10px', fontWeight: 700,
-                                        color: enviado ? '#28A06A' : completa ? '#d4a843' : 'var(--color-text-tertiary)',
+                                        color: enviado ? '#28A06A' : completa ? '#d4a843' : 'var(--notion-text-muted)',
                                         background: enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
                                         borderRadius: '4px', padding: '2px 6px',
                                     }}>
                                         {etapa.etapa}
                                     </span>
-                                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--notion-text)' }}>
                                         {etapa.nome}
                                     </span>
                                 </div>
@@ -315,24 +315,24 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                                 {doc.pronto ? (
                                                     <CheckCircle2 size={14} style={{ color: '#28A06A' }} />
                                                 ) : (
-                                                    <Circle size={14} style={{ color: 'var(--color-gray-600)' }} />
+                                                    <Circle size={14} style={{ color: 'var(--notion-text-secondary)' }} />
                                                 )}
                                             </button>
 
                                             {/* Doc name */}
-                                            <span style={{ fontSize: '12px', color: doc.pronto ? '#28A06A' : 'var(--color-text-secondary)', flex: 1 }}>
+                                            <span style={{ fontSize: '12px', color: doc.pronto ? '#28A06A' : 'var(--notion-text-secondary)', flex: 1 }}>
                                                 {docLabel(doc.tipo, empresa.documentosLabels)}
                                             </span>
 
                                             {/* File info or upload */}
                                             {doc.arquivo_url ? (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    {isImage(doc.arquivo_nome || '') ? <Image size={11} style={{ color: 'var(--color-text-tertiary)' }} /> : <FileText size={11} style={{ color: 'var(--color-text-tertiary)' }} />}
+                                                    {isImage(doc.arquivo_nome || '') ? <Image size={11} style={{ color: 'var(--notion-text-muted)' }} /> : <FileText size={11} style={{ color: 'var(--notion-text-muted)' }} />}
                                                     <a
                                                         href={doc.arquivo_url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                                                        style={{ fontSize: '10px', color: 'var(--notion-text-muted)', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                                                         title={doc.arquivo_nome || ''}
                                                     >
                                                         {doc.arquivo_nome}
@@ -355,7 +355,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                                     style={{
                                                         display: 'flex', alignItems: 'center', gap: '3px',
                                                         fontSize: '10px', fontWeight: 500,
-                                                        color: isUploading ? 'var(--color-text-tertiary)' : '#d4a843',
+                                                        color: isUploading ? 'var(--notion-text-muted)' : '#d4a843',
                                                         background: 'rgba(212,168,67,0.08)',
                                                         border: '1px solid rgba(212,168,67,0.2)',
                                                         borderRadius: '4px', padding: '2px 6px', cursor: 'pointer',
@@ -410,7 +410,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '4px',
                                         fontSize: '11px', fontWeight: 500,
-                                        color: completa ? '#d4a843' : 'var(--color-text-tertiary)',
+                                        color: completa ? '#d4a843' : 'var(--notion-text-muted)',
                                         background: completa ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.03)',
                                         border: `1px solid ${completa ? 'rgba(212,168,67,0.25)' : 'rgba(255,255,255,0.06)'}`,
                                         borderRadius: '6px', padding: '5px 12px',
@@ -461,7 +461,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             {editando && (
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px',
-                    paddingTop: '8px', borderTop: '1px solid var(--color-gray-700)',
+                    paddingTop: '8px', borderTop: '1px solid var(--notion-border)',
                 }}>
                     <input
                         type="text"

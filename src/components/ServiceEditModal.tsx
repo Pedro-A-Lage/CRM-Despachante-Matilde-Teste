@@ -38,7 +38,7 @@ const CONDICAO_OPTIONS = [
 const LABEL_STYLE: React.CSSProperties = {
   textTransform: 'none',
   fontSize: '11px',
-  color: '#8a9ab8',
+  color: 'var(--notion-text-muted)',
   fontWeight: 500,
 };
 
@@ -207,7 +207,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
     <>
       <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
         <DialogContent
-          className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-white/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
           style={{
             background: 'linear-gradient(145deg, #1e2436, #16192a)',
             border: '1px solid rgba(212,168,67,0.2)',
@@ -233,14 +233,14 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
             >
               <TabsTrigger
                 value="config"
-                className="flex-1 data-[state=active]:bg-[#d4a843] data-[state=active]:text-black data-[state=active]:shadow-none data-[state=inactive]:text-[#7a8ab0] data-[state=inactive]:bg-transparent"
+                className="flex-1 data-[state=active]:bg-[#d4a843] data-[state=active]:text-text data-[state=active]:shadow-none data-[state=inactive]:text-[#7a8ab0] data-[state=inactive]:bg-transparent"
                 style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 600, padding: '6px 8px' }}
               >
                 ⚙ Configurações
               </TabsTrigger>
               <TabsTrigger
                 value="docs"
-                className="flex-1 data-[state=active]:bg-[#d4a843] data-[state=active]:text-black data-[state=active]:shadow-none data-[state=inactive]:text-[#7a8ab0] data-[state=inactive]:bg-transparent"
+                className="flex-1 data-[state=active]:bg-[#d4a843] data-[state=active]:text-text data-[state=active]:shadow-none data-[state=inactive]:text-[#7a8ab0] data-[state=inactive]:bg-transparent"
                 style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 600, padding: '6px 8px' }}
               >
                 📄 Documentos
@@ -311,7 +311,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                   id="ativo"
                   checked={ativo}
                   onCheckedChange={setAtivo}
-                  className="data-[state=checked]:bg-[#d4a843] [&>span]:bg-white"
+                  className="data-[state=checked]:bg-[#d4a843] [&>span]:bg-surface"
                 />
                 <Label htmlFor="ativo" style={{ ...LABEL_STYLE, color: '#e2e8f0', fontSize: '12px', cursor: 'pointer' }}>
                   Serviço ativo
@@ -578,7 +578,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                 variant="outline"
                 onClick={onClose}
                 disabled={saving}
-                style={{ borderColor: 'rgba(255,255,255,0.12)', color: '#8a9ab8', fontSize: '12px' }}
+                style={{ borderColor: 'rgba(255,255,255,0.12)', color: 'var(--notion-text-muted)', fontSize: '12px' }}
               >
                 Cancelar
               </Button>

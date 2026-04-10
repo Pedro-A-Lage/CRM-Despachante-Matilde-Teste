@@ -56,25 +56,25 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                             animation: 'fadeInUp 0.2s ease-out',
                             background: 'var(--bg-primary)',
                             borderRadius: 'var(--radius-lg)',
-                            border: '1px solid var(--border-color)',
+                            border: '1px solid var(--notion-border)',
                             boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
                         }}
                     >
                         <div style={{ padding: '32px 32px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                             <div style={{
-                                background: options.danger ? 'var(--color-danger-bg)' : 'var(--color-warning-bg)',
+                                background: options.danger ? 'var(--notion-orange)' : 'var(--notion-orange)',
                                 borderRadius: '50%',
                                 padding: '16px',
                                 marginBottom: '16px',
-                                color: options.danger ? 'var(--color-danger)' : 'var(--color-warning)',
+                                color: options.danger ? 'var(--notion-orange)' : 'var(--notion-orange)',
                                 border: `2px solid ${options.danger ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255, 193, 7, 0.3)'}`,
                             }}>
                                 <AlertTriangle size={32} />
                             </div>
-                            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                                 {options.title || 'Atenção'}
                             </h3>
-                            <div style={{ marginTop: '12px', color: 'var(--color-text-secondary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                            <div style={{ marginTop: '12px', color: 'var(--notion-text-secondary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
                                 {options.message}
                             </div>
                         </div>
@@ -84,7 +84,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                             display: 'flex',
                             gap: '12px',
                             justifyContent: 'center',
-                            borderTop: '1px solid var(--border-color)',
+                            borderTop: '1px solid var(--notion-border)',
                         }}>
                             <button
                                 className="btn btn-secondary"
@@ -101,7 +101,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                                     flex: 1,
                                     justifyContent: 'center',
                                     fontWeight: 600,
-                                    ...(options.danger ? { background: 'var(--color-danger)', borderColor: 'var(--color-danger)', color: 'var(--color-white)' } : {}),
+                                    ...(options.danger ? { background: 'var(--notion-orange)', borderColor: 'var(--notion-orange)', color: 'var(--notion-text)' } : {}),
                                 }}
                             >
                                 {options.confirmText || 'Confirmar'}

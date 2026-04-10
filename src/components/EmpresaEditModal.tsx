@@ -14,7 +14,7 @@ import { Switch } from './ui/switch';
 const LABEL_STYLE: React.CSSProperties = {
   textTransform: 'none',
   fontSize: '11px',
-  color: '#8a9ab8',
+  color: 'var(--notion-text-muted)',
   fontWeight: 500,
 };
 
@@ -139,7 +139,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-white/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
+        className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
         style={{
           background: 'linear-gradient(145deg, #1e2436, #16192a)',
           border: '1px solid rgba(212,168,67,0.2)',
@@ -224,14 +224,14 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                       padding: 0,
                     }}
                   />
-                  <span style={{ fontSize: '11px', color: '#8a9ab8' }}>{cor}</span>
+                  <span style={{ fontSize: '11px', color: 'var(--notion-text-muted)' }}>{cor}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
                 <Label style={LABEL_STYLE}>Status</Label>
                 <div className="flex items-center gap-2 pt-1">
                   <Switch checked={ativo} onCheckedChange={setAtivo} />
-                  <span style={{ fontSize: '11px', color: ativo ? '#28A06A' : '#8a9ab8', fontWeight: 500 }}>
+                  <span style={{ fontSize: '11px', color: ativo ? '#28A06A' : 'var(--notion-text-muted)', fontWeight: 500 }}>
                     {ativo ? 'Ativa' : 'Inativa'}
                   </span>
                 </div>
@@ -383,7 +383,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
             background: 'rgba(0,0,0,0.15)',
           }}
         >
-          <Button variant="ghost" onClick={onClose} style={{ fontSize: '12px', color: '#8a9ab8' }}>
+          <Button variant="ghost" onClick={onClose} style={{ fontSize: '12px', color: 'var(--notion-text-muted)' }}>
             Cancelar
           </Button>
           <Button

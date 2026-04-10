@@ -13,17 +13,17 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
         }}>
             <div style={{
                 width: 56, height: 56, borderRadius: 14,
-                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: 16, opacity: 0.5,
             }}>
                 {icon}
             </div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: '0 0 6px' }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--notion-text)', margin: '0 0 6px' }}>
                 {title}
             </p>
             {description && (
-                <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '0 0 16px', maxWidth: 280 }}>
+                <p style={{ fontSize: 12, color: 'var(--notion-text-muted)', margin: '0 0 16px', maxWidth: 280 }}>
                     {description}
                 </p>
             )}
@@ -33,7 +33,7 @@ export function EmptyState({ icon, title, description, action }: EmptyStateProps
                     style={{
                         display: 'inline-flex', alignItems: 'center', gap: 6,
                         padding: '8px 18px', borderRadius: 8, border: 'none',
-                        background: 'var(--color-primary)', color: 'var(--color-gray-900)',
+                        background: 'var(--notion-blue)', color: 'var(--notion-text)',
                         fontWeight: 700, fontSize: 12, cursor: 'pointer',
                         fontFamily: 'var(--font-family)',
                         boxShadow: '0 2px 8px rgba(245,158,11,0.25)',

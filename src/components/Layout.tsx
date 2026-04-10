@@ -342,7 +342,7 @@ export default function Layout({ children }: LayoutProps) {
                                         width: 28,
                                         height: 28,
                                         borderRadius: 6,
-                                        background: 'linear-gradient(135deg, var(--color-primary), var(--color-yellow-dark))',
+                                        background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue-hover))',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
@@ -386,7 +386,7 @@ export default function Layout({ children }: LayoutProps) {
                                                     width: 36,
                                                     height: 36,
                                                     borderRadius: 8,
-                                                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-yellow-dark))',
+                                                    background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue-hover))',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
@@ -423,7 +423,7 @@ export default function Layout({ children }: LayoutProps) {
                                                     color: 'var(--notion-text)',
                                                     textAlign: 'left',
                                                 }}
-                                                className="hover:bg-white/5"
+                                                className="hover:bg-surface/5"
                                             >
                                                 {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
                                                 {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
@@ -447,7 +447,7 @@ export default function Layout({ children }: LayoutProps) {
                                                     color: '#C84040',
                                                     textAlign: 'left',
                                                 }}
-                                                className="hover:bg-white/5"
+                                                className="hover:bg-surface/5"
                                             >
                                                 <LogOut size={14} />
                                                 Sair
