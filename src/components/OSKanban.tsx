@@ -368,17 +368,21 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                     <button
                         onClick={clearFilters}
                         style={{
-                            padding: '5px 10px',
-                            borderRadius: 'var(--radius-sm)',
-                            fontSize: 'var(--text-xs)',
+                            padding: '6px 14px',
+                            borderRadius: 8,
+                            fontSize: 'var(--text-sm)',
+                            fontWeight: 600,
                             cursor: 'pointer',
-                            border: '1px solid var(--notion-border)',
-                            background: 'transparent',
-                            color: 'var(--notion-text-secondary)',
-                            display: 'flex', alignItems: 'center', gap: 4,
+                            border: '1px solid rgba(220,38,38,0.3)',
+                            background: 'rgba(220,38,38,0.08)',
+                            color: '#dc2626',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            transition: 'all 150ms',
                         }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.15)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.08)'; }}
                     >
-                        <X size={11} />
+                        <X size={14} />
                         Limpar filtros
                     </button>
                 )}
