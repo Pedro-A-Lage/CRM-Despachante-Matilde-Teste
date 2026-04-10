@@ -1,47 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* shadcn tokens — mapeados para o dark theme do CRM (Premium Dark + Amber) */
   :root {
-    /* Fundo: #171924 (cards do CRM) → HSL 230 20% 12% */
-    --background: 230 20% 8%;
-    --foreground: 220 15% 88%;
+    --notion-bg: #ffffff;
+    --notion-bg-alt: #f6f5f4;
+    --notion-surface: #ffffff;
+    --notion-text: rgba(0, 0, 0, 0.95);
+    --notion-text-secondary: #615d59;
+    --notion-text-muted: #a39e98;
+    --notion-border: rgba(0, 0, 0, 0.1);
+    --notion-blue: #0075de;
+    --notion-blue-hover: #005bab;
+    --notion-blue-focus: #097fe8;
+    --notion-badge-bg: #f2f9ff;
+    --notion-badge-text: #097fe8;
+    --notion-teal: #2a9d99;
+    --notion-green: #1aae39;
+    --notion-orange: #dd5b00;
+    --notion-pink: #ff64c8;
+    --notion-purple: #391c57;
+    --notion-brown: #523410;
+    --shadow-card:
+      rgba(0,0,0,0.04) 0px 4px 18px,
+      rgba(0,0,0,0.027) 0px 2.025px 7.84688px,
+      rgba(0,0,0,0.02) 0px 0.8px 2.925px,
+      rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+    --shadow-deep:
+      rgba(0,0,0,0.01) 0px 1px 3px,
+      rgba(0,0,0,0.02) 0px 3px 7px,
+      rgba(0,0,0,0.02) 0px 7px 15px,
+      rgba(0,0,0,0.04) 0px 14px 28px,
+      rgba(0,0,0,0.05) 0px 23px 52px;
 
-    /* Cards levemente elevados: #1E2130 */
-    --card: 230 20% 14%;
-    --card-foreground: 220 15% 88%;
-
-    /* Popovers / dropdowns */
-    --popover: 230 22% 13%;
-    --popover-foreground: 220 15% 88%;
-
-    /* Primary: âmbar do CRM #E8960A → HSL 37 90% 48% */
-    --primary: 37 90% 48%;
-    --primary-foreground: 230 20% 8%;
-
-    /* Secondary: #252838 */
-    --secondary: 230 18% 18%;
-    --secondary-foreground: 220 15% 88%;
-
-    /* Muted: #1E2130 */
-    --muted: 230 20% 14%;
-    --muted-foreground: 228 12% 58%;
-
-    /* Accent: âmbar suave */
-    --accent: 37 60% 22%;
-    --accent-foreground: 37 90% 70%;
-
-    /* Destructive: vermelho escuro compatível com dark */
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 210 40% 98%;
-
-    /* Bordas: #252838 */
-    --border: 230 18% 22%;
-    --input: 230 18% 18%;
-    --ring: 37 90% 48%;
+    /* Keep old shadcn tokens for backwards compat during migration */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 209 100% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 7% 96%;
+    --secondary-foreground: 0 0% 5%;
+    --muted: 40 7% 96%;
+    --muted-foreground: 30 5% 45%;
+    --accent: 40 7% 96%;
+    --accent-foreground: 0 0% 5%;
+    --destructive: 22 100% 43%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 0% / 0.1;
+    --input: 0 0% 0% / 0.1;
+    --ring: 209 100% 44%;
     --radius: 0.5rem;
+  }
+
+  .dark {
+    --notion-bg: #1a1a19;
+    --notion-bg-alt: #252522;
+    --notion-surface: #2a2927;
+    --notion-text: rgba(255, 255, 255, 0.95);
+    --notion-text-secondary: #a39e98;
+    --notion-text-muted: #615d59;
+    --notion-border: rgba(255, 255, 255, 0.1);
+    --notion-blue: #2b8fe8;
+    --notion-blue-hover: #0075de;
+    --notion-blue-focus: #62aef0;
+    --notion-badge-bg: rgba(43, 143, 232, 0.15);
+    --notion-badge-text: #62aef0;
+    --shadow-card:
+      rgba(0,0,0,0.3) 0px 4px 18px,
+      rgba(0,0,0,0.2) 0px 2px 8px,
+      rgba(0,0,0,0.15) 0px 1px 3px;
+    --shadow-deep:
+      rgba(0,0,0,0.5) 0px 23px 52px,
+      rgba(0,0,0,0.4) 0px 14px 28px,
+      rgba(0,0,0,0.3) 0px 7px 15px,
+      rgba(0,0,0,0.2) 0px 3px 7px;
+
+    /* shadcn compat for dark */
+    --background: 60 4% 10%;
+    --foreground: 60 4% 95%;
+    --card: 60 3% 16%;
+    --card-foreground: 60 4% 95%;
+    --popover: 60 3% 16%;
+    --popover-foreground: 60 4% 95%;
+    --primary: 209 78% 54%;
+    --primary-foreground: 60 4% 10%;
+    --secondary: 60 3% 16%;
+    --secondary-foreground: 60 4% 95%;
+    --muted: 60 3% 16%;
+    --muted-foreground: 30 6% 63%;
+    --accent: 60 3% 16%;
+    --accent-foreground: 60 4% 95%;
+    --destructive: 22 100% 43%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.1;
+    --input: 0 0% 100% / 0.1;
+    --ring: 209 78% 54%;
+  }
+
+  html {
+    font-family: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    font-feature-settings: "lnum", "locl";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--notion-bg);
+    color: var(--notion-text);
   }
 }
 
@@ -56,8 +127,6 @@
    DESIGN SYSTEM — DESPACHANTE MATILDE (v2)
    Premium Dark + Amber | Glassmorphism UI
    ============================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* --- CSS Custom Properties --- */
 :root {
