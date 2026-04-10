@@ -268,7 +268,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                         border: filterPendencia
                             ? '1.5px solid var(--notion-orange)'
                             : '1.5px solid var(--notion-border)',
-                        background: filterPendencia ? 'var(--notion-orange)' : 'transparent',
+                        background: filterPendencia ? 'rgba(221,91,0,0.1)' : 'transparent',
                         color: filterPendencia ? 'var(--notion-orange)' : 'var(--notion-text-secondary)',
                         display: 'flex', alignItems: 'center', gap: 4,
                         transition: 'all 0.15s',

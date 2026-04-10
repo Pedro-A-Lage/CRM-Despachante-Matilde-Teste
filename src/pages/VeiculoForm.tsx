@@ -308,12 +308,13 @@ export default function VeiculoForm() {
                             <div style={{
                                 marginTop: 'var(--space-4)',
                                 padding: 'var(--space-3) var(--space-4)',
-                                background: 'var(--notion-orange)',
+                                background: 'rgba(221,91,0,0.08)',
+                                border: '1px solid rgba(221,91,0,0.2)',
                                 borderRadius: 'var(--radius-sm)',
                                 textAlign: 'left',
                             }}>
-                                <p className="text-sm" style={{ color: 'var(--notion-orange)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <AlertCircle size={16} /> {extractionError}
+                                <p className="text-sm" style={{ color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <AlertCircle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} /> {extractionError}
                                 </p>
                             </div>
                         )}

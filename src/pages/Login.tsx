@@ -159,8 +159,9 @@ export default function Login() {
                         <div style={{
                             padding: '10px 14px',
                             borderRadius: 10,
-                            background: 'var(--notion-orange)',
-                            color: 'var(--notion-orange)',
+                            background: 'rgba(221,91,0,0.08)',
+                            color: 'var(--notion-text)',
+                            border: '1px solid rgba(221,91,0,0.2)',
                             fontSize: '0.85rem',
                             fontWeight: 600,
                             marginBottom: 16,

@@ -473,9 +473,9 @@ export default function ClientesList() {
                                 <button
                                     style={{
                                         padding: '8px 12px',
-                                        background: 'var(--notion-orange)',
+                                        background: 'rgba(221,91,0,0.1)',
                                         color: 'var(--notion-orange)',
-                                        border: 'none',
+                                        border: '1px solid rgba(221,91,0,0.2)',
                                         borderRadius: 8,
                                         fontWeight: 600,
                                         fontSize: '0.8rem',
@@ -487,11 +487,11 @@ export default function ClientesList() {
                                     }}
                                     onClick={() => handleDelete(c)}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--notion-orange)';
-                                        e.currentTarget.style.color = 'var(--notion-text)';
+                                        e.currentTarget.style.background = 'rgba(221,91,0,0.18)';
+                                        e.currentTarget.style.color = 'var(--notion-orange)';
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'var(--notion-orange)';
+                                        e.currentTarget.style.background = 'rgba(221,91,0,0.1)';
                                         e.currentTarget.style.color = 'var(--notion-orange)';
                                     }}
                                 >
@@ -580,12 +580,12 @@ export default function ClientesList() {
                                                 <button
                                                     onClick={() => handleDelete(c)}
                                                     style={{
-                                                        padding: '6px 10px', background: 'var(--notion-orange)', color: 'var(--notion-orange)',
-                                                        border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600,
+                                                        padding: '6px 10px', background: 'rgba(221,91,0,0.1)', color: 'var(--notion-orange)',
+                                                        border: '1px solid rgba(221,91,0,0.2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600,
                                                         fontSize: '0.75rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-orange)'; e.currentTarget.style.color = 'var(--notion-text)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--notion-orange)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(221,91,0,0.18)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(221,91,0,0.1)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>

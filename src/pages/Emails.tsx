@@ -193,8 +193,8 @@ export default function Emails() {
                     </div>
                 )}
                 {error && (
-                    <div style={{ margin: '16px', padding: '12px', background: 'var(--notion-orange)', color: 'var(--notion-orange)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <AlertTriangle size={16} />
+                    <div style={{ margin: '16px', padding: '12px', background: 'rgba(221,91,0,0.08)', color: 'var(--notion-text)', border: '1px solid rgba(221,91,0,0.2)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertTriangle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} />
                         {error}
                     </div>
                 )}
