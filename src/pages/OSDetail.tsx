@@ -1538,9 +1538,9 @@ export default function OSDetail() {
                                 outline: 'none',
                             }}
                         >
-                            <option value="" style={{ background: '#1e2130' }}>Nenhuma (particular)</option>
+                            <option value="">Nenhuma (particular)</option>
                             {empresasAtivas.map((emp) => (
-                                <option key={emp.id} value={emp.id} style={{ background: '#1e2130' }}>{emp.nome}</option>
+                                <option key={emp.id} value={emp.id}>{emp.nome}</option>
                             ))}
                         </select>
                         {empresa && (

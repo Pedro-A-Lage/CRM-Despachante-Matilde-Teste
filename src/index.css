@@ -351,7 +351,42 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
   z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal {
+  background: var(--notion-surface);
+  border: 1px solid var(--notion-border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-deep);
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* Toggle buttons inside modals/forms */
+.toggle-btn {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  background: rgba(0,0,0,0.05);
+  color: var(--notion-text-secondary);
+  cursor: pointer;
+  transition: all 150ms;
+  border-radius: 4px;
+}
+.dark .toggle-btn {
+  background: rgba(255,255,255,0.08);
+}
+.toggle-btn.active {
+  background: var(--notion-blue);
+  color: white;
 }
 
 /* --- Buttons ------------------------------------------------- */
@@ -1362,4 +1397,32 @@ textarea:focus {
 /* --- Sidebar group (supplement Layout.tsx <style>) --- */
 .sidebar-group {
   margin-bottom: 2px;
+}
+
+/* --- Global input/select/option dark mode fix --- */
+input[type="time"],
+input[type="date"],
+input[type="datetime-local"] {
+  color-scheme: light;
+}
+.dark input[type="time"],
+.dark input[type="date"],
+.dark input[type="datetime-local"] {
+  color-scheme: dark;
+}
+option {
+  background: var(--notion-surface);
+  color: var(--notion-text);
+}
+
+/* --- Global form-input dark bg fix --- */
+.form-input,
+.form-select,
+.form-textarea,
+.form-control,
+input.input,
+.input {
+  background: var(--notion-surface) !important;
+  color: var(--notion-text) !important;
+  border-color: var(--notion-border) !important;
 }
