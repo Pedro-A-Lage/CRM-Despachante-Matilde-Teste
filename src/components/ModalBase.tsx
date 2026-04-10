@@ -12,44 +12,46 @@ import React from 'react';
 
 export const overlayStyle: React.CSSProperties = {
     position: 'fixed', inset: 0, zIndex: 1000,
-    background: 'rgba(0,0,0,0.5)',
+    background: 'rgba(0,0,0,0.4)',
+    backdropFilter: 'blur(2px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     padding: 16,
 };
 
 export const modalStyle: React.CSSProperties = {
-    background: 'var(--bg-card, #171924)',
+    background: 'var(--notion-surface)',
     borderRadius: 16,
+    border: '1px solid var(--notion-border)',
     width: '100%', maxWidth: 700,
     maxHeight: '90vh',
     display: 'flex', flexDirection: 'column',
     overflow: 'hidden',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+    boxShadow: 'var(--shadow-deep)',
 };
 
 export const headerStyle: React.CSSProperties = {
     padding: '18px 24px',
-    borderBottom: '1px solid var(--border-color, #252838)',
+    borderBottom: '1px solid var(--notion-border)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    background: 'var(--bg-card, #171924)',
+    background: 'var(--notion-surface)',
     flexShrink: 0,
 };
 
 export const bodyStyle: React.CSSProperties = {
     flex: 1, overflowY: 'auto', padding: '16px 24px',
-    background: 'var(--color-black-primary, #0D0F17)',
+    background: 'var(--notion-bg)',
 };
 
 export const footerStyle: React.CSSProperties = {
     padding: '14px 24px',
-    borderTop: '1px solid var(--border-color, #252838)',
+    borderTop: '1px solid var(--notion-border)',
     display: 'flex', justifyContent: 'flex-end', gap: 10,
-    background: 'var(--bg-card, #171924)',
+    background: 'var(--notion-surface)',
     flexShrink: 0,
 };
 
 export const secaoStyle: React.CSSProperties = {
-    border: '1px solid var(--border-color, #252838)',
+    border: '1px solid var(--notion-border)',
     borderRadius: 12,
     marginBottom: 14,
     overflow: 'hidden',
@@ -57,11 +59,11 @@ export const secaoStyle: React.CSSProperties = {
 
 export const secaoHeaderStyle: React.CSSProperties = {
     padding: '10px 16px',
-    background: 'var(--bg-tertiary, #1E2130)',
+    background: 'var(--notion-bg-alt)',
     fontWeight: 700,
     fontSize: '0.88rem',
     color: 'var(--color-yellow-primary, #E8960A)',
-    borderBottom: '1px solid var(--border-color, #252838)',
+    borderBottom: '1px solid var(--notion-border)',
     display: 'flex', alignItems: 'center', gap: 7,
     textTransform: 'uppercase', letterSpacing: '0.05em',
 };
@@ -71,7 +73,7 @@ export const gridStyle: React.CSSProperties = {
     gridTemplateColumns: '1fr 1fr',
     gap: 12,
     padding: '14px 16px',
-    background: 'var(--bg-card, #171924)',
+    background: 'var(--notion-surface)',
 };
 
 export const fieldWrapStyle: React.CSSProperties = {
@@ -80,16 +82,16 @@ export const fieldWrapStyle: React.CSSProperties = {
 
 export const labelStyle: React.CSSProperties = {
     fontSize: '0.78rem', fontWeight: 600,
-    color: 'var(--color-text-secondary, #9A9890)',
+    color: 'var(--notion-text-secondary)',
     textTransform: 'uppercase', letterSpacing: '0.03em',
 };
 
 export const inputStyle: React.CSSProperties = {
     padding: '7px 10px',
-    border: '1px solid var(--border-color, #252838)',
+    border: '1px solid var(--notion-border)',
     borderRadius: 8,
-    background: 'var(--bg-tertiary, #1E2130)',
-    color: 'var(--color-text-primary, #E8E6E0)',
+    background: 'var(--notion-surface)',
+    color: 'var(--notion-text)',
     fontSize: '0.9rem',
     fontFamily: 'inherit',
     outline: 'none',
