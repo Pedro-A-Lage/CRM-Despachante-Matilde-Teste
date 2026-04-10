@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 
@@ -15,25 +16,21 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeaderProps) {
     return (
-        <div style={{ marginBottom: 20 }}>
+        <div className="py-8 border-b border-border mb-6">
             {breadcrumbs && breadcrumbs.length > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6, flexWrap: 'wrap' }}>
+                <div className="flex items-center gap-1 mb-1.5 flex-wrap">
                     {breadcrumbs.map((bc, i) => (
-                        <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            {i > 0 && <ChevronRight size={11} style={{ color: 'var(--color-text-tertiary)', opacity: 0.5 }} />}
+                        <span key={i} className="flex items-center gap-1">
+                            {i > 0 && <ChevronRight size={11} className="text-text-secondary opacity-50" />}
                             {bc.to ? (
-                                <Link to={bc.to} style={{
-                                    fontSize: 11, color: 'var(--color-text-tertiary)',
-                                    textDecoration: 'none', fontWeight: 500,
-                                    transition: 'color 0.15s',
-                                }}
-                                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
-                                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-tertiary)')}
+                                <Link
+                                    to={bc.to}
+                                    className="text-[11px] text-text-secondary font-medium no-underline transition-colors hover:text-[var(--notion-blue)]"
                                 >
                                     {bc.label}
                                 </Link>
                             ) : (
-                                <span style={{ fontSize: 11, color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                <span className="text-[11px] text-text font-semibold">
                                     {bc.label}
                                 </span>
                             )}
@@ -41,18 +38,18 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
                     ))}
                 </div>
             )}
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
+            <div className="flex items-end justify-between gap-3">
                 <div>
-                    <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text-primary)', margin: 0 }}>
+                    <h1 className="text-sub text-text m-0">
                         {title}
                     </h1>
                     {subtitle && (
-                        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: '3px 0 0', fontWeight: 400 }}>
+                        <p className="text-[1rem] text-text-secondary mt-1 mb-0 font-normal">
                             {subtitle}
                         </p>
                     )}
                 </div>
-                {actions && <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>{actions}</div>}
+                {actions && <div className="flex gap-2 items-center">{actions}</div>}
             </div>
         </div>
     );
