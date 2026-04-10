@@ -334,7 +334,7 @@ export default function ClientesList() {
                                     padding: '4px 10px',
                                     borderRadius: 7,
                                     background: c.tipo === 'PF' ? 'rgba(55,114,255,0.1)' : 'rgba(139,92,246,0.1)',
-                                    color: c.tipo === 'PF' ? 'var(--notion-blue)' : 'var(--notion-purple, #9065B0)',
+                                    color: c.tipo === 'PF' ? 'var(--notion-blue)' : '#7c3aed',
                                     fontSize: '0.75rem',
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
@@ -449,23 +449,21 @@ export default function ClientesList() {
                                     justifyContent: 'center',
                                     gap: '6px',
                                     padding: '8px 12px',
-                                    background: 'rgba(245,158,11,0.12)',
+                                    background: 'rgba(0,117,222,0.1)',
                                     color: 'var(--notion-blue)',
-                                    border: 'none',
+                                    border: '1px solid rgba(0,117,222,0.2)',
                                     borderRadius: 8,
                                     textDecoration: 'none',
                                     fontWeight: 600,
                                     fontSize: '0.8rem',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s',
+                                    transition: 'all 0.15s',
                                 }}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--notion-blue)';
-                                        e.currentTarget.style.color = 'var(--notion-bg)';
+                                        e.currentTarget.style.background = 'rgba(0,117,222,0.2)';
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'rgba(245,158,11,0.12)';
-                                        e.currentTarget.style.color = 'var(--notion-blue)';
+                                        e.currentTarget.style.background = 'rgba(0,117,222,0.1)';
                                     }}
                                 >
                                     <Pencil size={14} /> Editar
@@ -540,7 +538,7 @@ export default function ClientesList() {
                                             <span style={{
                                                 padding: '4px 10px', borderRadius: 7,
                                                 background: c.tipo === 'PF' ? 'rgba(55,114,255,0.1)' : 'rgba(139,92,246,0.1)',
-                                                color: c.tipo === 'PF' ? 'var(--notion-blue)' : 'var(--notion-purple, #9065B0)',
+                                                color: c.tipo === 'PF' ? 'var(--notion-blue)' : '#7c3aed',
                                                 fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em',
                                             }}>
                                                 {c.tipo === 'PF' ? 'PF' : 'PJ'}
