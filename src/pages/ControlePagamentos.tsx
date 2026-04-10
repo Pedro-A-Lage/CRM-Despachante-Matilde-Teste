@@ -118,7 +118,7 @@ function ConfirmPopover({ charge, onClose, onConfirm }: ConfirmPopoverProps) {
   return (
     <div ref={ref} className="finance-popover">
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)', marginBottom: 2 }}>
+        <div className="text-sm font-semibold" style={{ color: 'var(--notion-text)', marginBottom: 2 }}>
           Confirmar Pagamento
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -168,9 +168,9 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
   const overdue = isOverdue(charge);
   const paid = charge.status === 'pago';
 
-  let dotColor = 'var(--color-warning)';
-  if (paid) dotColor = 'var(--color-success)';
-  else if (overdue) dotColor = 'var(--color-danger)';
+  let dotColor = 'var(--notion-orange)';
+  if (paid) dotColor = 'var(--notion-green)';
+  else if (overdue) dotColor = 'var(--notion-orange)';
 
   const formattedDate = charge.confirmado_em
     ? new Date(charge.confirmado_em).toLocaleDateString('pt-BR')
@@ -183,7 +183,7 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
         alignItems: 'center',
         gap: 10,
         padding: '10px 14px',
-        borderTop: '1px solid var(--border-color)',
+        borderTop: '1px solid var(--notion-border)',
         flexWrap: 'wrap',
       }}
     >
@@ -204,7 +204,7 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
       {/* Description + category + vistoria local */}
       <div style={{ flex: 1, minWidth: 120 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 14, color: 'var(--color-text-primary)', fontWeight: 500 }}>
+          <span style={{ fontSize: 14, color: 'var(--notion-text)', fontWeight: 500 }}>
             {charge.descricao}
           </span>
           <span className="finance-metodo-badge">
@@ -212,14 +212,14 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
           </span>
         </div>
         {charge.categoria === 'vistoria' && charge.vistoria_local && (
-          <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: 'var(--notion-text-muted)', marginTop: 2 }}>
             📍 {charge.vistoria_local}
           </div>
         )}
       </div>
 
       {/* Value */}
-      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)', minWidth: 90, textAlign: 'right' }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--notion-text)', minWidth: 90, textAlign: 'right' }}>
         {fmt(charge.valor_previsto)}
       </span>
 
@@ -227,7 +227,7 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
         {paid ? (
           <>
-            <span style={{ fontSize: 12, color: 'var(--color-success)', fontWeight: 500 }}>
+            <span style={{ fontSize: 12, color: 'var(--notion-green)', fontWeight: 500 }}>
               Pago &middot; {charge.confirmado_por} &middot; {formattedDate}
             </span>
             {isAdmin && (
@@ -252,7 +252,7 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
               onClick={() => setPopoverOpen(o => !o)}
               disabled={loadingConfirm === charge.id}
               className="btn btn-sm"
-              style={{ background: 'var(--color-warning)', color: 'var(--color-white)', border: 'none' }}
+              style={{ background: 'var(--notion-orange)', color: 'var(--notion-text)', border: 'none' }}
             >
               <CheckCircle size={13} />
               {loadingConfirm === charge.id ? 'Salvando...' : 'Confirmar'}
@@ -302,9 +302,9 @@ function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConf
   return (
     <div
       style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-color)',
-        borderLeft: `4px solid ${allPaid ? 'var(--color-success)' : 'var(--color-warning)'}`,
+        background: 'var(--notion-surface)',
+        border: '1px solid var(--notion-border)',
+        borderLeft: `4px solid ${allPaid ? 'var(--notion-green)' : 'var(--notion-orange)'}`,
         borderRadius: 10,
         overflow: 'visible',
         marginBottom: 12,
@@ -322,29 +322,29 @@ function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConf
         }}
       >
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span
-              style={{ cursor: 'pointer', textDecoration: 'none', borderBottom: '1px dashed var(--color-primary)', color: 'var(--color-primary)' }}
+              style={{ cursor: 'pointer', textDecoration: 'none', borderBottom: '1px dashed var(--notion-blue)', color: 'var(--notion-blue)' }}
               onClick={(e) => { e.stopPropagation(); navigate(`/ordens/${group.osId}`); }}
               title="Abrir Ordem de Serviço"
             >
               OS #{group.osNumero}
             </span>
-            <span style={{ color: 'var(--color-text-primary)' }}>&middot; {group.clienteNome}</span>
+            <span style={{ color: 'var(--notion-text)' }}>&middot; {group.clienteNome}</span>
           </div>
-          <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+          <div style={{ fontSize: 13, color: 'var(--notion-text-secondary)', marginTop: 2 }}>
             {group.placa} &middot; {group.modelo} &middot; {tipoLabel}
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {group.totalPago > 0 && (
-            <span style={{ fontSize: 13, color: 'var(--color-success)', fontWeight: 500 }}>
+            <span style={{ fontSize: 13, color: 'var(--notion-green)', fontWeight: 500 }}>
               Pago: {fmt(group.totalPago)}
             </span>
           )}
           {group.totalPendente > 0 && (
-            <span style={{ fontSize: 13, color: 'var(--color-warning)', fontWeight: 500 }}>
+            <span style={{ fontSize: 13, color: 'var(--notion-orange)', fontWeight: 500 }}>
               Pendente: {fmt(group.totalPendente)}
             </span>
           )}
@@ -389,8 +389,8 @@ function SummaryCard({ label, value, icon, color }: SummaryCardProps) {
     <div
       style={{
         flex: '1 1 180px',
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-color)',
+        background: 'var(--notion-surface)',
+        border: '1px solid var(--notion-border)',
         borderRadius: 10,
         padding: '16px 20px',
         display: 'flex',
@@ -414,8 +414,8 @@ function SummaryCard({ label, value, icon, color }: SummaryCardProps) {
         {icon}
       </div>
       <div>
-        <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+        <div style={{ fontSize: 12, color: 'var(--notion-text-secondary)', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--notion-text)' }}>
           {fmt(value)}
         </div>
       </div>
@@ -649,12 +649,12 @@ export default function ControlePagamentos() {
   }
 
   const inputStyle: React.CSSProperties = {
-    border: '1px solid var(--border-color)',
+    border: '1px solid var(--notion-border)',
     borderRadius: 8,
     padding: '8px 12px',
     fontSize: 14,
     background: 'var(--bg-surface)',
-    color: 'var(--color-text-primary)',
+    color: 'var(--notion-text)',
     outline: 'none',
     fontFamily: 'inherit',
   };
@@ -664,9 +664,9 @@ export default function ControlePagamentos() {
     fontSize: 13,
     fontWeight: active ? 700 : 400,
     borderRadius: 7,
-    border: active ? 'none' : '1px solid var(--border-color)',
-    background: active ? 'var(--color-primary)' : 'var(--bg-surface)',
-    color: active ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+    border: active ? 'none' : '1px solid var(--notion-border)',
+    background: active ? 'var(--notion-blue)' : 'var(--bg-surface)',
+    color: active ? 'var(--notion-bg)' : 'var(--notion-text-secondary)',
     cursor: 'pointer',
     fontFamily: 'inherit',
     transition: 'background 0.15s',
@@ -677,10 +677,10 @@ export default function ControlePagamentos() {
       {/* Page title */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--notion-text)' }}>
             Controle de Pagamentos
           </h1>
-          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--color-text-secondary)' }}>
+          <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--notion-text-secondary)' }}>
             Confirme o pagamento de taxas das ordens de serviço
           </p>
         </div>
@@ -690,13 +690,13 @@ export default function ControlePagamentos() {
               onClick={handleConfirmarTodosGlobal}
               disabled={loading}
               style={{
-                background: 'var(--color-success)',
+                background: 'var(--notion-green)',
                 border: 'none',
                 borderRadius: 8,
                 padding: '8px 16px',
                 fontSize: 13,
                 fontWeight: 600,
-                color: 'var(--color-white)',
+                color: 'var(--notion-text)',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -713,11 +713,11 @@ export default function ControlePagamentos() {
             disabled={loading}
             style={{
               background: 'var(--bg-surface)',
-              border: '1px solid var(--border-color)',
+              border: '1px solid var(--notion-border)',
               borderRadius: 8,
               padding: '8px 14px',
               fontSize: 13,
-              color: 'var(--color-text-secondary)',
+              color: 'var(--notion-text-secondary)',
               cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -737,26 +737,26 @@ export default function ControlePagamentos() {
           <SummaryCard
             label="Total Pendente"
             value={resumo.totalPendente}
-            icon={<Clock size={20} color="var(--color-white)" />}
-            color="var(--color-warning)"
+            icon={<Clock size={20} color="var(--notion-text)" />}
+            color="var(--notion-orange)"
           />
           <SummaryCard
             label="Pago Hoje"
             value={resumo.pagoHoje}
-            icon={<CheckCircle size={20} color="var(--color-white)" />}
-            color="var(--color-success)"
+            icon={<CheckCircle size={20} color="var(--notion-text)" />}
+            color="var(--notion-green)"
           />
           <SummaryCard
             label="Pago na Semana"
             value={resumo.pagoSemana}
-            icon={<TrendingUp size={20} color="var(--color-white)" />}
-            color="var(--color-primary)"
+            icon={<TrendingUp size={20} color="var(--notion-text)" />}
+            color="var(--notion-blue)"
           />
           <SummaryCard
             label="Pago no Mes"
             value={resumo.pagoMes}
-            icon={<DollarSign size={20} color="var(--color-white)" />}
-            color="var(--color-success)"
+            icon={<DollarSign size={20} color="var(--notion-text)" />}
+            color="var(--notion-green)"
           />
         </div>
       )}
@@ -764,8 +764,8 @@ export default function ControlePagamentos() {
       {/* Filter bar */}
       <div
         style={{
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-color)',
+          background: 'var(--notion-surface)',
+          border: '1px solid var(--notion-border)',
           borderRadius: 10,
           padding: '14px 16px',
           marginBottom: 20,
@@ -784,7 +784,7 @@ export default function ControlePagamentos() {
               left: 10,
               top: '50%',
               transform: 'translateY(-50%)',
-              color: 'var(--color-text-tertiary)',
+              color: 'var(--notion-text-muted)',
               pointerEvents: 'none',
             }}
           />
@@ -822,14 +822,14 @@ export default function ControlePagamentos() {
 
         {/* Date range */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Calendar size={14} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
+          <Calendar size={14} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
           <input
             type="date"
             value={dataInicio}
             onChange={e => setDataInicio(e.target.value)}
             style={{ ...inputStyle, width: 140 }}
           />
-          <span style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>ate</span>
+          <span style={{ color: 'var(--notion-text-muted)', fontSize: 13 }}>ate</span>
           <input
             type="date"
             value={dataFim}
@@ -881,7 +881,7 @@ export default function ControlePagamentos() {
             justifyContent: 'center',
             gap: 10,
             padding: '48px 0',
-            color: 'var(--color-text-secondary)',
+            color: 'var(--notion-text-secondary)',
             fontSize: 15,
           }}
         >
@@ -893,8 +893,8 @@ export default function ControlePagamentos() {
       {!loading && erro && (
         <div
           style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--color-danger)',
+            background: 'var(--notion-surface)',
+            border: '1px solid var(--notion-orange)',
             borderRadius: 10,
             padding: '20px 24px',
             display: 'flex',
@@ -902,18 +902,18 @@ export default function ControlePagamentos() {
             gap: 14,
           }}
         >
-          <AlertTriangle size={20} color="var(--color-danger)" />
+          <AlertTriangle size={20} color="var(--notion-orange)" />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, color: 'var(--color-danger)', marginBottom: 4 }}>
+            <div style={{ fontWeight: 600, color: 'var(--notion-orange)', marginBottom: 4 }}>
               Erro ao carregar
             </div>
-            <div style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>{erro}</div>
+            <div style={{ fontSize: 14, color: 'var(--notion-text-secondary)' }}>{erro}</div>
           </div>
           <button
             onClick={carregar}
             style={{
-              background: 'var(--color-danger)',
-              color: 'var(--color-white)',
+              background: 'var(--notion-orange)',
+              color: 'var(--notion-text)',
               border: 'none',
               borderRadius: 7,
               padding: '8px 16px',
@@ -933,7 +933,7 @@ export default function ControlePagamentos() {
           style={{
             textAlign: 'center',
             padding: '56px 24px',
-            color: 'var(--color-text-secondary)',
+            color: 'var(--notion-text-secondary)',
           }}
         >
           <CheckCircle size={40} style={{ opacity: 0.3, marginBottom: 12, display: 'block', margin: '0 auto 12px' }} />
