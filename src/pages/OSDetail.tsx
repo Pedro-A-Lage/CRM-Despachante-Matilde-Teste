@@ -1195,10 +1195,10 @@ export default function OSDetail() {
                                                     setOs({ ...os, empresaFinanceiro: newFin });
                                                 }}
                                                 style={{
-                                                    background: 'rgba(255,255,255,0.06)',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    background: 'var(--notion-bg-alt)',
+                                                    border: '1px solid var(--notion-border)',
                                                     borderRadius: 4, padding: '2px 8px',
-                                                    fontSize: 12, color: '#d4a843', fontWeight: 600,
+                                                    fontSize: 12, color: 'var(--notion-text)', fontWeight: 600,
                                                     width: 80, outline: 'none',
                                                 }}
                                             />
@@ -1529,12 +1529,12 @@ export default function OSDetail() {
                             }}
                             style={{
                                 width: '100%',
-                                background: 'rgba(255,255,255,0.06)',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--notion-bg-alt)',
+                                border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 padding: '8px 10px',
                                 fontSize: 12,
-                                color: '#e2e8f0',
+                                color: 'var(--notion-text)',
                                 outline: 'none',
                             }}
                         >
@@ -1581,9 +1581,9 @@ export default function OSDetail() {
                                         width: '100%',
                                         fontSize: 10,
                                         fontWeight: 600,
-                                        color: '#d4a843',
-                                        background: 'rgba(212,168,67,0.1)',
-                                        border: '1px solid rgba(212,168,67,0.25)',
+                                        color: 'var(--notion-blue)',
+                                        background: 'rgba(0,117,222,0.08)',
+                                        border: '1px solid rgba(0,117,222,0.25)',
                                         borderRadius: 6,
                                         padding: '5px 0',
                                         cursor: 'pointer',
@@ -2163,8 +2163,8 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
 
     const CLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-muted)', marginBottom: 4 };
     const bannerColor = checklistComplete ? 'var(--notion-green)' : 'var(--notion-blue)';
-    const bannerBg = checklistComplete ? 'rgba(16,185,129,0.08)' : 'rgba(212,168,67,0.08)';
-    const bannerBorder = checklistComplete ? 'rgba(16,185,129,0.25)' : 'rgba(212,168,67,0.25)';
+    const bannerBg = checklistComplete ? 'rgba(16,185,129,0.08)' : 'rgba(0,117,222,0.08)';
+    const bannerBorder = checklistComplete ? 'rgba(16,185,129,0.25)' : 'rgba(0,117,222,0.25)';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -2265,7 +2265,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                         display: 'inline-flex', alignItems: 'center', gap: 5,
                         padding: '5px 12px', borderRadius: 7,
                         fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed',
-                        background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--notion-surface)',
+                        background: dirty ? 'var(--notion-blue)' : 'var(--notion-surface)',
                         color: dirty ? '#fff' : 'var(--notion-text-muted)',
                         border: dirty ? 'none' : '1px solid var(--notion-border)',
                         boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
@@ -2347,7 +2347,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                                         </button>
                                     </div>
                                     {(item.nome === 'CNH' || item.nome.includes('CNH')) && item.status !== 'nao_se_aplica' && item.status !== 'recebido' && (
-                                        <button style={{ background: 'transparent', border: '1px solid #F59E0B44', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: 'var(--notion-orange)', whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0 }}
+                                        <button style={{ background: 'transparent', border: '1px solid rgba(221,91,0,0.25)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: 'var(--notion-orange)', whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0 }}
                                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                             onClick={() => handleNaoPossuiCNH(item.id)}>Sem CNH?</button>
@@ -2372,7 +2372,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                             value={novoDocNome} onChange={(e) => setNovoDocNome(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddDocumento()}
                             style={{ flex: 1, fontSize: 12, padding: '6px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: 'var(--notion-text)', outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
-                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; e.currentTarget.style.background = 'rgba(212,168,67,0.04)'; }}
+                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; e.currentTarget.style.background = 'rgba(0,117,222,0.04)'; }}
                             onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
                         {novoDocNome.trim() && (
                             <button onClick={handleAddDocumento}
@@ -2440,7 +2440,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                                 </span>
                             )}
                             <button onClick={handleSave} disabled={!dirty}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-body)', color: dirty ? '#fff' : 'var(--notion-text-muted)', border: dirty ? 'none' : '1px solid var(--notion-border)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'var(--notion-blue)' : 'var(--bg-body)', color: dirty ? '#fff' : 'var(--notion-text-muted)', border: dirty ? 'none' : '1px solid var(--notion-border)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
                                 {dirty ? <Save size={12} /> : <CheckCircle size={12} />}
                                 {dirty ? 'Salvar' : 'Salvo'}
                             </button>

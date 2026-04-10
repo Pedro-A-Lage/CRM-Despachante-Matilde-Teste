@@ -466,7 +466,7 @@ export default function VeiculoForm() {
 
                                 {selectedCliente && checklistPreview.length > 0 && (
                                     <div style={{
-                                        background: 'rgba(255,255,255,0.7)',
+                                        background: 'var(--notion-bg-alt)',
                                         padding: 'var(--space-3)',
                                         borderRadius: 'var(--radius-sm)',
                                     }}>

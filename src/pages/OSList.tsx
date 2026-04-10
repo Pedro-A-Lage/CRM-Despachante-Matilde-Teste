@@ -484,7 +484,7 @@ export default function OSList() {
                         gap: 6,
                         background: 'linear-gradient(135deg, var(--notion-blue) 0%, var(--notion-blue-hover) 100%)',
                         color: '#fff',
-                        boxShadow: '0 2px 12px rgba(232,150,10,0.3)',
+                        boxShadow: '0 2px 12px rgba(0,117,222,0.3)',
                         transition: 'all 0.2s cubic-bezier(.4,0,.2,1)',
                         border: 'none',
                         cursor: 'pointer',
@@ -494,11 +494,11 @@ export default function OSList() {
                     }}
                     onMouseEnter={e => {
                         e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(232,150,10,0.4)';
+                        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,117,222,0.4)';
                     }}
                     onMouseLeave={e => {
                         e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '0 2px 12px rgba(232,150,10,0.3)';
+                        e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,117,222,0.3)';
                     }}
                 >
                     <Plus size={16} strokeWidth={2.5} /> Nova OS
@@ -552,7 +552,7 @@ export default function OSList() {
                             }}
                             onFocus={e => {
                                 e.target.style.borderColor = 'var(--notion-blue)';
-                                e.target.style.boxShadow = '0 0 0 3px rgba(232,150,10,0.12)';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(0,117,222,0.12)';
                             }}
                             onBlur={e => {
                                 e.target.style.borderColor = 'var(--notion-border)';
@@ -692,7 +692,7 @@ export default function OSList() {
                                 fontSize: 12,
                                 fontWeight: 600,
                                 border: `1px solid ${empresaFilter === '' ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
-                                backgroundColor: empresaFilter === '' ? 'rgba(212,168,67,0.15)' : 'transparent',
+                                backgroundColor: empresaFilter === '' ? 'rgba(0,117,222,0.08)' : 'transparent',
                                 color: empresaFilter === '' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
                                 transition: 'all 0.15s ease',
@@ -737,7 +737,7 @@ export default function OSList() {
                                 fontSize: 12,
                                 fontWeight: 600,
                                 border: `1px solid ${empresaFilter === 'particular' ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
-                                backgroundColor: empresaFilter === 'particular' ? 'rgba(212,168,67,0.15)' : 'transparent',
+                                backgroundColor: empresaFilter === 'particular' ? 'rgba(0,117,222,0.08)' : 'transparent',
                                 color: empresaFilter === 'particular' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
@@ -773,7 +773,7 @@ export default function OSList() {
                         width: 72,
                         height: 72,
                         borderRadius: 20,
-                        background: 'rgba(255,255,255,0.04)',
+                        background: 'var(--notion-bg-alt)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -804,7 +804,7 @@ export default function OSList() {
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 8,
-                                    boxShadow: '0 4px 16px rgba(232,150,10,0.3)',
+                                    boxShadow: '0 4px 16px rgba(0,117,222,0.3)',
                                     transition: 'all 0.2s',
                                     fontFamily: 'inherit',
                                 }}
@@ -829,7 +829,7 @@ export default function OSList() {
                                     padding: '10px 22px',
                                     borderRadius: 10,
                                     border: '1px solid var(--notion-border)',
-                                    background: 'rgba(255,255,255,0.04)',
+                                    background: 'var(--notion-bg-alt)',
                                     color: 'var(--notion-text-secondary)',
                                     fontWeight: 600,
                                     fontSize: '0.88rem',
@@ -841,11 +841,11 @@ export default function OSList() {
                                     fontFamily: 'inherit',
                                 }}
                                 onMouseEnter={e => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                                    e.currentTarget.style.background = 'rgba(0,0,0,0.06)';
                                     e.currentTarget.style.color = 'var(--notion-text)';
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                    e.currentTarget.style.background = 'var(--notion-bg-alt)';
                                     e.currentTarget.style.color = 'var(--notion-text-secondary)';
                                 }}
                             >
@@ -871,7 +871,7 @@ export default function OSList() {
                 }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
+                            <tr style={{ background: 'var(--notion-bg-alt)' }}>
                                 <th style={{ width: 4, padding: 0 }} /> {/* Status border column */}
                                 <SortableHeader label="OS" sortKey="os" width={80} />
                                 <SortableHeader label="Cliente" sortKey="cliente" />
@@ -914,7 +914,7 @@ export default function OSList() {
                                         onMouseLeave={() => setHoveredRow(null)}
                                         style={{
                                             background: isHovered
-                                                ? 'rgba(255,255,255,0.04)'
+                                                ? 'var(--notion-bg-alt)'
                                                 : temPendenciaFinanceira
                                                     ? 'rgba(239,68,68,0.04)'
                                                     : os.pendencia
@@ -923,7 +923,7 @@ export default function OSList() {
                                             transition: 'background 0.15s ease',
                                             cursor: 'pointer',
                                             animation: `oslist-fadeSlideIn 0.3s ease-out ${idx * 0.02}s both`,
-                                            borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                            borderBottom: '1px solid var(--notion-border)',
                                         }}
                                     >
                                         {/* Status color bar */}
@@ -1042,7 +1042,7 @@ export default function OSList() {
                                                         marginTop: 8,
                                                         height: 3,
                                                         borderRadius: 3,
-                                                        background: 'rgba(255,255,255,0.06)',
+                                                        background: 'var(--notion-border)',
                                                         overflow: 'hidden',
                                                         width: 80,
                                                     }}>

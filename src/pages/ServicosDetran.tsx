@@ -21,8 +21,8 @@ const SERVICES: DetranService[] = [
         description: 'Acesse o portal, execute a transferência e o CRM criará a OS automaticamente com o PDF capturado.',
         url: 'https://transito.mg.gov.br/veiculos/transferencias/taxa-para-transferir-propriedade-de-veiculo-comprador/index/2',
         icon: Upload,
-        color: 'var(--notion-blue)',
-        bgColor: 'rgba(55,114,255,0.1)'
+        color: '#0075de',
+        bgColor: 'rgba(0,117,222,0.08)'
     },
     {
         id: 'primeiro_emplacamento',
@@ -30,8 +30,8 @@ const SERVICES: DetranService[] = [
         description: 'Registro e emplacamento de veículo zero km.',
         url: 'https://transito.mg.gov.br/veiculos/emplacamento/primeiro-emplacamento-veiculo-zero-km/complementar-dados-do-veiculo',
         icon: FileBadge,
-        color: 'var(--notion-purple, #9065B0)',
-        bgColor: 'rgba(139,92,246,0.1)'
+        color: '#7c3aed',
+        bgColor: 'rgba(124,58,237,0.08)'
     },
     {
         id: 'segunda_via',
@@ -39,8 +39,8 @@ const SERVICES: DetranService[] = [
         description: 'Acesse o portal, solicite a 2ª via e o CRM criará a OS automaticamente com o PDF capturado.',
         url: 'https://transito.mg.gov.br/veiculos/documentos-de-veiculos/emitir-a-2-via-do-crv',
         icon: FileText,
-        color: 'var(--notion-green)',
-        bgColor: 'rgba(6,182,212,0.1)'
+        color: '#059669',
+        bgColor: 'rgba(5,150,105,0.08)'
     },
     {
         id: 'alteracao_dados',
@@ -48,8 +48,8 @@ const SERVICES: DetranService[] = [
         description: 'Inclusão ou retirada de restrição financeira. Altera gravame e dados do veículo.',
         url: 'https://transito.mg.gov.br/veiculos/alteracoes/solicitar-inclusao-ou-retirada-de-restricao-financeira-1',
         icon: Settings,
-        color: 'var(--notion-orange)',
-        bgColor: 'var(--notion-orange)'
+        color: '#dc2626',
+        bgColor: 'rgba(220,38,38,0.08)'
     },
     {
         id: 'mudanca_caracteristica',
@@ -57,8 +57,8 @@ const SERVICES: DetranService[] = [
         description: 'Mudança de características do veículo como cor, combustível, carroceria, etc.',
         url: 'https://transito.mg.gov.br/veiculos/alteracoes/solicitar-alteracao-de-caracteristica-de-veiculo',
         icon: Wrench,
-        color: 'var(--notion-pink, #C9ADC1)',
-        bgColor: 'color-mix(in srgb, var(--notion-pink, #C9ADC1) 12%, transparent)'
+        color: '#db2777',
+        bgColor: 'rgba(219,39,119,0.08)'
     },
     {
         id: 'baixa',
@@ -66,8 +66,8 @@ const SERVICES: DetranService[] = [
         description: 'Baixa definitiva de veículo por sinistro ou sucata.',
         url: 'https://transito.mg.gov.br/veiculos/veiculo-sinistrado-e-baixa-de-veiculo/taxa-de-baixa-de-veiculo',
         icon: XCircle,
-        color: 'var(--notion-orange)',
-        bgColor: 'var(--notion-orange)'
+        color: '#9333ea',
+        bgColor: 'rgba(147,51,234,0.08)'
     },
 ];
 
@@ -208,9 +208,9 @@ export default function ServicosDetran() {
                                 gap: '8px',
                                 padding: '11px 16px',
                                 background: hoveredService === servico.id
-                                    ? `linear-gradient(135deg, ${servico.color}, ${servico.color}cc)`
+                                    ? servico.color
                                     : servico.bgColor,
-                                color: hoveredService === servico.id ? 'var(--notion-text)' : servico.color,
+                                color: hoveredService === servico.id ? '#ffffff' : servico.color,
                                 border: 'none',
                                 borderRadius: 10,
                                 fontFamily: 'inherit',

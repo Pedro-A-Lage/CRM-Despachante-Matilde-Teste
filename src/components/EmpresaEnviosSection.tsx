@@ -245,7 +245,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     onClick={() => setEditando(!editando)}
                     style={{
                         display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px',
-                        color: editando ? '#d4a843' : 'var(--notion-text-muted)',
+                        color: editando ? 'var(--notion-blue)' : 'var(--notion-text-muted)',
                         background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: '6px',
                     }}
                     className="hover:bg-surface/5 transition-colors"
@@ -261,8 +261,8 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     const completa = etapaCompleta(etapa);
                     const enviado = etapa.enviado;
 
-                    const borderColor = enviado ? 'rgba(40,160,106,0.3)' : completa ? 'rgba(212,168,67,0.3)' : 'var(--notion-border)';
-                    const bgColor = enviado ? 'rgba(40,160,106,0.06)' : completa ? 'rgba(212,168,67,0.06)' : 'rgba(255,255,255,0.02)';
+                    const borderColor = enviado ? 'rgba(40,160,106,0.3)' : completa ? 'rgba(0,117,222,0.3)' : 'var(--notion-border)';
+                    const bgColor = enviado ? 'rgba(40,160,106,0.06)' : completa ? 'rgba(0,117,222,0.06)' : 'var(--notion-bg-alt)';
 
                     return (
                         <div key={etapaIdx} style={{ border: `1px solid ${borderColor}`, borderRadius: '10px', padding: '12px', background: bgColor }}>
@@ -271,8 +271,8 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <span style={{
                                         fontSize: '10px', fontWeight: 700,
-                                        color: enviado ? '#28A06A' : completa ? '#d4a843' : 'var(--notion-text-muted)',
-                                        background: enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
+                                        color: enviado ? '#28A06A' : completa ? '#0075de' : 'var(--notion-text-muted)',
+                                        background: enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(0,117,222,0.15)' : 'var(--notion-border)',
                                         borderRadius: '4px', padding: '2px 6px',
                                     }}>
                                         {etapa.etapa}
@@ -303,8 +303,8 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         <div key={doc.tipo} className="group" style={{
                                             display: 'flex', alignItems: 'center', gap: '8px',
                                             padding: '6px 8px', borderRadius: '6px',
-                                            background: doc.arquivo_url ? 'rgba(40,160,106,0.06)' : 'rgba(255,255,255,0.02)',
-                                            border: `1px solid ${doc.arquivo_url ? 'rgba(40,160,106,0.15)' : 'rgba(255,255,255,0.04)'}`,
+                                            background: doc.arquivo_url ? 'rgba(40,160,106,0.06)' : 'var(--notion-surface)',
+                                            border: `1px solid ${doc.arquivo_url ? 'rgba(40,160,106,0.15)' : 'var(--notion-border)'}`,
                                         }}>
                                             {/* Status icon */}
                                             <button
@@ -355,9 +355,9 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                                     style={{
                                                         display: 'flex', alignItems: 'center', gap: '3px',
                                                         fontSize: '10px', fontWeight: 500,
-                                                        color: isUploading ? 'var(--notion-text-muted)' : '#d4a843',
-                                                        background: 'rgba(212,168,67,0.08)',
-                                                        border: '1px solid rgba(212,168,67,0.2)',
+                                                        color: isUploading ? 'var(--notion-text-muted)' : '#0075de',
+                                                        background: 'rgba(0,117,222,0.08)',
+                                                        border: '1px solid rgba(0,117,222,0.2)',
                                                         borderRadius: '4px', padding: '2px 6px', cursor: 'pointer',
                                                     }}
                                                 >
@@ -390,29 +390,29 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         onChange={(e) => setNovoDocTipo(e.target.value)}
                                         placeholder="Novo documento..."
                                         style={{
-                                            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                                            color: '#e2e8f0', fontSize: '11px', borderRadius: '6px', padding: '4px 8px',
+                                            background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)',
+                                            color: 'var(--notion-text)', fontSize: '11px', borderRadius: '6px', padding: '4px 8px',
                                             flex: 1, height: '26px', outline: 'none',
                                         }}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddDoc(etapaIdx)}
                                     />
-                                    <button onClick={() => handleAddDoc(etapaIdx)} style={{ color: '#d4a843', padding: '2px', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                    <button onClick={() => handleAddDoc(etapaIdx)} style={{ color: 'var(--notion-blue)', padding: '2px', background: 'none', border: 'none', cursor: 'pointer' }}>
                                         <Plus size={14} />
                                     </button>
                                 </div>
                             )}
 
                             {/* Action buttons — sempre visíveis para permitir reenvio */}
-                            <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--notion-border)', flexWrap: 'wrap' }}>
                                 <button
                                     onClick={() => completa && handleGerarEmail(etapa, etapaIdx)}
                                     disabled={!completa || enviandoEmailIdx === etapaIdx}
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: '4px',
                                         fontSize: '11px', fontWeight: 500,
-                                        color: completa ? '#d4a843' : 'var(--notion-text-muted)',
-                                        background: completa ? 'rgba(212,168,67,0.12)' : 'rgba(255,255,255,0.03)',
-                                        border: `1px solid ${completa ? 'rgba(212,168,67,0.25)' : 'rgba(255,255,255,0.06)'}`,
+                                        color: completa ? '#0075de' : 'var(--notion-text-muted)',
+                                        background: completa ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg-alt)',
+                                        border: `1px solid ${completa ? 'rgba(0,117,222,0.2)' : 'var(--notion-border)'}`,
                                         borderRadius: '6px', padding: '5px 12px',
                                         cursor: completa && enviandoEmailIdx !== etapaIdx ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
                                     }}

@@ -266,7 +266,7 @@ export default function Financeiro() {
                 </p>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={mensal} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
                     <XAxis
                       dataKey="label"
                       tick={{ fontSize: 11, fill: 'var(--notion-text-secondary)' }}
@@ -315,7 +315,7 @@ export default function Financeiro() {
                         <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
                     <XAxis
                       dataKey="label"
                       tick={{ fontSize: 11, fill: 'var(--notion-text-secondary)' }}

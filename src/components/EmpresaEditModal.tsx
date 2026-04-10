@@ -19,20 +19,20 @@ const LABEL_STYLE: React.CSSProperties = {
 };
 
 const INPUT_STYLE: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  color: '#e2e8f0',
+  background: 'var(--notion-bg-alt)',
+  border: '1px solid var(--notion-border)',
+  color: 'var(--notion-text)',
   fontSize: '12px',
 };
 
 const INPUT_HIGHLIGHT_STYLE: React.CSSProperties = {
   ...INPUT_STYLE,
-  border: '1px solid rgba(212,168,67,0.35)',
+  border: '1px solid rgba(0,117,222,0.35)',
 };
 
 const SECTION_STYLE: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.06)',
+  background: 'var(--notion-bg-alt)',
+  border: '1px solid var(--notion-border)',
   borderRadius: '10px',
   padding: '12px',
 };
@@ -141,19 +141,19 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
       <DialogContent
         className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
         style={{
-          background: 'linear-gradient(145deg, #1e2436, #16192a)',
-          border: '1px solid rgba(212,168,67,0.2)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          background: 'var(--notion-surface)',
+          border: '1px solid var(--notion-border)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
         }}
       >
         <div className="overflow-y-auto flex-1 min-h-0" style={{ padding: '20px 20px 0 20px' }}>
           {/* Header */}
           <div style={{ marginBottom: '14px', paddingRight: '32px' }}>
-            <DialogTitle style={{ fontSize: '15px', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
+            <DialogTitle style={{ fontSize: '15px', fontWeight: 700, color: 'var(--notion-text)', lineHeight: 1.2 }}>
               {empresa.id ? 'Editar Empresa' : 'Nova Empresa'}
             </DialogTitle>
             {empresa.id && (
-              <p style={{ fontSize: '11px', color: '#d4a843', marginTop: '3px', fontWeight: 500 }}>
+              <p style={{ fontSize: '11px', color: 'var(--notion-text-secondary)', marginTop: '3px', fontWeight: 500 }}>
                 {empresa.nome}
               </p>
             )}
@@ -218,7 +218,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                       width: '36px',
                       height: '32px',
                       borderRadius: '6px',
-                      border: '1px solid rgba(255,255,255,0.1)',
+                      border: '1px solid var(--notion-border)',
                       background: 'transparent',
                       cursor: 'pointer',
                       padding: 0,
@@ -246,7 +246,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                   size="sm"
                   variant="ghost"
                   onClick={handleAddEtapa}
-                  style={{ fontSize: '11px', color: '#d4a843', height: '28px', padding: '0 8px' }}
+                  style={{ fontSize: '11px', color: 'var(--notion-blue)', height: '28px', padding: '0 8px' }}
                 >
                   <Plus className="w-3.5 h-3.5 mr-1" /> Etapa
                 </Button>
@@ -266,9 +266,9 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                       <div className="flex items-center gap-2 mb-2">
                         <span style={{
                           fontSize: '10px',
-                          color: '#d4a843',
+                          color: 'var(--notion-blue)',
                           fontWeight: 700,
-                          background: 'rgba(212,168,67,0.15)',
+                          background: 'rgba(0,117,222,0.12)',
                           borderRadius: '4px',
                           padding: '2px 6px',
                           minWidth: '20px',
@@ -326,7 +326,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                           />
                           <button
                             onClick={() => handleAddDoc(eIdx)}
-                            style={{ color: '#d4a843', padding: '2px' }}
+                            style={{ color: 'var(--notion-blue)', padding: '2px' }}
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -379,8 +379,8 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
           className="flex items-center justify-end gap-2"
           style={{
             padding: '12px 20px',
-            borderTop: '1px solid rgba(255,255,255,0.06)',
-            background: 'rgba(0,0,0,0.15)',
+            borderTop: '1px solid var(--notion-border)',
+            background: 'var(--notion-bg-alt)',
           }}
         >
           <Button variant="ghost" onClick={onClose} style={{ fontSize: '12px', color: 'var(--notion-text-muted)' }}>
@@ -392,8 +392,8 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
             style={{
               fontSize: '12px',
               fontWeight: 600,
-              background: nome.trim() ? '#d4a843' : 'rgba(255,255,255,0.06)',
-              color: nome.trim() ? '#000' : '#5A5D70',
+              background: nome.trim() ? 'var(--notion-blue)' : 'var(--notion-border)',
+              color: nome.trim() ? '#fff' : 'var(--notion-text-muted)',
             }}
           >
             Salvar

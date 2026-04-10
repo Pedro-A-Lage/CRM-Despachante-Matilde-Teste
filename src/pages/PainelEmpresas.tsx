@@ -285,10 +285,10 @@ export default function PainelEmpresas() {
                                                         setOrdens(prev => prev.map(o => o.id === os.id ? { ...o, empresaFinanceiro: newFin } : o));
                                                     }}
                                                     style={{
-                                                        background: 'rgba(255,255,255,0.06)',
-                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                        background: 'var(--notion-bg-alt)',
+                                                        border: '1px solid var(--notion-border)',
                                                         borderRadius: 4, padding: '2px 6px',
-                                                        fontSize: 11, color: '#d4a843', fontWeight: 600,
+                                                        fontSize: 11, color: 'var(--notion-text)', fontWeight: 600,
                                                         width: 70, outline: 'none', textAlign: 'center',
                                                     }}
                                                 />
@@ -301,7 +301,7 @@ export default function PainelEmpresas() {
                                                 {envios.map((etapa, i) => (
                                                     <div key={i} title={etapa.nome} style={{
                                                         width: 7, height: 7, borderRadius: '50%',
-                                                        backgroundColor: etapa.enviado ? '#28A06A' : etapaCompleta(etapa) ? '#d4a843' : 'var(--notion-text-secondary)',
+                                                        backgroundColor: etapa.enviado ? '#28A06A' : etapaCompleta(etapa) ? '#0075de' : 'var(--notion-text-secondary)',
                                                     }} />
                                                 ))}
                                             </div>
@@ -335,7 +335,7 @@ export default function PainelEmpresas() {
                                             <div style={{ padding: '0 14px 14px 40px' }}>
                                                 {/* Financial section */}
                                                 <div style={{
-                                                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)',
+                                                    background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)',
                                                     borderRadius: 8, padding: '10px 12px', marginBottom: 10,
                                                 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
@@ -388,16 +388,16 @@ export default function PainelEmpresas() {
                                                                     setOrdens(prev => prev.map(o => o.id === os.id ? { ...o, empresaFinanceiro: newFin } : o));
                                                                 }}
                                                                 style={{
-                                                                    background: 'rgba(255,255,255,0.06)',
-                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    background: 'var(--notion-bg-alt)',
+                                                                    border: '1px solid var(--notion-border)',
                                                                     borderRadius: 4, padding: '3px 6px',
-                                                                    fontSize: 11, color: '#e2e8f0',
+                                                                    fontSize: 11, color: 'var(--notion-text)',
                                                                     width: 90, outline: 'none',
                                                                 }}
                                                             />
                                                         </div>
 
-                                                        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.08)' }} />
+                                                        <div style={{ width: 1, height: 16, background: 'var(--notion-border)' }} />
 
                                                         {!recebido ? (
                                                             <button
@@ -417,7 +417,7 @@ export default function PainelEmpresas() {
                                                                 style={{
                                                                     display: 'flex', alignItems: 'center', gap: 4,
                                                                     fontSize: 11, fontWeight: 500, color: 'var(--notion-text-muted)',
-                                                                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                                                    background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)',
                                                                     borderRadius: 6, padding: '4px 10px', cursor: 'pointer',
                                                                 }}
                                                             >
@@ -438,16 +438,16 @@ export default function PainelEmpresas() {
                                                         const completa = etapaCompleta(etapa);
                                                         return (
                                                             <div key={eIdx} style={{
-                                                                border: `1px solid ${etapa.enviado ? 'rgba(40,160,106,0.2)' : completa ? 'rgba(212,168,67,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                                                                border: `1px solid ${etapa.enviado ? 'rgba(40,160,106,0.2)' : completa ? 'rgba(0,117,222,0.2)' : 'var(--notion-border)'}`,
                                                                 borderRadius: 8, padding: '8px 10px',
-                                                                background: etapa.enviado ? 'rgba(40,160,106,0.04)' : completa ? 'rgba(212,168,67,0.04)' : 'rgba(255,255,255,0.01)',
+                                                                background: etapa.enviado ? 'rgba(40,160,106,0.04)' : completa ? 'rgba(0,117,222,0.04)' : 'var(--notion-bg-alt)',
                                                             }}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                         <span style={{
                                                                             fontSize: 9, fontWeight: 700,
-                                                                            color: etapa.enviado ? '#28A06A' : completa ? '#d4a843' : 'var(--notion-text-muted)',
-                                                                            background: etapa.enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(212,168,67,0.15)' : 'rgba(255,255,255,0.06)',
+                                                                            color: etapa.enviado ? '#28A06A' : completa ? '#0075de' : 'var(--notion-text-muted)',
+                                                                            background: etapa.enviado ? 'rgba(40,160,106,0.15)' : completa ? 'rgba(0,117,222,0.15)' : 'var(--notion-border)',
                                                                             borderRadius: 3, padding: '1px 5px',
                                                                         }}>{etapa.etapa}</span>
                                                                         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-text)' }}>{etapa.nome}</span>
@@ -457,7 +457,7 @@ export default function PainelEmpresas() {
                                                                             <Mail size={10} /> Enviado {new Date(etapa.enviado_em!).toLocaleDateString('pt-BR')}
                                                                         </span>
                                                                     ) : completa ? (
-                                                                        <span style={{ fontSize: 10, color: '#d4a843', fontWeight: 500 }}>Pronto p/ enviar</span>
+                                                                        <span style={{ fontSize: 10, color: '#0075de', fontWeight: 500 }}>Pronto p/ enviar</span>
                                                                     ) : (
                                                                         <span style={{ fontSize: 10, color: 'var(--notion-text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
                                                                             <Clock size={10} /> Aguardando docs
