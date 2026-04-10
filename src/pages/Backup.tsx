@@ -68,15 +68,17 @@ export default function Backup() {
                     Restaurar Dados
                 </h3>
                 <div
+                    className="alert-warning"
                     style={{
-                        background: 'var(--notion-orange)',
                         padding: 'var(--space-4)',
-                        borderRadius: 'var(--radius-md)',
                         marginBottom: 'var(--space-4)',
+                        display: 'flex',
+                        gap: 8,
+                        alignItems: 'center',
                     }}
                 >
-                    <p className="text-sm" style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <AlertTriangle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} />
+                    <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+                    <p className="text-sm" style={{ margin: 0 }}>
                         <strong>Atenção:</strong> A restauração vai substituir TODOS os dados atuais.
                     </p>
                 </div>

@@ -36,12 +36,12 @@ import type { OrdemDeServico, Cliente, Veiculo, StatusVistoria } from '../types'
 // CONFIGURAÇÃO DE STATUS
 // ============================================
 const STATUS_CONFIG: Record<StatusVistoria, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-    agendar:              { label: 'A Agendar',     color: 'var(--notion-orange)', bg: 'var(--notion-orange)',  icon: <CalendarDays size={12} /> },
-    agendada:             { label: 'Agendada',      color: 'var(--notion-blue)',    bg: 'rgba(55,114,255,0.1)',    icon: <CalendarIcon size={12} /> },
-    reagendar:            { label: 'Reagendar',     color: 'var(--notion-orange)',  bg: 'var(--notion-orange)',  icon: <CalendarDays size={12} /> },
-    aprovada:             { label: 'Aprovada',      color: 'var(--notion-green)', bg: 'var(--notion-green)', icon: <CheckCircle size={12} /> },
-    aprovada_apontamento: { label: 'Apontamento',   color: 'var(--notion-orange)',  bg: 'rgba(235,87,87,0.1)',  icon: <AlertTriangle size={12} /> },
-    reprovada:            { label: 'Reprovada',     color: 'var(--notion-orange)',  bg: 'var(--notion-orange)',  icon: <XCircle size={12} /> },
+    agendar:              { label: 'A Agendar',     color: '#d97706', bg: 'rgba(217,119,6,0.1)',  icon: <CalendarDays size={12} /> },
+    agendada:             { label: 'Agendada',      color: 'var(--notion-blue)',    bg: 'rgba(0,117,222,0.1)',    icon: <CalendarIcon size={12} /> },
+    reagendar:            { label: 'Reagendar',     color: '#d97706',  bg: 'rgba(217,119,6,0.1)',  icon: <CalendarDays size={12} /> },
+    aprovada:             { label: 'Aprovada',      color: '#059669', bg: 'rgba(5,150,105,0.1)', icon: <CheckCircle size={12} /> },
+    aprovada_apontamento: { label: 'Apontamento',   color: 'var(--notion-orange)',  bg: 'rgba(221,91,0,0.1)',  icon: <AlertTriangle size={12} /> },
+    reprovada:            { label: 'Reprovada',     color: '#dc2626',  bg: 'rgba(220,38,38,0.1)',  icon: <XCircle size={12} /> },
 };
 
 function getStatusConfig(status: StatusVistoria) {
@@ -228,8 +228,8 @@ export default function VistoriaCalendar() {
                         cursor: 'pointer',
                         fontSize: 'var(--text-sm)',
                         fontWeight: 600,
-                        background: view === 'list' ? 'var(--notion-blue)' : 'transparent',
-                        color: view === 'list' ? 'var(--notion-bg)' : 'var(--notion-text-secondary)',
+                        background: view === 'list' ? 'rgba(0,117,222,0.08)' : 'transparent',
+                        color: view === 'list' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
@@ -245,8 +245,8 @@ export default function VistoriaCalendar() {
                         cursor: 'pointer',
                         fontSize: 'var(--text-sm)',
                         fontWeight: 600,
-                        background: view === 'calendar' ? 'var(--notion-blue)' : 'transparent',
-                        color: view === 'calendar' ? 'var(--notion-bg)' : 'var(--notion-text-secondary)',
+                        background: view === 'calendar' ? 'rgba(0,117,222,0.08)' : 'transparent',
+                        color: view === 'calendar' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
@@ -300,11 +300,11 @@ export default function VistoriaCalendar() {
                 marginBottom: 24,
             }}>
                 {[
-                    { label: 'Total', value: monthStats.total, color: 'var(--notion-blue)', bg: 'var(--notion-blue)' },
-                    { label: 'Aprovadas', value: monthStats.aprovadas, color: 'var(--notion-green)', bg: 'var(--notion-green)' },
-                    { label: 'Agendadas', value: monthStats.agendadas, color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
-                    { label: 'Apontamento', value: monthStats.apontamento, color: 'var(--notion-orange)', bg: 'rgba(235,87,87,0.1)' },
-                    { label: 'Reprovadas', value: monthStats.reprovadas, color: 'var(--notion-orange)', bg: 'var(--notion-orange)' },
+                    { label: 'Total', value: monthStats.total, color: 'var(--notion-blue)', bg: 'rgba(0,117,222,0.1)' },
+                    { label: 'Aprovadas', value: monthStats.aprovadas, color: '#059669', bg: 'rgba(5,150,105,0.1)' },
+                    { label: 'Agendadas', value: monthStats.agendadas, color: 'var(--notion-blue)', bg: 'rgba(0,117,222,0.1)' },
+                    { label: 'Apontamento', value: monthStats.apontamento, color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
+                    { label: 'Reprovadas', value: monthStats.reprovadas, color: '#dc2626', bg: 'rgba(220,38,38,0.1)' },
                 ].map(stat => (
                     <div key={stat.label} style={{
                         background: 'var(--notion-surface)',
@@ -712,7 +712,7 @@ function ListView({
                                     fontSize: 'var(--text-xs)',
                                     fontWeight: 700,
                                     color: 'var(--notion-blue)',
-                                    background: 'var(--notion-blue)',
+                                    background: 'rgba(0,117,222,0.1)',
                                     padding: '4px 10px',
                                     borderRadius: 8,
                                 }}>HOJE</span>
