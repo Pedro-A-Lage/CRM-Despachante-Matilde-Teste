@@ -209,7 +209,7 @@ export const FieldGridDate: React.FC<{
                 type="date"
                 style={{
                     ...inputStyle,
-                    ...(vazio ? { borderColor: 'var(--notion-orange)', background: '#fffbeb' } : {}),
+                    ...(vazio ? { borderColor: 'var(--notion-orange)', background: 'rgba(221,91,0,0.08)' } : {}),
                 }}
                 value={toInputValue(value)}
                 onChange={e => onUpdate(path, e.target.value)}
