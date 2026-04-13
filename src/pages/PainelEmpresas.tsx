@@ -78,8 +78,8 @@ export default function PainelEmpresas() {
             .filter((os) => os.empresaParceiraId === selectedEmpresa)
             .filter((os) => {
                 // Filtro período
-                if (filtroPeriodo !== 'todos' && os.criado_em) {
-                    const criado = new Date(os.criado_em);
+                if (filtroPeriodo !== 'todos' && os.criadoEm) {
+                    const criado = new Date(os.criadoEm);
                     if (filtroPeriodo === 'este_mes') {
                         if (criado.getMonth() !== now.getMonth() || criado.getFullYear() !== now.getFullYear()) return false;
                     } else if (filtroPeriodo === 'mes_passado') {
