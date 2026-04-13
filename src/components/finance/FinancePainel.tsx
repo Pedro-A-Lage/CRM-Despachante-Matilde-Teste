@@ -546,16 +546,24 @@ export default function FinancePainel({
                   <button
                     onClick={() => setShowRecebimento(true)}
                     style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap',
-                      padding: '10px 20px', borderRadius: 8,
-                      background: 'var(--notion-green)', color: '#fff',
-                      border: 'none', cursor: 'pointer',
-                      boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap',
+                      padding: '6px 13px', borderRadius: 7,
+                      background: 'rgba(16,185,129,0.12)',
+                      color: 'var(--notion-green)',
+                      border: '1px solid rgba(16,185,129,0.35)',
+                      cursor: 'pointer',
+                      letterSpacing: '0.01em',
                       transition: 'all 0.15s ease',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16,185,129,0.4)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(16,185,129,0.3)'; }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(16,185,129,0.22)';
+                      e.currentTarget.style.borderColor = 'rgba(16,185,129,0.6)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'rgba(16,185,129,0.12)';
+                      e.currentTarget.style.borderColor = 'rgba(16,185,129,0.35)';
+                    }}
                   >
                     <IconPlus /> Registrar Pagamento
                   </button>
