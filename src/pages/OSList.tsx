@@ -188,12 +188,16 @@ export default function OSList() {
             result = result.filter((o) => {
                 const cliente = clientes.find((c) => c.id === o.clienteId);
                 const veiculo = veiculos.find((v) => v.id === o.veiculoId);
+                const nomeCliente = cliente?.nome ?? '';
+                const placaVeiculo = veiculo?.placa ?? '';
+                const chassiVeiculo = veiculo?.chassi ?? '';
+                const cpfCliente = cliente?.cpfCnpj ?? '';
                 return (
                     o.numero.toString().includes(term) ||
-                    cliente?.nome?.toLowerCase().includes(term) ||
-                    veiculo?.placa?.toLowerCase().includes(term) ||
-                    veiculo?.chassi?.toLowerCase().includes(term) ||
-                    cliente?.cpfCnpj?.replace(/\D/g, '').includes(term.replace(/\D/g, ''))
+                    nomeCliente.toLowerCase().includes(term) ||
+                    placaVeiculo.toLowerCase().includes(term) ||
+                    chassiVeiculo.toLowerCase().includes(term) ||
+                    cpfCliente.replace(/\D/g, '').includes(term.replace(/\D/g, ''))
                 );
             });
         }
