@@ -260,7 +260,7 @@ export function sincronizarEnviosComEtapas(
         } else {
             // Verificar se a ordem/composição mudou
             for (let i = 0; i < documentosSincronizados.length; i++) {
-                if (documentosSincronizados[i].tipo !== etapaExistente.documentos[i]?.tipo) {
+                if (documentosSincronizados[i]!.tipo !== etapaExistente.documentos[i]?.tipo) {
                     mudou = true;
                     break;
                 }
