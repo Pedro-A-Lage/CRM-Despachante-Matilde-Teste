@@ -89,7 +89,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import FinancePainel from '../components/finance/FinancePainel';
 import { getChargesByOS, getPaymentsByOS, marcarCustoPago, cancelarCobrancasDaOS, getPriceByCodigo, updateCharge } from '../lib/financeService';
 import { EmpresaEnviosSection } from '../components/EmpresaEnviosSection';
-import { getEmpresa, getEmpresasAtivas, criarEnviosStatusFromEtapas } from '../lib/empresaService';
+import { getEmpresa, getEmpresasAtivas, criarEnviosStatusFromEtapas, sincronizarEnviosComEtapas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { gerarComunicadoExtravio, gerarRequerimento2Via } from '../lib/gerarDocumentos2Via';
 
@@ -480,7 +480,19 @@ export default function OSDetail() {
         if (ordem) {
             setOs(ordem);
             if (ordem.empresaParceiraId) {
-                getEmpresa(ordem.empresaParceiraId).then(setEmpresa);
+                getEmpresa(ordem.empresaParceiraId).then((emp) => {
+                    setEmpresa(emp);
+                    // Sincronizar enviosStatus com config atual da empresa
+                    if (emp && ordem.enviosStatus && ordem.enviosStatus.length > 0) {
+                        const { envios, mudou } = sincronizarEnviosComEtapas(
+                            ordem.enviosStatus, emp.etapasEnvio, ordem.trocaPlaca ?? false
+                        );
+                        if (mudou) {
+                            updateOrdem(ordem.id, { enviosStatus: envios });
+                            setOs((prev) => prev ? { ...prev, enviosStatus: envios } : prev);
+                        }
+                    }
+                });
             }
             getEmpresasAtivas().then(setEmpresasAtivas);
             const [c, v, payments] = await Promise.all([
