@@ -1924,7 +1924,7 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
 // ---- Checklist inline primitives (outside component to avoid re-mount) ----
 const CKColCard = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
     <div style={{
-        background: 'var(--notion-surface))',
+        background: 'var(--notion-surface)',
         border: '1px solid var(--notion-border)',
         borderRadius: 10,
         overflow: 'hidden',
@@ -3854,6 +3854,8 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
 
     useEffect(() => {
         const handleExtensionMessage = async (event: MessageEvent) => {
+            // Validar origem da mensagem
+            if (event.origin !== window.location.origin && !event.origin.startsWith('chrome-extension://')) return;
             if (event.data?.source !== 'MATILDE_EXTENSION') return;
 
             if (event.data?.type === 'CRLV_DOWNLOAD_COMPLETE') {

@@ -91,6 +91,16 @@ export async function saveEmpresa(empresa: Partial<EmpresaParceira> & { nome: st
 }
 
 export async function deleteEmpresa(id: string): Promise<void> {
+    // Verificar se existem OS vinculadas a esta empresa
+    const { data: osVinculadas } = await supabase
+        .from('ordens_de_servico')
+        .select('id')
+        .eq('empresa_parceira_id', id)
+        .limit(1);
+    if (osVinculadas && osVinculadas.length > 0) {
+        throw new Error('Não é possível excluir empresa com ordens de serviço vinculadas. Desvincule as OS primeiro.');
+    }
+
     const { error } = await supabase
         .from('empresas_parceiras')
         .delete()

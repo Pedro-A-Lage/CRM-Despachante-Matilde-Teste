@@ -22,8 +22,8 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
 
     const confirm: ConfirmFn = (opts) => {
         return new Promise<boolean>((resolve) => {
-            const parsedOpts = typeof opts === 'string' ? { message: opts, danger: true } : opts;
-            setOptions({ danger: true, ...parsedOpts });
+            const parsedOpts = typeof opts === 'string' ? { message: opts } : opts;
+            setOptions({ danger: false, ...parsedOpts });
             setResolver({ resolve });
             setOpen(true);
         });

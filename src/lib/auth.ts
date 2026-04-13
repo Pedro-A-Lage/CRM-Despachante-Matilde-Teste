@@ -22,18 +22,50 @@ function dbToUsuario(row: any): Usuario {
     };
 }
 
+// Rate limiting para login — máximo de tentativas por janela de tempo
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 5 * 60 * 1000; // 5 minutos
+const loginAttempts = new Map<string, { count: number; firstAttempt: number }>();
+
 export async function login(nome: string, senha: string): Promise<Usuario | null> {
+    // Verificar rate limit
+    const key = nome.toLowerCase();
+    const now = Date.now();
+    const record = loginAttempts.get(key);
+    if (record) {
+        if (now - record.firstAttempt > LOGIN_WINDOW_MS) {
+            // Janela expirou, resetar
+            loginAttempts.delete(key);
+        } else if (record.count >= LOGIN_MAX_ATTEMPTS) {
+            throw new Error(`Muitas tentativas de login. Aguarde ${Math.ceil((LOGIN_WINDOW_MS - (now - record.firstAttempt)) / 60000)} minuto(s).`);
+        }
+    }
+
     const { data, error } = await supabase
         .from('usuarios')
         .select('*')
         .eq('nome', nome)
         .single();
 
-    if (error || !data) return null;
+    if (error || !data) {
+        // Registrar tentativa falha
+        const existing = loginAttempts.get(key);
+        if (existing) { existing.count++; }
+        else { loginAttempts.set(key, { count: 1, firstAttempt: now }); }
+        return null;
+    }
 
     const hash = await hashSenha(senha);
-    if (hash !== data.senha_hash) return null;
+    if (hash !== data.senha_hash) {
+        // Registrar tentativa falha
+        const existing = loginAttempts.get(key);
+        if (existing) { existing.count++; }
+        else { loginAttempts.set(key, { count: 1, firstAttempt: now }); }
+        return null;
+    }
 
+    // Login bem sucedido — limpar tentativas
+    loginAttempts.delete(key);
     return dbToUsuario(data);
 }
 

@@ -62,7 +62,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  background: 'var(--notion-surface))',
+  background: 'var(--notion-surface)',
   border: '1px solid var(--notion-border)',
   borderRadius: 16,
   padding: 20,
