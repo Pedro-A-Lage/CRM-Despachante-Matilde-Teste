@@ -36,12 +36,12 @@ import type { OrdemDeServico, Cliente, Veiculo, StatusVistoria } from '../types'
 // CONFIGURAÇÃO DE STATUS
 // ============================================
 const STATUS_CONFIG: Record<StatusVistoria, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-    agendar:              { label: 'A Agendar',     color: 'var(--color-warning)', bg: 'var(--color-warning-bg)',  icon: <CalendarDays size={12} /> },
-    agendada:             { label: 'Agendada',      color: 'var(--color-info)',    bg: 'var(--color-info-bg)',    icon: <CalendarIcon size={12} /> },
-    reagendar:            { label: 'Reagendar',     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)',  icon: <CalendarDays size={12} /> },
-    aprovada:             { label: 'Aprovada',      color: 'var(--color-success)', bg: 'var(--color-success-bg)', icon: <CheckCircle size={12} /> },
-    aprovada_apontamento: { label: 'Apontamento',   color: 'var(--color-orange)',  bg: 'var(--color-orange-bg)',  icon: <AlertTriangle size={12} /> },
-    reprovada:            { label: 'Reprovada',     color: 'var(--color-danger)',  bg: 'var(--color-danger-bg)',  icon: <XCircle size={12} /> },
+    agendar:              { label: 'A Agendar',     color: '#d97706', bg: 'rgba(217,119,6,0.1)',  icon: <CalendarDays size={12} /> },
+    agendada:             { label: 'Agendada',      color: 'var(--notion-blue)',    bg: 'rgba(0,117,222,0.1)',    icon: <CalendarIcon size={12} /> },
+    reagendar:            { label: 'Reagendar',     color: '#d97706',  bg: 'rgba(217,119,6,0.1)',  icon: <CalendarDays size={12} /> },
+    aprovada:             { label: 'Aprovada',      color: '#059669', bg: 'rgba(5,150,105,0.1)', icon: <CheckCircle size={12} /> },
+    aprovada_apontamento: { label: 'Apontamento',   color: 'var(--notion-orange)',  bg: 'rgba(221,91,0,0.1)',  icon: <AlertTriangle size={12} /> },
+    reprovada:            { label: 'Reprovada',     color: '#dc2626',  bg: 'rgba(220,38,38,0.1)',  icon: <XCircle size={12} /> },
 };
 
 function getStatusConfig(status: StatusVistoria) {
@@ -130,8 +130,8 @@ export default function VistoriaCalendar() {
     if (loading) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: 12 }}>
-                <Loader2 size={24} className="spin" style={{ color: 'var(--color-primary)' }} />
-                <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-sm)' }}>Carregando agenda...</span>
+                <Loader2 size={24} className="spin" style={{ color: 'var(--notion-blue)' }} />
+                <span style={{ color: 'var(--notion-text-secondary)', fontSize: 'var(--text-sm)' }}>Carregando agenda...</span>
             </div>
         );
     }
@@ -149,7 +149,7 @@ export default function VistoriaCalendar() {
                     .vc-desktop { display: block !important; }
                     .vc-mobile { display: none !important; }
                 }
-                .vc-day-cell:hover { background: var(--color-primary-50) !important; }
+                .vc-day-cell:hover { background: rgba(0,117,222,0.04) !important; }
                 .vc-event:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
             `}</style>
 
@@ -165,20 +165,20 @@ export default function VistoriaCalendar() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <button onClick={prevMonth} style={{
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--border-color)',
+                            background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)',
                             borderRadius: 8,
                             padding: '8px 10px',
                             cursor: 'pointer',
-                            color: 'var(--color-text-secondary)',
+                            color: 'var(--notion-text-secondary)',
                             display: 'flex',
                             alignItems: 'center',
                         }}>
                             <ChevronLeft size={18} />
                         </button>
                         <button onClick={goToday} style={{
-                            background: 'var(--color-primary)',
-                            color: 'var(--color-text-inverse)',
+                            background: 'var(--notion-blue)',
+                            color: 'var(--notion-bg)',
                             border: 'none',
                             borderRadius: 8,
                             padding: '8px 16px',
@@ -189,12 +189,12 @@ export default function VistoriaCalendar() {
                             Hoje
                         </button>
                         <button onClick={nextMonth} style={{
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--border-color)',
+                            background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)',
                             borderRadius: 8,
                             padding: '8px 10px',
                             cursor: 'pointer',
-                            color: 'var(--color-text-secondary)',
+                            color: 'var(--notion-text-secondary)',
                             display: 'flex',
                             alignItems: 'center',
                         }}>
@@ -204,7 +204,7 @@ export default function VistoriaCalendar() {
                     <h2 style={{
                         fontSize: 'var(--text-2xl)',
                         fontWeight: 700,
-                        color: 'var(--color-text-primary)',
+                        color: 'var(--notion-text)',
                         textTransform: 'capitalize',
                         margin: 0,
                     }}>
@@ -216,8 +216,8 @@ export default function VistoriaCalendar() {
                 <div className="vc-desktop" style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
                     borderRadius: 10,
                     overflow: 'hidden',
                     minWidth: 140,
@@ -228,8 +228,8 @@ export default function VistoriaCalendar() {
                         cursor: 'pointer',
                         fontSize: 'var(--text-sm)',
                         fontWeight: 600,
-                        background: view === 'list' ? 'var(--color-primary)' : 'transparent',
-                        color: view === 'list' ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+                        background: view === 'list' ? 'rgba(0,117,222,0.08)' : 'transparent',
+                        color: view === 'list' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
@@ -245,15 +245,15 @@ export default function VistoriaCalendar() {
                         cursor: 'pointer',
                         fontSize: 'var(--text-sm)',
                         fontWeight: 600,
-                        background: view === 'calendar' ? 'var(--color-primary)' : 'transparent',
-                        color: view === 'calendar' ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+                        background: view === 'calendar' ? 'rgba(0,117,222,0.08)' : 'transparent',
+                        color: view === 'calendar' ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
                         width: '100%',
                         textAlign: 'left',
                         transition: 'all 0.15s',
-                        borderTop: '1px solid var(--border-color)',
+                        borderTop: '1px solid var(--notion-border)',
                     }}>
                         <CalendarIcon size={14} /> Calendário
                     </button>
@@ -275,14 +275,14 @@ export default function VistoriaCalendar() {
                         }}
                         style={{
                             padding: '7px 22px',
-                            border: period === key ? 'none' : '1px solid var(--border-color)',
+                            border: period === key ? 'none' : '1px solid var(--notion-border)',
                             borderRadius: 20,
                             cursor: 'pointer',
                             fontFamily: 'inherit',
                             fontSize: 'var(--text-sm)',
                             fontWeight: 600,
-                            background: period === key ? 'var(--color-primary)' : 'var(--bg-card)',
-                            color: period === key ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+                            background: period === key ? 'var(--notion-blue)' : 'var(--notion-surface)',
+                            color: period === key ? 'var(--notion-bg)' : 'var(--notion-text-secondary)',
                             transition: 'all 0.15s',
                             boxShadow: period === key ? '0 2px 8px rgba(0,0,0,0.25)' : 'none',
                         }}
@@ -300,15 +300,15 @@ export default function VistoriaCalendar() {
                 marginBottom: 24,
             }}>
                 {[
-                    { label: 'Total', value: monthStats.total, color: 'var(--color-primary)', bg: 'var(--color-primary-50)' },
-                    { label: 'Aprovadas', value: monthStats.aprovadas, color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
-                    { label: 'Agendadas', value: monthStats.agendadas, color: 'var(--color-info)', bg: 'var(--color-info-bg)' },
-                    { label: 'Apontamento', value: monthStats.apontamento, color: 'var(--color-orange)', bg: 'var(--color-orange-bg)' },
-                    { label: 'Reprovadas', value: monthStats.reprovadas, color: 'var(--color-danger)', bg: 'var(--color-danger-bg)' },
+                    { label: 'Total', value: monthStats.total, color: 'var(--notion-blue)', bg: 'rgba(0,117,222,0.1)' },
+                    { label: 'Aprovadas', value: monthStats.aprovadas, color: '#059669', bg: 'rgba(5,150,105,0.1)' },
+                    { label: 'Agendadas', value: monthStats.agendadas, color: 'var(--notion-blue)', bg: 'rgba(0,117,222,0.1)' },
+                    { label: 'Apontamento', value: monthStats.apontamento, color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
+                    { label: 'Reprovadas', value: monthStats.reprovadas, color: '#dc2626', bg: 'rgba(220,38,38,0.1)' },
                 ].map(stat => (
                     <div key={stat.label} style={{
-                        background: 'var(--bg-card)',
-                        border: '1px solid var(--border-color)',
+                        background: 'var(--notion-surface)',
+                        border: '1px solid var(--notion-border)',
                         borderRadius: 12,
                         padding: '16px 20px',
                         display: 'flex',
@@ -332,7 +332,7 @@ export default function VistoriaCalendar() {
                         <span style={{
                             fontSize: 'var(--text-xs)',
                             fontWeight: 600,
-                            color: 'var(--color-text-tertiary)',
+                            color: 'var(--notion-text-secondary)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em',
                         }}>{stat.label}</span>
@@ -423,8 +423,8 @@ function CalendarGrid({
 
     return (
         <div style={{
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
+            background: 'var(--notion-surface)',
+            border: '1px solid var(--notion-border)',
             borderRadius: 16,
             overflow: 'hidden',
         }}>
@@ -432,7 +432,7 @@ function CalendarGrid({
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(7, 1fr)',
-                borderBottom: '1px solid var(--border-color)',
+                borderBottom: '1px solid var(--notion-border)',
             }}>
                 {dayNames.map(name => (
                     <div key={name} style={{
@@ -442,7 +442,7 @@ function CalendarGrid({
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.08em',
-                        color: 'var(--color-text-tertiary)',
+                        color: 'var(--notion-text-secondary)',
                     }}>
                         {name}
                     </div>
@@ -454,7 +454,7 @@ function CalendarGrid({
                 <div key={wi} style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(7, 1fr)',
-                    borderBottom: wi < weeks.length - 1 ? '1px solid var(--border-color)' : 'none',
+                    borderBottom: wi < weeks.length - 1 ? '1px solid var(--notion-border)' : 'none',
                 }}>
                     {week.map((d, di) => {
                         const vistorias = getVistoriasForDay(d);
@@ -470,13 +470,13 @@ function CalendarGrid({
                                 style={{
                                     minHeight: 110,
                                     padding: 8,
-                                    borderRight: di < 6 ? '1px solid var(--border-color)' : 'none',
+                                    borderRight: di < 6 ? '1px solid var(--notion-border)' : 'none',
                                     cursor: 'pointer',
                                     opacity: isCurrentMonth ? 1 : 0.35,
                                     background: isSelected
-                                        ? 'var(--color-primary-50)'
+                                        ? 'rgba(0,117,222,0.06)'
                                         : isToday
-                                            ? 'rgba(255,193,7,0.04)'
+                                            ? 'rgba(0,117,222,0.03)'
                                             : 'transparent',
                                     transition: 'background 0.15s ease',
                                     position: 'relative',
@@ -498,8 +498,8 @@ function CalendarGrid({
                                         borderRadius: '50%',
                                         fontSize: 'var(--text-sm)',
                                         fontWeight: isToday ? 800 : 600,
-                                        background: isToday ? 'var(--color-primary)' : 'transparent',
-                                        color: isToday ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
+                                        background: isToday ? 'var(--notion-blue)' : 'transparent',
+                                        color: isToday ? 'var(--notion-bg)' : 'var(--notion-text-secondary)',
                                     }}>
                                         {format(d, 'd')}
                                     </span>
@@ -507,8 +507,8 @@ function CalendarGrid({
                                         <span style={{
                                             fontSize: 10,
                                             fontWeight: 700,
-                                            color: 'var(--color-primary)',
-                                            background: 'var(--color-primary-50)',
+                                            color: 'var(--notion-blue)',
+                                            background: 'rgba(0,117,222,0.1)',
                                             padding: '2px 6px',
                                             borderRadius: 8,
                                         }}>
@@ -559,7 +559,7 @@ function CalendarGrid({
                                                 </div>
                                                 <div style={{
                                                     fontWeight: 600,
-                                                    color: 'var(--color-text-primary)',
+                                                    color: 'var(--notion-text)',
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis',
@@ -617,17 +617,17 @@ function ListView({
     if (vistoriasMes.length === 0) {
         return (
             <div style={{
-                background: 'var(--bg-card)',
-                border: '2px dashed var(--border-color)',
+                background: 'var(--notion-surface)',
+                border: '2px dashed var(--notion-border)',
                 borderRadius: 16,
                 padding: 48,
                 textAlign: 'center',
             }}>
-                <CalendarIcon size={48} style={{ color: 'var(--color-text-tertiary)', margin: '0 auto 16px', opacity: 0.3 }} />
-                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 8 }}>
+                <CalendarIcon size={48} style={{ color: 'var(--notion-text-secondary)', margin: '0 auto 16px', opacity: 0.3 }} />
+                <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--notion-text)', marginBottom: 8 }}>
                     Nenhuma vistoria neste mês
                 </h3>
-                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-tertiary)' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--notion-text-secondary)' }}>
                     As vistorias agendadas aparecerão aqui automaticamente.
                 </p>
             </div>
@@ -656,14 +656,14 @@ function ListView({
                             gap: 12,
                             marginBottom: 12,
                             paddingBottom: 8,
-                            borderBottom: '2px solid var(--border-color)',
+                            borderBottom: '2px solid var(--notion-border)',
                         }}>
                             <div style={{
                                 width: 48,
                                 height: 48,
                                 borderRadius: 12,
-                                background: isToday ? 'var(--color-primary)' : 'var(--bg-card)',
-                                border: isToday ? 'none' : '1px solid var(--border-color)',
+                                background: isToday ? 'var(--notion-blue)' : 'var(--notion-surface)',
+                                border: isToday ? 'none' : '1px solid var(--notion-border)',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
@@ -673,7 +673,7 @@ function ListView({
                                 <span style={{
                                     fontSize: 'var(--text-lg)',
                                     fontWeight: 800,
-                                    color: isToday ? 'var(--color-text-inverse)' : 'var(--color-text-primary)',
+                                    color: isToday ? 'var(--notion-bg)' : 'var(--notion-text)',
                                     lineHeight: 1,
                                 }}>
                                     {format(dateObj, 'd')}
@@ -682,7 +682,7 @@ function ListView({
                                     fontSize: 9,
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
-                                    color: isToday ? 'rgba(0,0,0,0.6)' : 'var(--color-text-tertiary)',
+                                    color: isToday ? 'rgba(0,0,0,0.6)' : 'var(--notion-text-secondary)',
                                     lineHeight: 1,
                                     marginTop: 2,
                                 }}>
@@ -693,7 +693,7 @@ function ListView({
                                 <h3 style={{
                                     fontSize: 'var(--text-base)',
                                     fontWeight: 700,
-                                    color: 'var(--color-text-primary)',
+                                    color: 'var(--notion-text)',
                                     margin: 0,
                                     textTransform: 'capitalize',
                                 }}>
@@ -701,7 +701,7 @@ function ListView({
                                 </h3>
                                 <span style={{
                                     fontSize: 'var(--text-xs)',
-                                    color: 'var(--color-text-tertiary)',
+                                    color: 'var(--notion-text-secondary)',
                                 }}>
                                     {grouped[dateStr]!.length} vistoria{grouped[dateStr]!.length > 1 ? 's' : ''}
                                 </span>
@@ -711,8 +711,8 @@ function ListView({
                                     marginLeft: 'auto',
                                     fontSize: 'var(--text-xs)',
                                     fontWeight: 700,
-                                    color: 'var(--color-primary)',
-                                    background: 'var(--color-primary-50)',
+                                    color: 'var(--notion-blue)',
+                                    background: 'rgba(0,117,222,0.1)',
                                     padding: '4px 10px',
                                     borderRadius: 8,
                                 }}>HOJE</span>
@@ -753,8 +753,8 @@ function VistoriaCard({ os, cliente, veiculo }: {
             style={{
                 display: 'flex',
                 alignItems: 'stretch',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)',
+                border: '1px solid var(--notion-border)',
                 borderRadius: 12,
                 overflow: 'hidden',
                 textDecoration: 'none',
@@ -766,7 +766,7 @@ function VistoriaCard({ os, cliente, veiculo }: {
                 (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px rgba(0,0,0,0.2)`;
             }}
             onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-color)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--notion-border)';
                 (e.currentTarget as HTMLElement).style.boxShadow = 'none';
             }}
         >
@@ -785,14 +785,14 @@ function VistoriaCard({ os, cliente, veiculo }: {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '12px 0',
-                borderRight: '1px solid var(--border-color)',
+                borderRight: '1px solid var(--notion-border)',
                 flexShrink: 0,
             }}>
                 <Clock size={14} style={{ color: cfg.color, marginBottom: 4 }} />
                 <span style={{
                     fontSize: 'var(--text-base)',
                     fontWeight: 800,
-                    color: 'var(--color-text-primary)',
+                    color: 'var(--notion-text)',
                 }}>
                     {os.vistoria?.horaAgendamento || '—'}
                 </span>
@@ -816,7 +816,7 @@ function VistoriaCard({ os, cliente, veiculo }: {
                     <span style={{
                         fontSize: 'var(--text-sm)',
                         fontWeight: 700,
-                        color: 'var(--color-text-primary)',
+                        color: 'var(--notion-text)',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -845,7 +845,7 @@ function VistoriaCard({ os, cliente, veiculo }: {
                     alignItems: 'center',
                     gap: 12,
                     fontSize: 'var(--text-xs)',
-                    color: 'var(--color-text-tertiary)',
+                    color: 'var(--notion-text-secondary)',
                 }}>
                     {veiculo && (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
@@ -861,7 +861,7 @@ function VistoriaCard({ os, cliente, veiculo }: {
                         alignItems: 'center',
                         gap: 4,
                         fontSize: 11,
-                        color: 'var(--color-text-tertiary)',
+                        color: 'var(--notion-text-secondary)',
                         marginTop: 2,
                     }}>
                         <MapPin size={11} style={{ flexShrink: 0 }} />
@@ -894,8 +894,8 @@ function DayDetailPanel({ day, vistorias, clientes, veiculos, onClose }: {
     return (
         <div style={{
             marginTop: 24,
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
+            background: 'var(--notion-surface)',
+            border: '1px solid var(--notion-border)',
             borderRadius: 16,
             overflow: 'hidden',
         }}>
@@ -905,15 +905,15 @@ function DayDetailPanel({ day, vistorias, clientes, veiculos, onClose }: {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '16px 20px',
-                borderBottom: '1px solid var(--border-color)',
-                background: 'var(--color-primary-50)',
+                borderBottom: '1px solid var(--notion-border)',
+                background: 'var(--notion-blue)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <CalendarIcon size={18} style={{ color: 'var(--color-primary)' }} />
+                    <CalendarIcon size={18} style={{ color: 'var(--notion-blue)' }} />
                     <span style={{
                         fontSize: 'var(--text-base)',
                         fontWeight: 700,
-                        color: 'var(--color-text-primary)',
+                        color: 'var(--notion-text)',
                         textTransform: 'capitalize',
                     }}>
                         {format(day, "EEEE, dd 'de' MMMM", { locale: ptBR })}
@@ -921,8 +921,8 @@ function DayDetailPanel({ day, vistorias, clientes, veiculos, onClose }: {
                     <span style={{
                         fontSize: 'var(--text-xs)',
                         fontWeight: 600,
-                        color: 'var(--color-primary)',
-                        background: 'var(--color-primary-100)',
+                        color: 'var(--notion-blue)',
+                        background: 'var(--notion-blue)',
                         padding: '2px 8px',
                         borderRadius: 6,
                     }}>
@@ -933,7 +933,7 @@ function DayDetailPanel({ day, vistorias, clientes, veiculos, onClose }: {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: 'var(--color-text-tertiary)',
+                    color: 'var(--notion-text-secondary)',
                     fontSize: 'var(--text-lg)',
                     fontWeight: 700,
                     padding: '4px 8px',

@@ -51,19 +51,19 @@ function exportCSV(rows: Record<string, unknown>[], filename: string) {
 
 const inputStyle: React.CSSProperties = {
   marginTop: 4,
-  border: '1px solid var(--border-color)',
+  border: '1px solid var(--notion-border)',
   borderRadius: 8,
   padding: '8px 12px',
   fontSize: 14,
   background: 'var(--bg-surface)',
-  color: 'var(--color-text-primary)',
+  color: 'var(--notion-text)',
   outline: 'none',
   fontFamily: 'inherit',
 };
 
 const cardStyle: React.CSSProperties = {
-  background: 'var(--bg-card, var(--bg-surface))',
-  border: '1px solid var(--border-color)',
+  background: 'var(--notion-surface))',
+  border: '1px solid var(--notion-border)',
   borderRadius: 16,
   padding: 20,
 };
@@ -136,14 +136,14 @@ export default function Financeiro() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 20 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--notion-text)', marginBottom: 20 }}>
         Financeiro
       </h1>
 
       {erro && (
         <div style={{
-          background: 'rgba(220,38,38,0.08)', border: '1px solid var(--color-danger)',
-          color: 'var(--color-danger)', borderRadius: 8, padding: '12px 16px', fontSize: 14, marginBottom: 16,
+          background: 'rgba(220,38,38,0.08)', border: '1px solid var(--notion-orange)',
+          color: 'var(--notion-orange)', borderRadius: 8, padding: '12px 16px', fontSize: 14, marginBottom: 16,
         }}>
           {erro}
         </div>
@@ -153,23 +153,23 @@ export default function Financeiro() {
           {/* Filtro de período + Export button */}
           <div style={{
             display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end',
-            background: 'var(--bg-surface)', border: '1px solid var(--border-color)',
+            background: 'var(--bg-surface)', border: '1px solid var(--notion-border)',
             borderRadius: 12, padding: 16,
           }}>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block' }}>De</label>
+              <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--notion-text-secondary)', display: 'block' }}>De</label>
               <input type="date" value={inicio} onChange={e => setInicio(e.target.value)} style={inputStyle} />
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)', display: 'block' }}>Até</label>
+              <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--notion-text-secondary)', display: 'block' }}>Até</label>
               <input type="date" value={fim} onChange={e => setFim(e.target.value)} style={inputStyle} />
             </div>
             <button
               onClick={carregar}
               disabled={loading}
               style={{
-                padding: '8px 20px', background: 'var(--color-primary)',
-                color: 'var(--color-text-on-primary, #fff)', borderRadius: 8, fontSize: 14,
+                padding: '8px 20px', background: 'var(--notion-blue)',
+                color: 'var(--notion-bg)', borderRadius: 8, fontSize: 14,
                 border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.5 : 1, fontFamily: 'inherit', fontWeight: 600,
               }}
@@ -184,9 +184,9 @@ export default function Financeiro() {
                   onClick={() => setEmpresaFilter('')}
                   style={{
                     padding: '5px 14px', fontSize: 12, fontWeight: empresaFilter === '' ? 700 : 400,
-                    borderRadius: 20, border: empresaFilter === '' ? 'none' : '1px solid var(--border-color)',
-                    background: empresaFilter === '' ? 'var(--color-primary)' : 'var(--bg-surface)',
-                    color: empresaFilter === '' ? 'var(--color-text-on-primary)' : 'var(--color-text-secondary)',
+                    borderRadius: 20, border: empresaFilter === '' ? 'none' : '1px solid var(--notion-border)',
+                    background: empresaFilter === '' ? 'var(--notion-blue)' : 'var(--bg-surface)',
+                    color: empresaFilter === '' ? 'var(--notion-bg)' : 'var(--notion-text-secondary)',
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >
@@ -198,9 +198,9 @@ export default function Financeiro() {
                     onClick={() => setEmpresaFilter(emp.id)}
                     style={{
                       padding: '5px 14px', fontSize: 12, fontWeight: empresaFilter === emp.id ? 700 : 400,
-                      borderRadius: 20, border: empresaFilter === emp.id ? 'none' : '1px solid var(--border-color)',
+                      borderRadius: 20, border: empresaFilter === emp.id ? 'none' : '1px solid var(--notion-border)',
                       background: empresaFilter === emp.id ? emp.cor : 'var(--bg-surface)',
-                      color: empresaFilter === emp.id ? '#fff' : 'var(--color-text-secondary)',
+                      color: empresaFilter === emp.id ? '#fff' : 'var(--notion-text-secondary)',
                       cursor: 'pointer', fontFamily: 'inherit',
                     }}
                   >
@@ -211,9 +211,9 @@ export default function Financeiro() {
                   onClick={() => setEmpresaFilter('particular')}
                   style={{
                     padding: '5px 14px', fontSize: 12, fontWeight: empresaFilter === 'particular' ? 700 : 400,
-                    borderRadius: 20, border: empresaFilter === 'particular' ? 'none' : '1px solid var(--border-color)',
+                    borderRadius: 20, border: empresaFilter === 'particular' ? 'none' : '1px solid var(--notion-border)',
                     background: empresaFilter === 'particular' ? '#374151' : 'var(--bg-surface)',
-                    color: empresaFilter === 'particular' ? '#fff' : 'var(--color-text-secondary)',
+                    color: empresaFilter === 'particular' ? '#fff' : 'var(--notion-text-secondary)',
                     cursor: 'pointer', fontFamily: 'inherit',
                   }}
                 >
@@ -229,9 +229,9 @@ export default function Financeiro() {
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '8px 16px',
                   background: 'transparent',
-                  border: '1px solid var(--border-color)',
+                  border: '1px solid var(--notion-border)',
                   borderRadius: 8, fontSize: 14,
-                  color: 'var(--color-text-secondary)',
+                  color: 'var(--notion-text-secondary)',
                   cursor: 'pointer', fontFamily: 'inherit', fontWeight: 500,
                   marginLeft: 'auto',
                 }}
@@ -245,13 +245,13 @@ export default function Financeiro() {
           {/* Cards resumo */}
           {relatorio && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-              <SummaryCard label="Receita" value={fmt(relatorio.receita)} color="var(--color-primary)"
+              <SummaryCard label="Receita" value={fmt(relatorio.receita)} color="var(--notion-blue)"
                 subtitle={`${relatorio.osCount} OS no período`} />
-              <SummaryCard label="Custos" value={fmt(relatorio.totalCustos)} color="var(--color-warning)" />
+              <SummaryCard label="Custos" value={fmt(relatorio.totalCustos)} color="var(--notion-orange)" />
               <SummaryCard label="Honorários" value={fmt(relatorio.honorarios)}
-                color={relatorio.honorarios >= 0 ? 'var(--color-success)' : 'var(--color-danger)'} />
-              <SummaryCard label="Recebido" value={fmt(relatorio.totalRecebido)} color="var(--color-success)" />
-              <SummaryCard label="A Receber" value={fmt(relatorio.aReceber)} color="var(--color-warning)" />
+                color={relatorio.honorarios >= 0 ? 'var(--notion-green)' : 'var(--notion-orange)'} />
+              <SummaryCard label="Recebido" value={fmt(relatorio.totalRecebido)} color="var(--notion-green)" />
+              <SummaryCard label="A Receber" value={fmt(relatorio.aReceber)} color="var(--notion-orange)" />
             </div>
           )}
 
@@ -261,21 +261,21 @@ export default function Financeiro() {
 
               {/* Chart 1: Receita x Custos x Honorários por mês */}
               <div style={cardStyle}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Receita · Custos · Honorários por Mês
                 </p>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={mensal} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
                     <XAxis
                       dataKey="label"
-                      tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }}
+                      tick={{ fontSize: 11, fill: 'var(--notion-text-secondary)' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
                       tickFormatter={fmtShort}
-                      tick={{ fontSize: 10, fill: 'var(--color-text-secondary)' }}
+                      tick={{ fontSize: 10, fill: 'var(--notion-text-secondary)' }}
                       axisLine={false}
                       tickLine={false}
                       width={52}
@@ -284,14 +284,14 @@ export default function Financeiro() {
                       formatter={(value) => [fmt(Number(value ?? 0))]}
                       contentStyle={{
                         background: 'var(--bg-surface)',
-                        border: '1px solid var(--border-color)',
+                        border: '1px solid var(--notion-border)',
                         borderRadius: 8,
                         fontSize: 12,
                       }}
-                      labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
+                      labelStyle={{ color: 'var(--notion-text)', fontWeight: 600 }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <Bar dataKey="receita" name="Receita" fill="#f59e0b" radius={[3, 3, 0, 0]} />
+                    <Bar dataKey="receita" name="Receita" fill="var(--notion-blue)" radius={[3, 3, 0, 0]} />
                     <Bar dataKey="custos" name="Custos" fill="#ef4444" radius={[3, 3, 0, 0]} />
                     <Bar dataKey="honorarios" name="Honorários" fill="#22c55e" radius={[3, 3, 0, 0]} />
                   </BarChart>
@@ -300,7 +300,7 @@ export default function Financeiro() {
 
               {/* Chart 2: Recebido x Pendente por mês */}
               <div style={cardStyle}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Recebido x Pendente por Mês
                 </p>
                 <ResponsiveContainer width="100%" height={260}>
@@ -311,20 +311,20 @@ export default function Financeiro() {
                         <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="gradPendente" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
+                        <stop offset="5%" stopColor="var(--notion-blue)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="var(--notion-blue)" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.08)" />
                     <XAxis
                       dataKey="label"
-                      tick={{ fontSize: 11, fill: 'var(--color-text-secondary)' }}
+                      tick={{ fontSize: 11, fill: 'var(--notion-text-secondary)' }}
                       axisLine={false}
                       tickLine={false}
                     />
                     <YAxis
                       tickFormatter={fmtShort}
-                      tick={{ fontSize: 10, fill: 'var(--color-text-secondary)' }}
+                      tick={{ fontSize: 10, fill: 'var(--notion-text-secondary)' }}
                       axisLine={false}
                       tickLine={false}
                       width={52}
@@ -333,11 +333,11 @@ export default function Financeiro() {
                       formatter={(value) => [fmt(Number(value ?? 0))]}
                       contentStyle={{
                         background: 'var(--bg-surface)',
-                        border: '1px solid var(--border-color)',
+                        border: '1px solid var(--notion-border)',
                         borderRadius: 8,
                         fontSize: 12,
                       }}
-                      labelStyle={{ color: 'var(--color-text-primary)', fontWeight: 600 }}
+                      labelStyle={{ color: 'var(--notion-text)', fontWeight: 600 }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Area
@@ -353,7 +353,7 @@ export default function Financeiro() {
                       type="monotone"
                       dataKey="pendente"
                       name="A Receber"
-                      stroke="#f59e0b"
+                      stroke="var(--notion-blue)"
                       strokeWidth={2}
                       fill="url(#gradPendente)"
                       stackId="2"
@@ -367,13 +367,13 @@ export default function Financeiro() {
           {/* ── SECTION B: Top Serviços ── */}
           {topServicos.length > 0 && (
             <div style={cardStyle}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Receita por Tipo de Serviço
               </p>
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', fontSize: 14, color: 'var(--color-text-primary)', borderCollapse: 'collapse' }}>
+                <table style={{ width: '100%', fontSize: 14, color: 'var(--notion-text)', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ color: 'var(--color-text-secondary)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    <tr style={{ color: 'var(--notion-text-secondary)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                       <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 12 }}>#</th>
                       <th style={{ textAlign: 'left', paddingBottom: 8, paddingRight: 12 }}>Serviço</th>
                       <th style={{ textAlign: 'center', paddingBottom: 8, paddingRight: 12 }}>Qtd OS</th>
@@ -383,24 +383,24 @@ export default function Financeiro() {
                   </thead>
                   <tbody>
                     {topServicos.map((item, idx) => (
-                      <tr key={item.tipoServico} style={{ borderTop: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '9px 12px 9px 0', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                      <tr key={item.tipoServico} style={{ borderTop: '1px solid var(--notion-border)' }}>
+                        <td style={{ padding: '9px 12px 9px 0', color: 'var(--notion-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
                           {idx + 1}
                         </td>
-                        <td style={{ padding: '9px 12px 9px 0', color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                        <td style={{ padding: '9px 12px 9px 0', color: 'var(--notion-text)', fontWeight: 500 }}>
                           {getServicoLabel(serviceLabels, item.tipoServico)}
                         </td>
-                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                           {item.qtdOS}
                         </td>
-                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'right', fontFamily: 'monospace', color: 'var(--color-text-primary)' }}>
+                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'right', fontFamily: 'monospace', color: 'var(--notion-text)' }}>
                           {fmt(item.receitaTotal)}
                         </td>
                         <td style={{ padding: '9px 0', textAlign: 'right' }}>
                           <span style={{
                             display: 'inline-block',
                             background: 'rgba(245,158,11,0.12)',
-                            color: '#f59e0b',
+                            color: 'var(--notion-blue)',
                             borderRadius: 6,
                             padding: '2px 8px',
                             fontSize: 12,
@@ -419,7 +419,7 @@ export default function Financeiro() {
           )}
 
           {!relatorio && !loading && (
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: 40 }}>
+            <p style={{ fontSize: 14, color: 'var(--notion-text-secondary)', fontStyle: 'italic', textAlign: 'center', padding: 40 }}>
               Clique em "Filtrar" para carregar as estatísticas.
             </p>
           )}
@@ -439,7 +439,7 @@ function SummaryCard({ label, value, color, subtitle }: { label: string; value: 
     }}>
       <p style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color }}>{label}</p>
       <p style={{ fontSize: 20, fontWeight: 700, color, marginTop: 4 }}>{value}</p>
-      {subtitle && <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 4 }}>{subtitle}</p>}
+      {subtitle && <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', marginTop: 4 }}>{subtitle}</p>}
     </div>
   );
 }

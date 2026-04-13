@@ -84,8 +84,8 @@ export default function VeiculosList() {
         <th 
             style={{ 
                 padding: '14px 16px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, 
-                color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', 
-                borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width,
+                color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', 
+                borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width,
                 cursor: 'pointer', userSelect: 'none'
             }}
             onClick={() => handleSort(sortKey)}
@@ -125,10 +125,10 @@ export default function VeiculosList() {
                 marginBottom: 'var(--space-8)',
             }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--notion-text)', letterSpacing: '-0.5px' }}>
                         Veículos
                     </h1>
-                    <p style={{ margin: '8px 0 0', color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
+                    <p style={{ margin: '8px 0 0', color: 'var(--notion-text-secondary)', fontSize: '0.95rem' }}>
                         {veiculos.length} veículo{veiculos.length !== 1 ? 's' : ''} cadastrado{veiculos.length !== 1 ? 's' : ''}
                     </p>
                 </div>
@@ -137,8 +137,8 @@ export default function VeiculosList() {
                     alignItems: 'center',
                     gap: '8px',
                     padding: '11px 20px',
-                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
-                    color: 'var(--color-text-inverse)',
+                    background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
+                    color: 'var(--notion-bg)',
                     borderRadius: 10,
                     textDecoration: 'none',
                     fontWeight: 700,
@@ -169,9 +169,9 @@ export default function VeiculosList() {
                     onClick={() => setViewMode('cards')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'cards' ? 'var(--color-purple)' : 'var(--bg-body)',
-                        color: viewMode === 'cards' ? '#fff' : 'var(--color-text-primary)',
-                        border: viewMode === 'cards' ? 'none' : '1px solid var(--border-color)',
+                        background: viewMode === 'cards' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
+                        color: viewMode === 'cards' ? '#fff' : 'var(--notion-text)',
+                        border: viewMode === 'cards' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
                         cursor: 'pointer',
                         fontWeight: 600,
@@ -183,14 +183,14 @@ export default function VeiculosList() {
                     }}
                     onMouseEnter={e => {
                         if (viewMode !== 'cards') {
-                            e.currentTarget.style.borderColor = 'var(--color-purple)';
+                            e.currentTarget.style.borderColor = 'var(--notion-purple, #9065B0)';
                             e.currentTarget.style.background = 'rgba(139,92,246,0.08)';
                         }
                     }}
                     onMouseLeave={e => {
                         if (viewMode !== 'cards') {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.borderColor = 'var(--notion-border)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -200,9 +200,9 @@ export default function VeiculosList() {
                     onClick={() => setViewMode('list')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'list' ? 'var(--color-purple)' : 'var(--bg-body)',
-                        color: viewMode === 'list' ? '#fff' : 'var(--color-text-primary)',
-                        border: viewMode === 'list' ? 'none' : '1px solid var(--border-color)',
+                        background: viewMode === 'list' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
+                        color: viewMode === 'list' ? '#fff' : 'var(--notion-text)',
+                        border: viewMode === 'list' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
                         cursor: 'pointer',
                         fontWeight: 600,
@@ -214,14 +214,14 @@ export default function VeiculosList() {
                     }}
                     onMouseEnter={e => {
                         if (viewMode !== 'list') {
-                            e.currentTarget.style.borderColor = 'var(--color-purple)';
+                            e.currentTarget.style.borderColor = 'var(--notion-purple, #9065B0)';
                             e.currentTarget.style.background = 'rgba(139,92,246,0.08)';
                         }
                     }}
                     onMouseLeave={e => {
                         if (viewMode !== 'list') {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.borderColor = 'var(--notion-border)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -235,12 +235,12 @@ export default function VeiculosList() {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '12px 16px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)',
+                border: '1px solid var(--notion-border)',
                 borderRadius: 12,
                 marginBottom: 'var(--space-8)',
             }}>
-                <Search size={18} style={{ color: 'var(--color-text-secondary)' }} />
+                <Search size={18} style={{ color: 'var(--notion-text-secondary)' }} />
                 <input
                     type="text"
                     placeholder="Buscar por placa, Renavam, chassi ou modelo..."
@@ -250,7 +250,7 @@ export default function VeiculosList() {
                         flex: 1,
                         border: 'none',
                         background: 'transparent',
-                        color: 'var(--color-text-primary)',
+                        color: 'var(--notion-text)',
                         fontSize: '0.95rem',
                         outline: 'none',
                     }}
@@ -260,17 +260,17 @@ export default function VeiculosList() {
             {/* Vehicle Cards Grid / List */}
             {viewMode === 'cards' ? (filtered.length === 0 ? (
                 <div style={{
-                    background: 'var(--bg-card)',
-                    border: '2px dashed var(--border-color)',
+                    background: 'var(--notion-surface)',
+                    border: '2px dashed var(--notion-border)',
                     borderRadius: 16,
                     padding: '60px 20px',
                     textAlign: 'center',
                 }}>
-                    <Car size={48} style={{ color: 'var(--color-text-secondary)', opacity: 0.3, margin: '0 auto 16px' }} />
-                    <h3 style={{ margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: '1.1rem', fontWeight: 700 }}>
+                    <Car size={48} style={{ color: 'var(--notion-text-secondary)', opacity: 0.3, margin: '0 auto 16px' }} />
+                    <h3 style={{ margin: '0 0 8px', color: 'var(--notion-text)', fontSize: '1.1rem', fontWeight: 700 }}>
                         {search ? 'Nenhum veículo encontrado' : 'Nenhum veículo cadastrado'}
                     </h3>
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: '0 0 20px' }}>
+                    <p style={{ color: 'var(--notion-text-secondary)', fontSize: '0.9rem', margin: '0 0 20px' }}>
                         {search ? 'Tente uma busca diferente.' : 'Cadastre seu primeiro veículo para começar.'}
                     </p>
                     {!search && (
@@ -279,8 +279,8 @@ export default function VeiculosList() {
                             alignItems: 'center',
                             gap: '8px',
                             padding: '10px 20px',
-                            background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
-                            color: 'var(--color-text-inverse)',
+                            background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
+                            color: 'var(--notion-bg)',
                             borderRadius: 10,
                             textDecoration: 'none',
                             fontWeight: 700,
@@ -303,8 +303,8 @@ export default function VeiculosList() {
                             onMouseEnter={() => setHoveredCard(v.id)}
                             onMouseLeave={() => setHoveredCard(null)}
                             style={{
-                                background: 'var(--bg-card)',
-                                border: `2px solid ${hoveredCard === v.id ? 'var(--color-purple)' : 'var(--border-color)'}`,
+                                background: 'var(--notion-surface)',
+                                border: `2px solid ${hoveredCard === v.id ? 'var(--notion-purple, #9065B0)' : 'var(--notion-border)'}`,
                                 borderRadius: 14,
                                 padding: '20px',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -322,7 +322,7 @@ export default function VeiculosList() {
                                 width: 100,
                                 height: 100,
                                 borderRadius: '50%',
-                                background: 'var(--color-purple)',
+                                background: 'var(--notion-purple, #9065B0)',
                                 opacity: 0.04,
                             }} />
 
@@ -339,19 +339,19 @@ export default function VeiculosList() {
                                     width: 44,
                                     height: 44,
                                     borderRadius: 10,
-                                    background: 'var(--color-purple-bg)',
+                                    background: 'rgba(139,92,246,0.1)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     border: '2px solid rgba(139,92,246,0.2)',
                                 }}>
-                                    <Car size={20} style={{ color: 'var(--color-purple)' }} />
+                                    <Car size={20} style={{ color: 'var(--notion-purple, #9065B0)' }} />
                                 </div>
                                 <div>
                                     <div style={{
                                         fontSize: '1.1rem',
                                         fontWeight: 800,
-                                        color: 'var(--color-text-primary)',
+                                        color: 'var(--notion-text)',
                                         letterSpacing: '1px',
                                         fontFamily: 'monospace',
                                     }}>
@@ -359,7 +359,7 @@ export default function VeiculosList() {
                                     </div>
                                     <div style={{
                                         fontSize: '0.75rem',
-                                        color: 'var(--color-text-tertiary)',
+                                        color: 'var(--notion-text-secondary)',
                                         marginTop: 2,
                                     }}>
                                         Placa
@@ -372,7 +372,7 @@ export default function VeiculosList() {
                                 margin: '0 0 12px',
                                 fontSize: '0.95rem',
                                 fontWeight: 700,
-                                color: 'var(--color-text-primary)',
+                                color: 'var(--notion-text)',
                                 position: 'relative',
                                 zIndex: 1,
                             }}>
@@ -390,13 +390,13 @@ export default function VeiculosList() {
                             }}>
                                 <div style={{
                                     padding: '8px',
-                                    background: 'var(--bg-body)',
-                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--notion-bg)',
+                                    border: '1px solid var(--notion-border)',
                                     borderRadius: 8,
                                 }}>
                                     <div style={{
                                         fontSize: '0.7rem',
-                                        color: 'var(--color-text-tertiary)',
+                                        color: 'var(--notion-text-secondary)',
                                         textTransform: 'uppercase',
                                         fontWeight: 600,
                                         marginBottom: 3,
@@ -404,7 +404,7 @@ export default function VeiculosList() {
                                     <div style={{
                                         fontSize: '0.8rem',
                                         fontWeight: 700,
-                                        color: 'var(--color-text-primary)',
+                                        color: 'var(--notion-text)',
                                         fontFamily: 'monospace',
                                     }}>
                                         {v.renavam}
@@ -412,13 +412,13 @@ export default function VeiculosList() {
                                 </div>
                                 <div style={{
                                     padding: '8px',
-                                    background: 'var(--bg-body)',
-                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--notion-bg)',
+                                    border: '1px solid var(--notion-border)',
                                     borderRadius: 8,
                                 }}>
                                     <div style={{
                                         fontSize: '0.7rem',
-                                        color: 'var(--color-text-tertiary)',
+                                        color: 'var(--notion-text-secondary)',
                                         textTransform: 'uppercase',
                                         fontWeight: 600,
                                         marginBottom: 3,
@@ -426,7 +426,7 @@ export default function VeiculosList() {
                                     <div style={{
                                         fontSize: '0.8rem',
                                         fontWeight: 700,
-                                        color: 'var(--color-text-primary)',
+                                        color: 'var(--notion-text)',
                                         fontFamily: 'monospace',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
@@ -447,7 +447,7 @@ export default function VeiculosList() {
                                 marginBottom: '14px',
                                 fontSize: '0.85rem',
                                 fontWeight: 600,
-                                color: 'var(--color-info)',
+                                color: 'var(--notion-blue)',
                                 textDecoration: 'none',
                                 transition: 'all 0.2s',
                                 position: 'relative',
@@ -478,7 +478,7 @@ export default function VeiculosList() {
                                     gap: '6px',
                                     padding: '8px 12px',
                                     background: 'rgba(245,158,11,0.12)',
-                                    color: 'var(--color-primary)',
+                                    color: 'var(--notion-blue)',
                                     border: 'none',
                                     borderRadius: 8,
                                     textDecoration: 'none',
@@ -488,12 +488,12 @@ export default function VeiculosList() {
                                     transition: 'all 0.2s',
                                 }}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--color-primary)';
-                                        e.currentTarget.style.color = 'var(--color-text-inverse)';
+                                        e.currentTarget.style.background = 'var(--notion-blue)';
+                                        e.currentTarget.style.color = 'var(--notion-bg)';
                                     }}
                                     onMouseLeave={e => {
                                         e.currentTarget.style.background = 'rgba(245,158,11,0.12)';
-                                        e.currentTarget.style.color = 'var(--color-primary)';
+                                        e.currentTarget.style.color = 'var(--notion-blue)';
                                     }}
                                 >
                                     <Pencil size={14} /> Editar
@@ -501,9 +501,9 @@ export default function VeiculosList() {
                                 <button
                                     style={{
                                         padding: '8px 12px',
-                                        background: 'var(--color-danger-bg)',
-                                        color: 'var(--color-danger)',
-                                        border: 'none',
+                                        background: 'rgba(221,91,0,0.1)',
+                                        color: 'var(--notion-orange)',
+                                        border: '1px solid rgba(221,91,0,0.2)',
                                         borderRadius: 8,
                                         fontWeight: 600,
                                         fontSize: '0.8rem',
@@ -515,12 +515,12 @@ export default function VeiculosList() {
                                     }}
                                     onClick={() => handleDelete(v)}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--color-danger)';
-                                        e.currentTarget.style.color = 'var(--color-white)';
+                                        e.currentTarget.style.background = 'rgba(221,91,0,0.18)';
+                                        e.currentTarget.style.color = 'var(--notion-orange)';
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'var(--color-danger-bg)';
-                                        e.currentTarget.style.color = 'var(--color-danger)';
+                                        e.currentTarget.style.background = 'rgba(221,91,0,0.1)';
+                                        e.currentTarget.style.color = 'var(--notion-orange)';
                                     }}
                                 >
                                     <Trash2 size={14} />
@@ -532,8 +532,8 @@ export default function VeiculosList() {
             )) : (
                 // LIST VIEW
                 <div className="veiculos-list-grid" style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
                     borderRadius: 12,
                     overflow: 'hidden',
                 }}>
@@ -545,7 +545,7 @@ export default function VeiculosList() {
                                     <SortableHeader label="Renavam" sortKey="renavam" />
                                     <SortableHeader label="Chassi" sortKey="chassi" />
                                     <SortableHeader label="Cliente" sortKey="cliente" />
-                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width: 90 }}>Ações</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width: 90 }}>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -556,35 +556,35 @@ export default function VeiculosList() {
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.05)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                                     >
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                 <div style={{
                                                     width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-                                                    background: 'var(--color-purple-bg)',
+                                                    background: 'rgba(139,92,246,0.1)',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     border: '2px solid rgba(139,92,246,0.2)',
                                                 }}>
-                                                    <Car size={16} style={{ color: 'var(--color-purple)' }} />
+                                                    <Car size={16} style={{ color: 'var(--notion-purple, #9065B0)' }} />
                                                 </div>
                                                 <div style={{ minWidth: 0 }}>
-                                                    <div style={{ fontWeight: 700, color: 'var(--color-text-primary)', fontFamily: 'monospace', letterSpacing: '1px', fontSize: '0.9rem' }}>
+                                                    <div style={{ fontWeight: 700, color: 'var(--notion-text)', fontFamily: 'monospace', letterSpacing: '1px', fontSize: '0.9rem' }}>
                                                         {v.placa || '—'}
                                                     </div>
-                                                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
                                                         {v.marcaModelo}
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', fontFamily: 'monospace', color: 'var(--color-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'monospace', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                                             {v.renavam}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', fontFamily: 'monospace', color: 'var(--color-text-secondary)', fontSize: '0.85rem', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'monospace', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {v.chassi}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <Link to={`/clientes/${v.clienteId}`} style={{
-                                                color: 'var(--color-info)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem',
+                                                color: 'var(--notion-blue)', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem',
                                                 transition: 'all 0.2s', whiteSpace: 'nowrap',
                                             }}
                                                 onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline'; }}
@@ -593,27 +593,27 @@ export default function VeiculosList() {
                                                 {clientes.find(c => c.id === v.clienteId)?.nome || '—'}
                                             </Link>
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                                                 <Link to={`/veiculos/${v.id}/editar`} style={{
-                                                    padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--color-primary)',
+                                                    padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)',
                                                     borderRadius: 6, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600,
                                                     cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
                                                 }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-text-inverse)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-blue)'; e.currentTarget.style.color = 'var(--notion-bg)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
                                                 >
                                                     <Pencil size={14} />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(v)}
                                                     style={{
-                                                        padding: '6px 10px', background: 'var(--color-danger-bg)', color: 'var(--color-danger)',
-                                                        border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600,
+                                                        padding: '6px 10px', background: 'rgba(221,91,0,0.1)', color: 'var(--notion-orange)',
+                                                        border: '1px solid rgba(221,91,0,0.2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600,
                                                         fontSize: '0.75rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-danger)'; e.currentTarget.style.color = 'var(--color-white)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-danger-bg)'; e.currentTarget.style.color = 'var(--color-danger)'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(221,91,0,0.18)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(221,91,0,0.1)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>

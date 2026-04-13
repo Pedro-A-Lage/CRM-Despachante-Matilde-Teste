@@ -38,20 +38,20 @@ const CONDICAO_OPTIONS = [
 const LABEL_STYLE: React.CSSProperties = {
   textTransform: 'none',
   fontSize: '11px',
-  color: '#8a9ab8',
+  color: 'var(--notion-text-secondary)',
   fontWeight: 500,
 };
 
 const INPUT_STYLE: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  color: '#e2e8f0',
+  background: 'var(--notion-bg-alt)',
+  border: '1px solid var(--notion-border)',
+  color: 'var(--notion-text)',
   fontSize: '12px',
 };
 
 const INPUT_HIGHLIGHT_STYLE: React.CSSProperties = {
   ...INPUT_STYLE,
-  border: '1px solid rgba(212,168,67,0.35)',
+  border: '1px solid rgba(0,117,222,0.35)',
 };
 
 const DAE_OPTIONS = [
@@ -207,11 +207,11 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
     <>
       <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
         <DialogContent
-          className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-white/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
+          className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
           style={{
-            background: 'linear-gradient(145deg, #1e2436, #16192a)',
-            border: '1px solid rgba(212,168,67,0.2)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            background: 'var(--notion-surface)',
+            border: '1px solid var(--notion-border)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           }}
         >
           <div className="overflow-y-auto flex-1 min-h-0" style={{ padding: '20px 20px 0 20px' }}>
@@ -229,18 +229,18 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
           <Tabs value={activeTab} onValueChange={v => setActiveTab(v as 'config' | 'docs')}>
             <TabsList
               className="w-full mb-4"
-              style={{ background: 'rgba(255,255,255,0.05)', padding: '3px', borderRadius: '8px', height: 'auto', border: 'none' }}
+              style={{ background: 'var(--notion-bg-alt)', padding: '3px', borderRadius: '8px', height: 'auto', border: '1px solid var(--notion-border)' }}
             >
               <TabsTrigger
                 value="config"
-                className="flex-1 data-[state=active]:bg-[#d4a843] data-[state=active]:text-black data-[state=active]:shadow-none data-[state=inactive]:text-[#7a8ab0] data-[state=inactive]:bg-transparent"
+                className="flex-1 data-[state=active]:bg-[#0075de] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[var(--notion-text-secondary)] data-[state=inactive]:bg-transparent"
                 style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 600, padding: '6px 8px' }}
               >
                 ⚙ Configurações
               </TabsTrigger>
               <TabsTrigger
                 value="docs"
-                className="flex-1 data-[state=active]:bg-[#d4a843] data-[state=active]:text-black data-[state=active]:shadow-none data-[state=inactive]:text-[#7a8ab0] data-[state=inactive]:bg-transparent"
+                className="flex-1 data-[state=active]:bg-[#0075de] data-[state=active]:text-white data-[state=active]:shadow-none data-[state=inactive]:text-[var(--notion-text-secondary)] data-[state=inactive]:bg-transparent"
                 style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 600, padding: '6px 8px' }}
               >
                 📄 Documentos
@@ -311,9 +311,9 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                   id="ativo"
                   checked={ativo}
                   onCheckedChange={setAtivo}
-                  className="data-[state=checked]:bg-[#d4a843] [&>span]:bg-white"
+                  className="data-[state=checked]:bg-[#0075de] [&>span]:bg-surface"
                 />
-                <Label htmlFor="ativo" style={{ ...LABEL_STYLE, color: '#e2e8f0', fontSize: '12px', cursor: 'pointer' }}>
+                <Label htmlFor="ativo" style={{ ...LABEL_STYLE, color: 'var(--notion-text)', fontSize: '12px', cursor: 'pointer' }}>
                   Serviço ativo
                 </Label>
               </div>
@@ -321,7 +321,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
               {/* Custos Extras Automáticos */}
               {priceItems.length > 0 && (
                 <div className="flex flex-col gap-2" style={{ marginTop: '8px' }}>
-                  <Label style={{ ...LABEL_STYLE, fontSize: '12px', color: '#d4a843' }}>
+                  <Label style={{ ...LABEL_STYLE, fontSize: '12px', color: 'var(--notion-text-secondary)' }}>
                     Custos Extras Automáticos
                   </Label>
                   <p style={{ fontSize: '11px', color: '#6b7a99', marginTop: '-4px' }}>
@@ -330,8 +330,8 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                   <div
                     className="flex flex-col gap-1"
                     style={{
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      background: 'var(--notion-bg-alt)',
+                      border: '1px solid var(--notion-border)',
                       borderRadius: '8px',
                       padding: '10px',
                       maxHeight: '200px',
@@ -347,7 +347,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                           style={{
                             padding: '6px 8px',
                             borderRadius: '6px',
-                            background: selected ? 'rgba(212,168,67,0.08)' : 'transparent',
+                            background: selected ? 'rgba(0,117,222,0.08)' : 'transparent',
                           }}
                         >
                           <input
@@ -361,11 +361,11 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                                 setCustosExtras(prev => prev.filter(c => c.codigo !== item.codigo));
                               }
                             }}
-                            style={{ accentColor: '#d4a843', width: '14px', height: '14px', cursor: 'pointer' }}
+                            style={{ accentColor: '#0075de', width: '14px', height: '14px', cursor: 'pointer' }}
                           />
                           <label
                             htmlFor={`custo-${item.codigo}`}
-                            style={{ flex: 1, fontSize: '12px', color: '#e2e8f0', cursor: 'pointer' }}
+                            style={{ flex: 1, fontSize: '12px', color: 'var(--notion-text)', cursor: 'pointer' }}
                           >
                             {item.descricao}
                             <span style={{ color: '#6b7a99', marginLeft: '6px', fontSize: '11px' }}>
@@ -410,7 +410,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                 if (myPrices.length === 0) return null;
                 return (
                   <div className="flex flex-col gap-2" style={{ marginTop: '8px' }}>
-                    <Label style={{ ...LABEL_STYLE, fontSize: '12px', color: '#d4a843' }}>
+                    <Label style={{ ...LABEL_STYLE, fontSize: '12px', color: 'var(--notion-text-secondary)' }}>
                       Preços do Serviço
                     </Label>
                     <p style={{ fontSize: '11px', color: '#6b7a99', marginTop: '-4px' }}>
@@ -418,15 +418,15 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                     </p>
                     <div
                       style={{
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.08)',
+                        background: 'var(--notion-bg-alt)',
+                        border: '1px solid var(--notion-border)',
                         borderRadius: '8px',
                         overflow: 'hidden',
                       }}
                     >
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                         <thead>
-                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                          <tr style={{ borderBottom: '1px solid var(--notion-border)' }}>
                             <th style={{ padding: '8px 10px', textAlign: 'left', color: '#6b7a99', fontWeight: 600, fontSize: '11px' }}>Placa</th>
                             <th style={{ padding: '8px 10px', textAlign: 'left', color: '#6b7a99', fontWeight: 600, fontSize: '11px' }}>Veículo</th>
                             <th style={{ padding: '8px 10px', textAlign: 'right', color: '#6b7a99', fontWeight: 600, fontSize: '11px' }}>Valor</th>
@@ -435,11 +435,11 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                         </thead>
                         <tbody>
                           {myPrices.map(sp => (
-                            <tr key={sp.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                              <td style={{ padding: '8px 10px', color: '#e2e8f0' }}>
+                            <tr key={sp.id} style={{ borderBottom: '1px solid var(--notion-border)' }}>
+                              <td style={{ padding: '8px 10px', color: 'var(--notion-text)' }}>
                                 {sp.com_placa ? 'Com placa' : 'Sem placa'}
                               </td>
-                              <td style={{ padding: '8px 10px', color: '#e2e8f0' }}>
+                              <td style={{ padding: '8px 10px', color: 'var(--notion-text)' }}>
                                 {sp.tipo_veiculo === 'carro' ? 'Carro' : 'Moto'}
                               </td>
                               <td style={{ padding: '8px 10px', textAlign: 'right' }}>
@@ -487,7 +487,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                                     >✓</button>
                                   </div>
                                 ) : (
-                                  <span style={{ color: priceSaved === sp.id ? '#22c55e' : '#e2e8f0', fontWeight: 600, transition: 'color 0.3s' }}>
+                                  <span style={{ color: priceSaved === sp.id ? '#22c55e' : 'var(--notion-text)', fontWeight: 600, transition: 'color 0.3s' }}>
                                     {priceSaved === sp.id ? '✓ ' : ''}R$ {sp.valor.toFixed(2).replace('.', ',')}
                                   </span>
                                 )}
@@ -547,7 +547,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
           {error && <p className="text-sm text-destructive mt-2">{error}</p>}
         </div>
 
-        <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+        <div style={{ height: '1px', background: 'var(--notion-border)' }} />
 
         <div style={{ padding: '14px 20px 20px 20px' }}>
           <DialogFooter className="flex-row justify-between items-center">
@@ -578,7 +578,7 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                 variant="outline"
                 onClick={onClose}
                 disabled={saving}
-                style={{ borderColor: 'rgba(255,255,255,0.12)', color: '#8a9ab8', fontSize: '12px' }}
+                style={{ borderColor: 'var(--notion-border)', color: 'var(--notion-text-secondary)', fontSize: '12px' }}
               >
                 Cancelar
               </Button>
@@ -587,12 +587,12 @@ export function ServiceEditModal({ open, config, onClose, onSaved, onDeleted }: 
                 onClick={handleSave}
                 disabled={saving}
                 style={{
-                  background: saving ? '#7a6020' : 'linear-gradient(135deg, #d4a843, #c49530)',
-                  color: '#000',
+                  background: saving ? 'var(--notion-blue-hover)' : 'var(--notion-blue)',
+                  color: '#fff',
                   fontWeight: 700,
                   fontSize: '12px',
                   border: 'none',
-                  boxShadow: saving ? 'none' : '0 2px 8px rgba(212,168,67,0.3)',
+                  boxShadow: saving ? 'none' : '0 2px 8px rgba(0,117,222,0.3)',
                 }}
               >
                 {saving ? 'Salvando...' : 'Salvar'}

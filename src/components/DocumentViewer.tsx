@@ -20,9 +20,9 @@ export function DocumentViewer({ url, fileName, isOpen, onClose }: DocumentViewe
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden ring-1 ring-gray-200">
+            <div className="bg-surface rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden ring-1 ring-border">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/80">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-alt/80">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,8 +30,8 @@ export function DocumentViewer({ url, fileName, isOpen, onClose }: DocumentViewe
                             </svg>
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900">{fileName || 'Documento'}</h3>
-                            <p className="text-sm text-gray-500">Visualização direta</p>
+                            <h3 className="text-card-title">{fileName || 'Documento'}</h3>
+                            <p className="text-sm text-text-secondary">Visualização direta</p>
                         </div>
                     </div>
 
@@ -44,7 +44,7 @@ export function DocumentViewer({ url, fileName, isOpen, onClose }: DocumentViewe
                         </button>
                         <button
                             onClick={onClose}
-                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            className="p-2 text-text-muted hover:text-text hover:bg-[rgba(0,0,0,0.05)] dark:hover:bg-[rgba(255,255,255,0.08)] rounded-full transition-colors"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -54,11 +54,11 @@ export function DocumentViewer({ url, fileName, isOpen, onClose }: DocumentViewe
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 relative bg-gray-100 overflow-auto">
+                <div className="flex-1 relative bg-bg-alt overflow-auto">
                     {loading && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-gray-50">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-surface">
                             <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                            <span className="text-gray-500 font-medium">Carregando documento...</span>
+                            <span className="text-text-secondary font-medium">Carregando documento...</span>
                         </div>
                     )}
 

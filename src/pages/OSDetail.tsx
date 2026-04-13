@@ -89,7 +89,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import FinancePainel from '../components/finance/FinancePainel';
 import { getChargesByOS, getPaymentsByOS, marcarCustoPago, cancelarCobrancasDaOS, getPriceByCodigo, updateCharge } from '../lib/financeService';
 import { EmpresaEnviosSection } from '../components/EmpresaEnviosSection';
-import { getEmpresa, getEmpresasAtivas, criarEnviosStatusFromEtapas } from '../lib/empresaService';
+import { getEmpresa, getEmpresasAtivas, criarEnviosStatusFromEtapas, sincronizarEnviosComEtapas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { gerarComunicadoExtravio, gerarRequerimento2Via } from '../lib/gerarDocumentos2Via';
 
@@ -163,11 +163,11 @@ function getReceiptStatus(dataAquisicao?: string) {
 const checklistStatusIcon = (status: StatusChecklist) => {
     switch (status) {
         case 'recebido':
-            return <CheckCircle size={16} style={{ color: 'var(--color-success)' }} />;
+            return <CheckCircle size={16} style={{ color: 'var(--notion-green)' }} />;
         case 'invalido':
-            return <XCircle size={16} style={{ color: 'var(--color-danger)' }} />;
+            return <XCircle size={16} style={{ color: 'var(--notion-orange)' }} />;
         default:
-            return <Circle size={16} style={{ color: 'var(--color-gray-400)' }} />;
+            return <Circle size={16} style={{ color: 'var(--notion-text-secondary)' }} />;
     }
 };
 
@@ -242,23 +242,23 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
     return (
         <div style={{ padding: 'var(--space-2)' }}>
             <div className="flex justify-between items-center mb-4">
-                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--color-text-primary)' }}>Troca de Placa</h3>
+                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--notion-text)' }}>Troca de Placa</h3>
                 {!os.trocaPlaca && (
                     <span className="badge badge-neutral">Esta OS não possui troca de placa</span>
                 )}
             </div>
 
-            <div className="card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', padding: 'var(--space-5)' }}>
+            <div className="card" style={{ background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', padding: 'var(--space-5)' }}>
                 <div className="os-header-grid" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-5)', alignItems: 'flex-start' }}>
                     <div style={{ flex: 1 }}>
-                        <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 8 }}>Solicitar Boleto da Placa</h4>
-                        <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-500)', marginBottom: 'var(--space-4)' }}>
+                        <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: 'var(--notion-blue)', marginBottom: 8 }}>Solicitar Boleto da Placa</h4>
+                        <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--notion-text-secondary)', marginBottom: 'var(--space-4)' }}>
                             Envie a folha do DETRAN diretamente para o e-mail da estampadora de placa com 1 clique (o sistema salva o e-mail para as próximas vezes).
                         </p>
 
                         <div className="flex flex-col gap-3">
                             <div>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-gray-400)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
                                     E-mail da Estampadora de Placa
                                 </label>
                                 <input 
@@ -272,7 +272,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                             </div>
 
                             <div>
-                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--color-gray-400)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
+                                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
                                     Texto do E-mail (Mensagem)
                                 </label>
                                 <textarea 
@@ -281,7 +281,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                                     onChange={(e) => setMensagemCustomizada(e.target.value)}
                                     style={{ fontSize: 13, borderRadius: 8, padding: '8px 12px', minHeight: 120, resize: 'vertical' }}
                                 />
-                                <p style={{ fontSize: 11, color: 'var(--color-gray-500)', marginTop: 4 }}>
+                                <p style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginTop: 4 }}>
                                     O arquivo PDF (.pdf) processado do Detran já vai anexado automaticamente neste envio!
                                 </p>
                             </div>
@@ -304,8 +304,8 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                                 if (!ultimoEnvio) return null;
                                 
                                 return (
-                                    <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--color-gray-500)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <CheckCircle size={14} style={{ color: 'var(--color-success)' }} />
+                                    <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <CheckCircle size={14} style={{ color: 'var(--notion-green)' }} />
                                         <span>
                                             Último envio arquivado no histórico: <strong>{new Date(ultimoEnvio.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às {new Date(ultimoEnvio.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}</strong> por {ultimoEnvio.usuario}
                                         </span>
@@ -314,14 +314,14 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                             })()}
 
                             {errorMsg && (
-                                <div style={{ color: 'var(--color-danger)', fontSize: 12, fontWeight: 600, marginTop: 4 }}>
+                                <div style={{ color: 'var(--notion-orange)', fontSize: 12, fontWeight: 600, marginTop: 4 }}>
                                     <AlertTriangle size={12} style={{ marginRight: 4, verticalAlign: -2 }} />
                                     {errorMsg}
                                 </div>
                             )}
                             
                             {successMsg && (
-                                <div style={{ color: 'var(--color-success)', fontSize: 12, fontWeight: 600, marginTop: 4 }}>
+                                <div style={{ color: 'var(--notion-green)', fontSize: 12, fontWeight: 600, marginTop: 4 }}>
                                     <CheckCircle size={12} style={{ marginRight: 4, verticalAlign: -2 }} />
                                     {successMsg}
                                 </div>
@@ -330,12 +330,12 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                             {!os.pdfDetranUrl && (
                                 <div style={{
                                     backgroundColor: 'rgba(239,68,68,0.1)',
-                                    borderLeft: '4px solid var(--color-danger)',
+                                    borderLeft: '4px solid var(--notion-orange)',
                                     padding: '10px',
                                     borderRadius: '4px',
                                     marginTop: 'var(--space-2)'
                                 }}>
-                                    <p style={{ fontSize: '0.7rem', color: 'var(--color-error-hover)', margin: 0, fontWeight: 600 }}>
+                                    <p style={{ fontSize: '0.7rem', color: 'var(--notion-orange)', margin: 0, fontWeight: 600 }}>
                                         ⚠️ <b>Atenção:</b> Você precisa capturar o PDF do DETRAN na delegacia antes de pedir a placa!
                                     </p>
                                 </div>
@@ -343,15 +343,15 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                         </div>
                     </div>
 
-                    <div className="os-header-aside" style={{ width: 250, borderLeft: '1px solid var(--border-color)', paddingLeft: 'var(--space-5)' }}>
-                        <h5 style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-gray-400)', marginBottom: 12 }}>Documento Necessário</h5>
+                    <div className="os-header-aside" style={{ width: 250, borderLeft: '1px solid var(--notion-border)', paddingLeft: 'var(--space-5)' }}>
+                        <h5 style={{ fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--notion-text-secondary)', marginBottom: 12 }}>Documento Necessário</h5>
                         {os.pdfDetranUrl ? (
-                            <div style={{ background: 'var(--bg-tertiary)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                            <div style={{ background: 'var(--notion-bg-alt)', padding: '10px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--notion-border)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                                    <FileText size={20} color="var(--color-primary)" />
+                                    <FileText size={20} color="var(--notion-blue)" />
                                     <div style={{ overflow: 'hidden' }}>
                                         <p style={{ fontSize: '0.7rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Folha do Detran</p>
-                                        <p style={{ fontSize: '0.6rem', color: 'var(--color-text-tertiary)', margin: 0 }}>PDF Próxima Etapa</p>
+                                        <p style={{ fontSize: '0.6rem', color: 'var(--notion-text-secondary)', margin: 0 }}>PDF Próxima Etapa</p>
                                     </div>
                                 </div>
                                 <button
@@ -388,12 +388,12 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                                 <label htmlFor="upload-pdf-detran-deleg" style={{
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
                                     padding: 'var(--space-3)', cursor: 'pointer',
-                                    border: '2px dashed var(--border-color)', borderRadius: 'var(--radius-sm)',
-                                    background: 'var(--bg-tertiary)', transition: 'border-color 0.2s',
+                                    border: '2px dashed var(--notion-border)', borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--notion-bg-alt)', transition: 'border-color 0.2s',
                                 }}>
-                                    <Upload size={20} color="var(--color-primary)" />
-                                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--color-text-secondary)' }}>Anexar Folha do Detran</span>
-                                    <span style={{ fontSize: '0.55rem', color: 'var(--color-gray-500)' }}>Clique para selecionar PDF</span>
+                                    <Upload size={20} color="var(--notion-blue)" />
+                                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--notion-text-secondary)' }}>Anexar Folha do Detran</span>
+                                    <span style={{ fontSize: '0.55rem', color: 'var(--notion-text-secondary)' }}>Clique para selecionar PDF</span>
                                 </label>
                             </div>
                         )}
@@ -480,7 +480,19 @@ export default function OSDetail() {
         if (ordem) {
             setOs(ordem);
             if (ordem.empresaParceiraId) {
-                getEmpresa(ordem.empresaParceiraId).then(setEmpresa);
+                getEmpresa(ordem.empresaParceiraId).then((emp) => {
+                    setEmpresa(emp);
+                    // Sincronizar enviosStatus com config atual da empresa
+                    if (emp && ordem.enviosStatus && ordem.enviosStatus.length > 0) {
+                        const { envios, mudou } = sincronizarEnviosComEtapas(
+                            ordem.enviosStatus, emp.etapasEnvio, ordem.trocaPlaca ?? false
+                        );
+                        if (mudou) {
+                            updateOrdem(ordem.id, { enviosStatus: envios });
+                            setOs((prev) => prev ? { ...prev, enviosStatus: envios } : prev);
+                        }
+                    }
+                });
             }
             getEmpresasAtivas().then(setEmpresasAtivas);
             const [c, v, payments] = await Promise.all([
@@ -930,41 +942,41 @@ export default function OSDetail() {
 
             {/* ===== TOP BAR (compact) ===== */}
             <div style={{
-                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                 borderRadius: 10, padding: '8px 14px', marginBottom: 8,
                 borderLeft: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button onClick={() => navigate(-1)} style={{
-                        background: 'var(--bg-body)', border: '1px solid var(--border-color)',
-                        borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--color-text-secondary)',
+                        background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
+                        borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--notion-text-secondary)',
                         display: 'flex', alignItems: 'center', transition: 'all 0.2s',
                     }}>
                         <ArrowLeft size={16} />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: 18, fontWeight: 850, color: 'var(--color-primary)', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontSize: 18, fontWeight: 850, color: 'var(--notion-blue)', letterSpacing: '-0.5px' }}>
                         OS #{os.numero}
                     </h1>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)' }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)' }}>
                         {getServicoLabel(serviceLabels, os.tipoServico)}
                     </span>
-                    <div style={{ height: 16, width: 1, background: 'var(--border-color)', margin: '0 2px' }} />
-                    <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', fontWeight: 600 }}>
+                    <div style={{ height: 16, width: 1, background: 'var(--notion-border)', margin: '0 2px' }} />
+                    <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', fontWeight: 600 }}>
                         {new Date(os.dataAbertura).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                     </span>
                     {os.docProntoEm && (
                         <>
-                            <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>→</span>
-                            <span style={{ fontSize: 10, color: 'var(--color-success)', fontWeight: 700 }}>
+                            <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>→</span>
+                            <span style={{ fontSize: 10, color: 'var(--notion-green)', fontWeight: 700 }}>
                                 {new Date(os.docProntoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </span>
                         </>
                     )}
                     {os.entregueEm && (
                         <>
-                            <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>→</span>
-                            <span style={{ fontSize: 10, color: 'var(--color-info)', fontWeight: 700 }}>
+                            <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>→</span>
+                            <span style={{ fontSize: 10, color: 'var(--notion-blue)', fontWeight: 700 }}>
                                 {new Date(os.entregueEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                             </span>
                         </>
@@ -994,26 +1006,26 @@ export default function OSDetail() {
                                     onClick={() => window.open(os.pdfDetranUrl, '_blank')}
                                     style={{
                                         padding: '4px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                                        background: 'var(--color-primary)', color: '#fff', fontWeight: 800, fontSize: 10,
+                                        background: 'var(--notion-blue)', color: '#fff', fontWeight: 800, fontSize: 10,
                                         display: 'flex', alignItems: 'center', gap: 4, textTransform: 'uppercase',
                                     }}
                                 >
                                     <FileText size={11} /> PDF
                                 </button>
                                 <label htmlFor="upload-pdf-detran-header" style={{
-                                    padding: '4px 8px', borderRadius: 8, cursor: 'pointer',
-                                    background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
-                                    color: 'var(--color-purple, #6366f1)', fontWeight: 800, fontSize: 10,
-                                    display: 'flex', alignItems: 'center', gap: 3, textTransform: 'uppercase',
+                                    padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
+                                    background: 'rgba(0,117,222,0.08)', border: '1px solid rgba(0,117,222,0.2)',
+                                    color: 'var(--notion-blue)', fontWeight: 800, fontSize: 10,
+                                    display: 'flex', alignItems: 'center', gap: 4, textTransform: 'uppercase',
                                 }}>
-                                    <Upload size={9} /> Trocar
+                                    <Upload size={10} /> Trocar
                                 </label>
                             </div>
                         ) : (
                             <label htmlFor="upload-pdf-detran-header" style={{
                                 padding: '4px 10px', borderRadius: 8, cursor: 'pointer',
                                 background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)',
-                                color: 'var(--color-danger)', fontWeight: 800, fontSize: 10,
+                                color: 'var(--notion-orange)', fontWeight: 800, fontSize: 10,
                                 display: 'flex', alignItems: 'center', gap: 4, textTransform: 'uppercase',
                             }}>
                                 <Upload size={11} /> Anexar PDF
@@ -1027,7 +1039,7 @@ export default function OSDetail() {
                             style={{
                                 width: 170, maxWidth: '100%', fontSize: 11, padding: '6px 10px', borderRadius: 8,
                                 fontWeight: 750, fontFamily: 'var(--font-family)', textTransform: 'uppercase',
-                                background: 'var(--bg-body)', border: '1px solid var(--border-color)',
+                                background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
                                 appearance: 'none', cursor: 'pointer', transition: 'all 0.2s',
                             }}
                             value={os.status}
@@ -1038,15 +1050,15 @@ export default function OSDetail() {
                                 <option key={k} value={k}>{v}</option>
                             ))}
                         </select>
-                        <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--color-text-tertiary)' }} />
+                        <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--notion-text-secondary)' }} />
                     </div>
 
-                    <div style={{ height: 20, width: 1, background: 'var(--border-color)', margin: '0 2px' }} />
+                    <div style={{ height: 20, width: 1, background: 'var(--notion-border)', margin: '0 2px' }} />
 
                     <button onClick={handleOpenEditModal} title="Editar OS"
                         style={{
-                            width: 30, height: 30, borderRadius: 8, border: '1px solid var(--border-color)',
-                            background: 'var(--bg-body)', cursor: 'pointer', color: 'var(--color-text-secondary)',
+                            width: 30, height: 30, borderRadius: 8, border: '1px solid var(--notion-border)',
+                            background: 'var(--notion-bg)', cursor: 'pointer', color: 'var(--notion-text-secondary)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
                         }}>
                         <Edit2 size={14} />
@@ -1055,7 +1067,7 @@ export default function OSDetail() {
                     <button onClick={handleDelete} title="Apagar OS"
                         style={{
                             width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)',
-                            background: 'rgba(239,68,68,0.06)', cursor: 'pointer', color: 'var(--color-danger)',
+                            background: 'rgba(239,68,68,0.06)', cursor: 'pointer', color: 'var(--notion-orange)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
                         }}>
                         <Trash2 size={14} />
@@ -1065,7 +1077,7 @@ export default function OSDetail() {
             </div>
 
             {/* ===== TWO COLUMN LAYOUT ===== */}
-            <div className="os-main-row" style={{ display: 'flex', gap: 14, alignItems: 'flex-start', width: '100%', flexWrap: 'wrap' }}>
+            <div className="os-main-row" style={{ display: 'flex', gap: 20, alignItems: 'flex-start', width: '100%' }}>
 
                 {/* ===== LEFT COLUMN (main content) ===== */}
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -1091,7 +1103,7 @@ export default function OSDetail() {
                                         className={`tab ${activeTab === tab.id ? 'active' : ''}`}
                                         onClick={() => handleTabSwitch(tab.id)}
                                         style={
-                                            isFinanceiroComDebito ? { color: 'var(--color-danger)', fontWeight: 700 }
+                                            isFinanceiroComDebito ? { color: 'var(--notion-orange)', fontWeight: 700 }
                                             : isEmpresaTudoEnviado ? { color: '#28A06A', fontWeight: 700 }
                                             : undefined
                                         }
@@ -1099,7 +1111,7 @@ export default function OSDetail() {
                                         {tab.icon}
                                         {tab.label}
                                         {isFinanceiroComDebito && (
-                                            <span style={{ fontSize: 9, marginLeft: 4, background: 'rgba(239,68,68,0.15)', color: 'var(--color-danger)', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>
+                                            <span style={{ fontSize: 9, marginLeft: 4, background: 'rgba(239,68,68,0.15)', color: 'var(--notion-orange)', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>
                                                 Pendente
                                             </span>
                                         )}
@@ -1168,22 +1180,22 @@ export default function OSDetail() {
                                                 boxShadow: `0 0 8px ${empresa.cor}50`,
                                             }}
                                         />
-                                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>
                                             {empresa.nome}
                                         </span>
                                     </div>
-                                    <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--color-text-secondary)', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--notion-text-secondary)', alignItems: 'center' }}>
                                         {usuario?.role === 'admin' && (
                                             <>
-                                                <span>Serviço: <strong style={{ color: 'var(--color-primary)' }}>R$ {empresa.valorServico?.toFixed(2) || '—'}</strong></span>
+                                                <span>Serviço: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorServico?.toFixed(2) || '—'}</strong></span>
                                                 {empresa.valorPlaca != null && (
-                                                    <span>Placa: <strong style={{ color: 'var(--color-primary)' }}>R$ {empresa.valorPlaca.toFixed(2)}</strong></span>
+                                                    <span>Placa: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorPlaca.toFixed(2)}</strong></span>
                                                 )}
                                             </>
                                         )}
                                         {/* Nota Fiscal */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>NF:</span>
+                                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>NF:</span>
                                             <input
                                                 type="text"
                                                 value={os.empresaFinanceiro?.numero_nf || ''}
@@ -1195,10 +1207,10 @@ export default function OSDetail() {
                                                     setOs({ ...os, empresaFinanceiro: newFin });
                                                 }}
                                                 style={{
-                                                    background: 'rgba(255,255,255,0.06)',
-                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                    background: 'var(--notion-bg-alt)',
+                                                    border: '1px solid var(--notion-border)',
                                                     borderRadius: 4, padding: '2px 8px',
-                                                    fontSize: 12, color: '#d4a843', fontWeight: 600,
+                                                    fontSize: 12, color: 'var(--notion-text)', fontWeight: 600,
                                                     width: 80, outline: 'none',
                                                 }}
                                             />
@@ -1247,15 +1259,15 @@ export default function OSDetail() {
                 </div>
 
                 {/* ===== RIGHT SIDEBAR ===== */}
-                <div className="os-vehicle-sticky" style={{ width: 300, maxWidth: 300, flexShrink: 0, position: 'sticky', top: 80, alignSelf: 'flex-start', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="os-vehicle-sticky" style={{ width: 320, flexShrink: 0, position: 'sticky', top: 80, alignSelf: 'flex-start', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
                     {/* ══ RESUMO DO CLIENTE ══ */}
-                    <div style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '14px', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 12, padding: '14px', overflow: 'hidden' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--color-text-tertiary)' }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--notion-text-secondary)' }}>
                                 Resumo do Cliente
                             </span>
-                            <button onClick={handleOpenFullEditCliente} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)', opacity: 0.7 }}>
+                            <button onClick={handleOpenFullEditCliente} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--notion-blue)', opacity: 0.7 }}>
                                 <Edit2 size={12} />
                             </button>
                         </div>
@@ -1265,34 +1277,34 @@ export default function OSDetail() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     <div style={{
                                         width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                                        background: 'var(--color-primary)', color: '#fff',
+                                        background: 'var(--notion-blue)', color: '#fff',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         fontWeight: 800, fontSize: 14, letterSpacing: 0.5,
                                     }}>
                                         {cliente.nome.split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()}
                                     </div>
-                                    <Link to={`/clientes/${cliente.id}`} style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-text-primary)', textDecoration: 'none', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+                                    <Link to={`/clientes/${cliente.id}`} style={{ fontWeight: 700, fontSize: 13, color: 'var(--notion-text)', textDecoration: 'none', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
                                         {cliente.nome}
                                     </Link>
                                 </div>
                                 {/* Dados */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11.5 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <User size={12} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                                        <span style={{ color: 'var(--color-text-tertiary)' }}>{cliente.cpfCnpj && cliente.cpfCnpj.replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF'}</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginLeft: 'auto' }}>{cliente.cpfCnpj || '—'}</span>
+                                        <User size={12} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                        <span style={{ color: 'var(--notion-text-secondary)' }}>{cliente.cpfCnpj && cliente.cpfCnpj.replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF'}</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', marginLeft: 'auto' }}>{cliente.cpfCnpj || '—'}</span>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <Phone size={12} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                                        <span style={{ color: 'var(--color-text-tertiary)' }}>Telefone</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginLeft: 'auto' }}>
+                                        <Phone size={12} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                        <span style={{ color: 'var(--notion-text-secondary)' }}>Telefone</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', marginLeft: 'auto' }}>
                                             {cliente.telefones?.filter((t: string) => t.trim())[0] || '—'}
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <Mail size={12} style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }} />
-                                        <span style={{ color: 'var(--color-text-tertiary)' }}>E-mail</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginLeft: 'auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
+                                        <Mail size={12} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                        <span style={{ color: 'var(--notion-text-secondary)' }}>E-mail</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', marginLeft: 'auto', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
                                             {cliente.email || '—'}
                                         </span>
                                     </div>
@@ -1317,7 +1329,7 @@ export default function OSDetail() {
                                             style={{
                                                 flex: 1, padding: '6px 0', borderRadius: 8, cursor: 'pointer',
                                                 background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
-                                                color: 'var(--color-info)', fontWeight: 700, fontSize: 11,
+                                                color: 'var(--notion-blue)', fontWeight: 700, fontSize: 11,
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                                                 textDecoration: 'none',
                                             }}
@@ -1328,14 +1340,14 @@ export default function OSDetail() {
                                 )}
                             </div>
                         ) : (
-                            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-text-tertiary)' }}>—</span>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--notion-text-secondary)' }}>—</span>
                         )}
                     </div>
 
                     {/* ══ DADOS DO VEÍCULO ══ */}
-                    <div style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '14px', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 12, padding: '14px', overflow: 'hidden' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--color-text-tertiary)' }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--notion-text-secondary)' }}>
                                 Dados do Veículo
                             </span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1355,14 +1367,14 @@ export default function OSDetail() {
                                     }}
                                     title={os.trocaPlaca ? 'Clique para manter placa' : 'Clique para trocar placa'}
                                 >
-                                    <span style={{ fontSize: 9, fontWeight: 800, color: os.trocaPlaca ? 'var(--color-primary)' : 'var(--color-text-tertiary)' }}>
+                                    <span style={{ fontSize: 9, fontWeight: 800, color: os.trocaPlaca ? 'var(--notion-blue)' : 'var(--notion-text-secondary)' }}>
                                         {os.trocaPlaca ? 'TROCA' : 'MANTER'}
                                     </span>
-                                    <div style={{ width: 22, height: 11, borderRadius: 6, backgroundColor: os.trocaPlaca ? 'var(--color-primary)' : 'var(--color-text-tertiary)', position: 'relative' }}>
+                                    <div style={{ width: 22, height: 11, borderRadius: 6, backgroundColor: os.trocaPlaca ? 'var(--notion-blue)' : 'var(--notion-text-secondary)', position: 'relative' }}>
                                         <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: '#fff', position: 'absolute', top: 2, left: os.trocaPlaca ? 13 : 2, transition: 'left 0.2s' }} />
                                     </div>
                                 </div>
-                                <button onClick={handleOpenFullEditVeiculo} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)', opacity: 0.7 }}>
+                                <button onClick={handleOpenFullEditVeiculo} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--notion-blue)', opacity: 0.7 }}>
                                     <Edit2 size={12} />
                                 </button>
                             </div>
@@ -1408,29 +1420,29 @@ export default function OSDetail() {
                                     background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)',
                                     borderRadius: 8, padding: '6px 12px', width: '100%', textAlign: 'center',
                                 }}>
-                                    <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--color-text-tertiary)', marginBottom: 2 }}>Marca/Modelo</div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{veiculo.marcaModelo || '—'}</div>
+                                    <div style={{ fontSize: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--notion-text-secondary)', marginBottom: 2 }}>Marca/Modelo</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{veiculo.marcaModelo || '—'}</div>
                                 </div>
                                 {/* Chassi e Renavam */}
                                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11.5 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: 'var(--color-text-tertiary)' }}>Chassi</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontSize: 10.5, fontFamily: 'monospace' }}>{veiculo.chassi || '—'}</span>
+                                        <span style={{ color: 'var(--notion-text-secondary)' }}>Chassi</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', fontSize: 10.5, fontFamily: 'monospace' }}>{veiculo.chassi || '—'}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: 'var(--color-text-tertiary)' }}>Renavam</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontFamily: 'monospace' }}>{veiculo.renavam || '—'}</span>
+                                        <span style={{ color: 'var(--notion-text-secondary)' }}>Renavam</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', fontFamily: 'monospace' }}>{veiculo.renavam || '—'}</span>
                                     </div>
                                 </div>
                                 {/* Recibo — só transferência */}
                                 {os.tipoServico === 'transferencia' && (
                                     <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11.5, cursor: 'pointer' }} onClick={handleOpenFullEditVeiculo}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                            <FileText size={10} style={{ color: veiculo?.dataAquisicao ? 'var(--color-primary)' : 'var(--color-danger)' }} />
-                                            <span style={{ color: veiculo?.dataAquisicao ? 'var(--color-text-tertiary)' : 'var(--color-danger)' }}>Recibo</span>
+                                            <FileText size={10} style={{ color: veiculo?.dataAquisicao ? 'var(--notion-blue)' : 'var(--notion-orange)' }} />
+                                            <span style={{ color: veiculo?.dataAquisicao ? 'var(--notion-text-secondary)' : 'var(--notion-orange)' }}>Recibo</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <span style={{ fontWeight: 600, fontFamily: 'monospace', color: veiculo?.dataAquisicao ? 'var(--color-text-primary)' : 'var(--color-danger)' }}>
+                                            <span style={{ fontWeight: 600, fontFamily: 'monospace', color: veiculo?.dataAquisicao ? 'var(--notion-text)' : 'var(--notion-orange)' }}>
                                                 {veiculo?.dataAquisicao
                                                     ? (veiculo.dataAquisicao.includes('T')
                                                         ? new Date(veiculo.dataAquisicao).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
@@ -1443,7 +1455,7 @@ export default function OSDetail() {
                                                 return (
                                                     <span style={{
                                                         fontSize: 9, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 2,
-                                                        color: recStatus.status === 'expired' ? 'var(--color-danger)' : 'var(--color-warning)',
+                                                        color: recStatus.status === 'expired' ? 'var(--notion-orange)' : 'var(--notion-orange)',
                                                     }}>
                                                         <AlertTriangle size={9} />
                                                         {recStatus.label}
@@ -1455,15 +1467,15 @@ export default function OSDetail() {
                                 )}
                             </div>
                         ) : (
-                            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-text-tertiary)' }}>Sem Veículo</span>
+                            <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--notion-text-secondary)' }}>Sem Veículo</span>
                         )}
                     </div>
 
                     {/* ══ EMPRESA PARCEIRA ══ */}
-                    <div style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '14px' }}>
+                    <div style={{ background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 12, padding: '14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                            <Building2 size={12} style={{ color: 'var(--color-primary)' }} />
-                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--color-text-tertiary)' }}>
+                            <Building2 size={12} style={{ color: 'var(--notion-blue)' }} />
+                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, color: 'var(--notion-text-secondary)' }}>
                                 Empresa Parceira
                             </span>
                         </div>
@@ -1529,27 +1541,27 @@ export default function OSDetail() {
                             }}
                             style={{
                                 width: '100%',
-                                background: 'rgba(255,255,255,0.06)',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--notion-bg-alt)',
+                                border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 padding: '8px 10px',
                                 fontSize: 12,
-                                color: '#e2e8f0',
+                                color: 'var(--notion-text)',
                                 outline: 'none',
                             }}
                         >
-                            <option value="" style={{ background: '#1e2130' }}>Nenhuma (particular)</option>
+                            <option value="">Nenhuma (particular)</option>
                             {empresasAtivas.map((emp) => (
-                                <option key={emp.id} value={emp.id} style={{ background: '#1e2130' }}>{emp.nome}</option>
+                                <option key={emp.id} value={emp.id}>{emp.nome}</option>
                             ))}
                         </select>
                         {empresa && (
                             <div style={{ marginTop: 8 }}>
                                 {usuario?.role === 'admin' && (
-                                    <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', display: 'flex', gap: 12, marginBottom: 6 }}>
-                                        <span>Serviço: <strong style={{ color: 'var(--color-primary)' }}>R$ {empresa.valorServico?.toFixed(2) || '—'}</strong></span>
+                                    <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)', display: 'flex', gap: 12, marginBottom: 6 }}>
+                                        <span>Serviço: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorServico?.toFixed(2) || '—'}</strong></span>
                                         {empresa.valorPlaca != null && (
-                                            <span>Placa: <strong style={{ color: 'var(--color-primary)' }}>R$ {empresa.valorPlaca.toFixed(2)}</strong></span>
+                                            <span>Placa: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorPlaca.toFixed(2)}</strong></span>
                                         )}
                                     </div>
                                 )}
@@ -1581,9 +1593,9 @@ export default function OSDetail() {
                                         width: '100%',
                                         fontSize: 10,
                                         fontWeight: 600,
-                                        color: '#d4a843',
-                                        background: 'rgba(212,168,67,0.1)',
-                                        border: '1px solid rgba(212,168,67,0.25)',
+                                        color: 'var(--notion-blue)',
+                                        background: 'rgba(0,117,222,0.08)',
+                                        border: '1px solid rgba(0,117,222,0.25)',
                                         borderRadius: 6,
                                         padding: '5px 0',
                                         cursor: 'pointer',
@@ -1653,8 +1665,8 @@ function ConferenciaDados({ os, cliente, veiculo }: { os: OrdemDeServico; client
     return (
         <div style={{
             background: isError ? 'rgba(239, 68, 68, 0.04)' : 'rgba(245, 158, 11, 0.04)',
-            border: '1px solid var(--border-color)',
-            borderLeft: `4px solid ${isError ? 'var(--color-danger)' : 'var(--color-warning)'}`,
+            border: '1px solid var(--notion-border)',
+            borderLeft: `4px solid ${isError ? 'var(--notion-orange)' : 'var(--notion-orange)'}`,
             borderRadius: '10px',
             padding: '10px 14px',
             marginBottom: '10px',
@@ -1669,13 +1681,13 @@ function ConferenciaDados({ os, cliente, veiculo }: { os: OrdemDeServico; client
                     background: isError ? 'rgba(239, 68, 68, 0.12)' : 'rgba(245, 158, 11, 0.12)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                    <AlertTriangle size={14} style={{ color: isError ? 'var(--color-danger)' : 'var(--color-warning)' }} />
+                    <AlertTriangle size={14} style={{ color: isError ? 'var(--notion-orange)' : 'var(--notion-orange)' }} />
                 </div>
                 <div>
-                    <h4 style={{ margin: 0, fontSize: 11, fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.01em' }}>
+                    <h4 style={{ margin: 0, fontSize: 11, fontWeight: 800, color: 'var(--notion-text)', letterSpacing: '-0.01em' }}>
                         Conferência de Dados
                     </h4>
-                    <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: isError ? 'var(--color-danger)' : 'var(--color-warning)', opacity: 0.9 }}>
+                    <p style={{ margin: 0, fontSize: 10, fontWeight: 600, color: isError ? 'var(--notion-orange)' : 'var(--notion-orange)', opacity: 0.9 }}>
                         {erros.length > 0 && `${erros.length} problema${erros.length > 1 ? 's' : ''} crítico${erros.length > 1 ? 's' : ''}`}
                         {erros.length > 0 && avisos.length > 0 && ' • '}
                         {avisos.length > 0 && `${avisos.length} aviso${avisos.length > 1 ? 's' : ''} de atenção`}
@@ -1698,18 +1710,18 @@ function ConferenciaDados({ os, cliente, veiculo }: { os: OrdemDeServico; client
                     }}>
                         <div style={{
                             width: 6, height: 6, borderRadius: '50%',
-                            background: p.tipo === 'erro' ? 'var(--color-danger)' : 'var(--color-warning)',
+                            background: p.tipo === 'erro' ? 'var(--notion-orange)' : 'var(--notion-orange)',
                             boxShadow: `0 0 6px ${p.tipo === 'erro' ? 'rgba(239,68,68,0.4)' : 'rgba(245,158,11,0.4)'}`
                         }} />
                         <span style={{ 
-                            fontSize: 10, fontWeight: 800, color: 'var(--color-text-tertiary)',
+                            fontSize: 10, fontWeight: 800, color: 'var(--notion-text-secondary)',
                             textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: '60px'
                         }}>
                             {p.campo}
                         </span>
                         <span style={{
                             fontSize: 11, fontWeight: 600,
-                            color: p.tipo === 'erro' ? 'var(--color-danger)' : 'var(--color-warning)',
+                            color: p.tipo === 'erro' ? 'var(--notion-orange)' : 'var(--notion-orange)',
                             lineHeight: 1.2
                         }}>
                             {p.msg}
@@ -1781,9 +1793,9 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
     const hasPend = !!(os.pendencia);
 
     const cardStyle = (baseColor: string, isChanged: boolean): React.CSSProperties => ({
-        background: 'var(--bg-card)',
+        background: 'var(--notion-surface)',
         borderRadius: '10px',
-        border: `1px solid ${isChanged ? baseColor : 'var(--border-color)'}`,
+        border: `1px solid ${isChanged ? baseColor : 'var(--notion-border)'}`,
         padding: '8px 12px',
         display: 'flex',
         alignItems: 'center',
@@ -1810,21 +1822,21 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
     return (
         <div style={{ marginBottom: 10 }}>
             {/* Pendência / Impedimento */}
-            <div style={cardStyle('var(--color-danger)', pendEditing || confirmingResolve)}>
-                <div style={iconBoxStyle(hasPend ? 'rgba(239,68,68,0.12)' : 'rgba(107,114,128,0.1)', hasPend ? 'var(--color-danger)' : 'var(--color-text-tertiary)')}>
-                    <AlertTriangle size={13} color={hasPend ? 'var(--color-danger)' : 'var(--color-text-tertiary)'} strokeWidth={2.5} />
+            <div style={cardStyle('var(--notion-orange)', pendEditing || confirmingResolve)}>
+                <div style={iconBoxStyle(hasPend ? 'rgba(239,68,68,0.12)' : 'rgba(107,114,128,0.1)', hasPend ? 'var(--notion-orange)' : 'var(--notion-text-secondary)')}>
+                    <AlertTriangle size={13} color={hasPend ? 'var(--notion-orange)' : 'var(--notion-text-secondary)'} strokeWidth={2.5} />
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <label style={{
                         fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-                        letterSpacing: '0.05em', color: hasPend ? 'var(--color-danger)' : 'var(--color-text-tertiary)'
+                        letterSpacing: '0.05em', color: hasPend ? 'var(--notion-orange)' : 'var(--notion-text-secondary)'
                     }}>
                         Pendência / Impedimento
                     </label>
 
                     {/* Modo leitura: mostra texto + botões Editar / Resolvida */}
                     {hasPend && !pendEditing && !confirmingResolve && (
-                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-danger)' }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-orange)' }}>
                             {os.pendencia}
                         </span>
                     )}
@@ -1844,7 +1856,7 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
                             style={{
                                 background: 'transparent', border: 'none', outline: 'none',
                                 fontSize: 12, fontWeight: 700,
-                                color: pend ? 'var(--color-danger)' : 'var(--color-text-primary)',
+                                color: pend ? 'var(--notion-orange)' : 'var(--notion-text)',
                                 padding: 0, width: '100%',
                             }}
                         />
@@ -1852,7 +1864,7 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
 
                     {/* Confirmação de resolução */}
                     {confirmingResolve && (
-                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)' }}>
                             Confirmar que a pendência foi resolvida?
                         </span>
                     )}
@@ -1866,7 +1878,7 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
                             <Edit2 size={12} /> Editar
                         </button>
                         <button onClick={() => setConfirmingResolve(true)} title="Resolver pendência"
-                            style={btnStyle('rgba(16,185,129,0.1)', 'var(--color-success)', '1px solid rgba(16,185,129,0.3)')}>
+                            style={btnStyle('rgba(16,185,129,0.1)', 'var(--notion-green)', '1px solid rgba(16,185,129,0.3)')}>
                             <CheckCircle size={12} /> Resolvida
                         </button>
                     </div>
@@ -1876,11 +1888,11 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
                 {pendEditing && (
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                         <button onClick={savePend} disabled={pendSaving || !pendChanged}
-                            style={btnStyle(pendChanged ? 'var(--color-danger)' : 'var(--color-text-tertiary)', '#fff')}>
+                            style={btnStyle(pendChanged ? 'var(--notion-orange)' : 'var(--notion-text-secondary)', '#fff')}>
                             {pendSaving ? '...' : 'Salvar'}
                         </button>
                         <button onClick={cancelEditing}
-                            style={btnStyle('transparent', 'var(--color-text-secondary)', '1px solid var(--border-color)')}>
+                            style={btnStyle('transparent', 'var(--notion-text-secondary)', '1px solid var(--notion-border)')}>
                             Cancelar
                         </button>
                     </div>
@@ -1890,11 +1902,11 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
                 {confirmingResolve && (
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                         <button onClick={resolvePend} disabled={pendSaving}
-                            style={btnStyle('var(--color-success)', '#fff')}>
+                            style={btnStyle('var(--notion-green)', '#fff')}>
                             <CheckCircle size={12} /> {pendSaving ? '...' : 'Confirmar'}
                         </button>
                         <button onClick={() => setConfirmingResolve(false)}
-                            style={btnStyle('transparent', 'var(--color-text-secondary)', '1px solid var(--border-color)')}>
+                            style={btnStyle('transparent', 'var(--notion-text-secondary)', '1px solid var(--notion-border)')}>
                             Cancelar
                         </button>
                     </div>
@@ -1908,8 +1920,8 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
 // ---- Checklist inline primitives (outside component to avoid re-mount) ----
 const CKColCard = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
     <div style={{
-        background: 'var(--bg-card, var(--bg-surface))',
-        border: '1px solid var(--border-color)',
+        background: 'var(--notion-surface))',
+        border: '1px solid var(--notion-border)',
         borderRadius: 10,
         overflow: 'hidden',
         display: 'flex',
@@ -1923,11 +1935,11 @@ const CKColCard = ({ children, style }: { children: React.ReactNode; style?: Rea
 const CKColHeader = ({ label, right }: { label: string; right?: React.ReactNode }) => (
     <div style={{
         padding: '9px 14px 8px',
-        borderBottom: '1px solid var(--border-color)',
+        borderBottom: '1px solid var(--notion-border)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
         background: 'rgba(128,128,128,0.03)',
     }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.09em', opacity: 0.85 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.09em', opacity: 0.85 }}>
             {label}
         </span>
         {right}
@@ -2152,19 +2164,19 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
 
     const statusColor = (s: StatusChecklist) => {
         switch (s) {
-            case 'recebido': return { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', label: 'Recebido' };
-            case 'invalido': return { color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.12)', label: 'Inválido' };
-            case 'nao_se_aplica': return { color: 'var(--color-neutral)', bg: 'rgba(107,114,128,0.12)', label: 'N/A' };
-            default: return { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
+            case 'recebido': return { color: 'var(--notion-green)', bg: 'rgba(16,185,129,0.12)', label: 'Recebido' };
+            case 'invalido': return { color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.12)', label: 'Inválido' };
+            case 'nao_se_aplica': return { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.12)', label: 'N/A' };
+            default: return { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
         }
     };
 
     // (matchDocCliente já está declarado acima do useEffect)
 
-    const CLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-text-tertiary)', marginBottom: 4 };
-    const bannerColor = checklistComplete ? 'var(--color-success)' : 'var(--color-primary)';
-    const bannerBg = checklistComplete ? 'rgba(16,185,129,0.08)' : 'rgba(212,168,67,0.08)';
-    const bannerBorder = checklistComplete ? 'rgba(16,185,129,0.25)' : 'rgba(212,168,67,0.25)';
+    const CLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 4 };
+    const bannerColor = checklistComplete ? 'var(--notion-green)' : 'var(--notion-blue)';
+    const bannerBg = checklistComplete ? 'rgba(16,185,129,0.08)' : 'rgba(0,117,222,0.08)';
+    const bannerBorder = checklistComplete ? 'rgba(16,185,129,0.25)' : 'rgba(0,117,222,0.25)';
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -2173,13 +2185,13 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                 <div style={{
                     padding: '10px 14px',
                     borderRadius: 10,
-                    border: '1px solid var(--color-border)',
+                    border: '1px solid var(--notion-border)',
                     background: 'rgba(59,130,246,0.08)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 8,
                 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)' }}>
                         Documentos 2ª Via CRV
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -2235,7 +2247,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                         <FileText size={15} />
                     </div>
                     <div>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             Documentos do Processo
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
@@ -2244,15 +2256,15 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                                 <div style={{ height: '100%', borderRadius: 2, width: `${progressPercent}%`, background: bannerColor, transition: 'width 0.5s ease' }} />
                             </div>
                             <span style={{ fontSize: 11, fontWeight: 800, color: bannerColor }}>{progressPercent}%</span>
-                            {checklistComplete && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 3 }}><CheckCircle size={10} strokeWidth={3} /> COMPLETO</span>}
+                            {checklistComplete && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--notion-green)', display: 'flex', alignItems: 'center', gap: 3 }}><CheckCircle size={10} strokeWidth={3} /> COMPLETO</span>}
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 4 }}>
                         {[
-                            { label: `${recebidos} recebidos`, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)' },
-                            { label: `${pendentes} pendentes`, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)' },
-                            ...(invalidos > 0 ? [{ label: `${invalidos} invalidos`, color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.12)' }] : []),
-                            ...(naoAplica > 0 ? [{ label: `${naoAplica} n/a`, color: 'var(--color-text-tertiary)', bg: 'rgba(128,128,128,0.10)' }] : []),
+                            { label: `${recebidos} recebidos`, color: 'var(--notion-green)', bg: 'rgba(16,185,129,0.12)' },
+                            { label: `${pendentes} pendentes`, color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)' },
+                            ...(invalidos > 0 ? [{ label: `${invalidos} invalidos`, color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.12)' }] : []),
+                            ...(naoAplica > 0 ? [{ label: `${naoAplica} n/a`, color: 'var(--notion-text-secondary)', bg: 'rgba(128,128,128,0.10)' }] : []),
                         ].map(s => (
                             <span key={s.label} style={{ fontSize: 10, fontWeight: 700, color: s.color, background: s.bg, padding: '2px 7px', borderRadius: 99, border: `1px solid ${s.color}22` }}>
                                 {s.label}
@@ -2265,9 +2277,9 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                         display: 'inline-flex', alignItems: 'center', gap: 5,
                         padding: '5px 12px', borderRadius: 7,
                         fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed',
-                        background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-card)',
-                        color: dirty ? '#fff' : 'var(--color-text-tertiary)',
-                        border: dirty ? 'none' : '1px solid var(--border-color)',
+                        background: dirty ? 'var(--notion-blue)' : 'var(--notion-surface)',
+                        color: dirty ? '#fff' : 'var(--notion-text-secondary)',
+                        border: dirty ? 'none' : '1px solid var(--notion-border)',
                         boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                         transition: 'all 0.2s', opacity: dirty ? 1 : 0.6,
                     } as React.CSSProperties}>
@@ -2279,32 +2291,32 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 12, alignItems: 'start' }}>
 
                 {/* COLUNA ESQUERDA: Document List */}
-                <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid var(--notion-border)' }}>
                         <span style={{ ...CLBL, marginBottom: 0, flex: 1 }}>Lista de Documentos</span>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>{total} itens</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-blue)', opacity: 0.7 }}>{total} itens</span>
                     </div>
                     {localChecklist.map((item, idx) => {
                         const sc = statusColor(item.status);
                         const isNa = item.status === 'nao_se_aplica';
                         return (
-                            <div key={item.id} style={{ borderBottom: idx < localChecklist.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                            <div key={item.id} style={{ borderBottom: idx < localChecklist.length - 1 ? '1px solid var(--notion-border)' : 'none' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', minHeight: 48, transition: 'background 0.15s', flexWrap: 'wrap' }}
                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(128,128,128,0.04)'}
                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                     <div style={{ width: 9, height: 9, borderRadius: '50%', background: sc.color, flexShrink: 0, boxShadow: `0 0 4px ${sc.color}44` }} />
-                                    <span style={{ flex: '1 1 140px', fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--color-text-secondary)' : 'var(--color-text-primary)', textDecoration: isNa ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</span>
+                                    <span style={{ flex: '1 1 140px', fontSize: 14, fontWeight: 600, minWidth: 0, color: isNa ? 'var(--notion-text-secondary)' : 'var(--notion-text)', textDecoration: isNa ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</span>
                                     <div style={{ display: 'flex', gap: 1, padding: '1px', borderRadius: 6, background: 'rgba(128,128,128,0.06)', alignItems: 'center', flexShrink: 0 }}>
                                         {[
-                                            { id: 'pendente', icon: Clock, color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.15)', label: 'Pendente' },
-                                            { id: 'recebido', icon: CheckCircle, color: 'var(--color-success)', bg: 'rgba(16,185,129,0.15)', label: 'Recebido' },
-                                            { id: 'invalido', icon: AlertTriangle, color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.15)', label: 'Invalido' },
-                                            { id: 'nao_se_aplica', icon: X, color: 'var(--color-neutral)', bg: 'rgba(107,114,128,0.15)', label: 'N/A' },
+                                            { id: 'pendente', icon: Clock, color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.15)', label: 'Pendente' },
+                                            { id: 'recebido', icon: CheckCircle, color: 'var(--notion-green)', bg: 'rgba(16,185,129,0.15)', label: 'Recebido' },
+                                            { id: 'invalido', icon: AlertTriangle, color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.15)', label: 'Invalido' },
+                                            { id: 'nao_se_aplica', icon: X, color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.15)', label: 'N/A' },
                                         ].map(opt => {
                                             const isSelected = item.status === opt.id;
                                             return (
                                                 <button key={opt.id} onClick={() => updateItem(item.id, { status: opt.id as StatusChecklist })} title={opt.label}
-                                                    style={{ width: 22, height: 22, borderRadius: 5, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? opt.bg : 'transparent', color: isSelected ? opt.color : 'var(--color-text-secondary)', opacity: isSelected ? 1 : 0.35 }}
+                                                    style={{ width: 22, height: 22, borderRadius: 5, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s', background: isSelected ? opt.bg : 'transparent', color: isSelected ? opt.color : 'var(--notion-text-secondary)', opacity: isSelected ? 1 : 0.35 }}
                                                     onMouseEnter={e => !isSelected && (e.currentTarget.style.opacity = '0.75')}
                                                     onMouseLeave={e => !isSelected && (e.currentTarget.style.opacity = '0.35')}>
                                                     <opt.icon size={11} strokeWidth={isSelected ? 3 : 2} />
@@ -2317,13 +2329,13 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                                         {item.arquivo ? (
                                             <>
                                                 <button onClick={() => onOpenViewer(item.arquivo!, item.nome)} title="Ver documento"
-                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-info)', transition: 'background 0.15s' }}
+                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-blue)', transition: 'background 0.15s' }}
                                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
                                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}>
                                                     <Eye size={12} />
                                                 </button>
                                                 <button title="Remover anexo"
-                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-danger)', transition: 'background 0.15s' }}
+                                                    style={{ width: 26, height: 26, borderRadius: 6, background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-orange)', transition: 'background 0.15s' }}
                                                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
                                                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
                                                     onClick={async () => { const confirmed = await confirm('Deseja remover este anexo?'); if (confirmed) { updateItem(item.id, { arquivo: undefined, status: 'pendente' }); setDirty(true); } }}>
@@ -2332,22 +2344,22 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                                             </>
                                         ) : (
                                             <button title="Anexar arquivo" disabled={uploadingId === item.id}
-                                                style={{ height: 26, padding: '0 8px', borderRadius: 6, background: uploadingId === item.id ? 'var(--bg-secondary)' : 'var(--color-primary)', color: uploadingId === item.id ? 'var(--color-text-secondary)' : 'var(--bg-body)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'opacity 0.15s' }}
+                                                style={{ height: 26, padding: '0 8px', borderRadius: 6, background: uploadingId === item.id ? 'var(--notion-bg-alt)' : 'var(--notion-blue)', color: uploadingId === item.id ? 'var(--notion-text-secondary)' : 'var(--notion-bg)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'opacity 0.15s' }}
                                                 onClick={() => { setActiveUploadItemId(item.id); fileInputRef.current?.click(); }}>
                                                 {uploadingId === item.id ? <Clock size={11} className="animate-spin" /> : <Upload size={11} />}
                                                 {uploadingId === item.id ? '...' : 'Anexar'}
                                             </button>
                                         )}
                                         <button title="Excluir item"
-                                            style={{ width: 22, height: 22, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', opacity: 0.2, transition: 'opacity 0.15s, color 0.15s' }}
-                                            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--color-danger)'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+                                            style={{ width: 22, height: 22, borderRadius: 5, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-text-secondary)', opacity: 0.2, transition: 'opacity 0.15s, color 0.15s' }}
+                                            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                                             onClick={async () => { const confirmed = await confirm(`Deseja mesmo remover o item "${item.nome}"?`); if (confirmed) { setLocalChecklist(prev => prev.filter(i => i.id !== item.id)); setDirty(true); } }}>
                                             <Trash2 size={11} />
                                         </button>
                                     </div>
                                     {(item.nome === 'CNH' || item.nome.includes('CNH')) && item.status !== 'nao_se_aplica' && item.status !== 'recebido' && (
-                                        <button style={{ background: 'transparent', border: '1px solid #F59E0B44', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: 'var(--color-warning)', whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0 }}
+                                        <button style={{ background: 'transparent', border: '1px solid rgba(221,91,0,0.25)', borderRadius: 5, padding: '2px 7px', cursor: 'pointer', fontSize: 9, fontWeight: 700, color: 'var(--notion-orange)', whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0 }}
                                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.08)'}
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                             onClick={() => handleNaoPossuiCNH(item.id)}>Sem CNH?</button>
@@ -2357,8 +2369,8 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                                     <div style={{ padding: '0 12px 6px 29px' }}>
                                         <input type="text" placeholder="Observacao..."
                                             value={item.observacao || ''} onChange={(e) => updateItem(item.id, { observacao: e.target.value })}
-                                            style={{ width: '100%', fontSize: 10, padding: '3px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 5, color: 'var(--color-text-secondary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s', fontStyle: 'italic', boxSizing: 'border-box' }}
-                                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'rgba(128,128,128,0.06)'; }}
+                                            style={{ width: '100%', fontSize: 10, padding: '3px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 5, color: 'var(--notion-text-secondary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s', fontStyle: 'italic', boxSizing: 'border-box' }}
+                                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--notion-border)'; e.currentTarget.style.background = 'rgba(128,128,128,0.06)'; }}
                                             onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
                                     </div>
                                 )}
@@ -2366,17 +2378,17 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                         );
                     })}
                     {/* Add new doc row */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderTop: '1px solid var(--border-color)', background: 'var(--bg-body)' }}>
-                        <Plus size={13} style={{ color: 'var(--color-primary)', opacity: 0.5, flexShrink: 0 }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderTop: '1px solid var(--notion-border)', background: 'var(--notion-bg)' }}>
+                        <Plus size={13} style={{ color: 'var(--notion-blue)', opacity: 0.5, flexShrink: 0 }} />
                         <input type="text" placeholder="Adicionar documento..."
                             value={novoDocNome} onChange={(e) => setNovoDocNome(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddDocumento()}
-                            style={{ flex: 1, fontSize: 12, padding: '6px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: 'var(--color-text-primary)', outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
-                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.04)'; }}
+                            style={{ flex: 1, fontSize: 12, padding: '6px 8px', background: 'transparent', border: '1px solid transparent', borderRadius: 6, color: 'var(--notion-text)', outline: 'none', transition: 'border-color 0.2s, background 0.2s' }}
+                            onFocus={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; e.currentTarget.style.background = 'rgba(0,117,222,0.04)'; }}
                             onBlur={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
                         {novoDocNome.trim() && (
                             <button onClick={handleAddDocumento}
-                                style={{ height: 26, padding: '0 10px', borderRadius: 6, background: 'var(--color-primary)', color: 'var(--bg-body)', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, transition: 'opacity 0.15s' }}>
+                                style={{ height: 26, padding: '0 10px', borderRadius: 6, background: 'var(--notion-blue)', color: 'var(--notion-bg)', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, transition: 'opacity 0.15s' }}>
                                 <Plus size={12} /> Adicionar
                             </button>
                         )}
@@ -2389,15 +2401,15 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
 
                     {/* Docs do Cliente */}
                     {docsCliente.length > 0 && (
-                        <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                        <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+                            <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--notion-border)' }}>
                                 <span style={CLBL}>Docs do Cliente</span>
                                 {cliente && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                                        <User size={11} style={{ color: 'var(--color-text-tertiary)' }} />
-                                        <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{cliente.nome}</span>
+                                        <User size={11} style={{ color: 'var(--notion-text-secondary)' }} />
+                                        <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>{cliente.nome}</span>
                                         {docsCliente.filter(d => d.arquivo).length > 0 && (
-                                            <span style={{ fontSize: 10, color: 'var(--color-success)', fontWeight: 700 }}>
+                                            <span style={{ fontSize: 10, color: 'var(--notion-green)', fontWeight: 700 }}>
                                                 · {docsCliente.filter(d => d.arquivo).length} com arquivo
                                             </span>
                                         )}
@@ -2407,13 +2419,13 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                             <div style={{ padding: '10px 12px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                                 {docsCliente.map(doc => (
                                     <span key={doc.id}
-                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border-color)', color: 'var(--color-text-primary)', cursor: doc.arquivo ? 'pointer' : 'default', transition: 'border-color 0.15s' }}
+                                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 6, fontSize: 11, fontWeight: 600, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--notion-border)', color: 'var(--notion-text)', cursor: doc.arquivo ? 'pointer' : 'default', transition: 'border-color 0.15s' }}
                                         onClick={() => doc.arquivo && onOpenViewer(doc.arquivo, doc.nome || doc.tipo)}
-                                        onMouseEnter={e => { if (doc.arquivo) e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}>
-                                        {doc.arquivo ? <CheckCircle size={10} style={{ color: 'var(--color-success)' }} /> : <FileText size={10} style={{ color: 'var(--color-neutral)' }} />}
+                                        onMouseEnter={e => { if (doc.arquivo) e.currentTarget.style.borderColor = 'var(--notion-blue)'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--notion-border)'; }}>
+                                        {doc.arquivo ? <CheckCircle size={10} style={{ color: 'var(--notion-green)' }} /> : <FileText size={10} style={{ color: 'var(--notion-text-secondary)' }} />}
                                         {doc.tipo || doc.nome}
-                                        {doc.arquivo && <Eye size={9} style={{ color: 'var(--color-info)', opacity: 0.7 }} />}
+                                        {doc.arquivo && <Eye size={9} style={{ color: 'var(--notion-blue)', opacity: 0.7 }} />}
                                     </span>
                                 ))}
                             </div>
@@ -2421,26 +2433,26 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                     )}
 
                     {/* Observacoes */}
-                    <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                        <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+                        <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--notion-border)' }}>
                             <span style={CLBL}>Observacoes</span>
                         </div>
                         <div style={{ padding: '10px 12px' }}>
                             <textarea rows={4} placeholder="Observacoes gerais do checklist..."
                                 value={observacoesGlobais} onChange={(e) => { setObservacoesGlobais(e.target.value); markDirty(true); }}
-                                style={{ width: '100%', fontSize: 13, padding: '8px 10px', background: 'var(--bg-body)', border: '1px solid var(--border-color)', borderRadius: 7, color: 'var(--color-text-primary)', outline: 'none', resize: 'vertical', minHeight: 80, fontFamily: 'inherit', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
-                                onFocus={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-                                onBlur={e => e.currentTarget.style.borderColor = 'var(--border-color)'} />
+                                style={{ width: '100%', fontSize: 13, padding: '8px 10px', background: 'var(--notion-bg)', border: '1px solid var(--notion-border)', borderRadius: 7, color: 'var(--notion-text)', outline: 'none', resize: 'vertical', minHeight: 80, fontFamily: 'inherit', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
+                                onFocus={e => e.currentTarget.style.borderColor = 'var(--notion-blue)'}
+                                onBlur={e => e.currentTarget.style.borderColor = 'var(--notion-border)'} />
                         </div>
-                        <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+                        <div style={{ padding: '8px 12px', borderTop: '1px solid var(--notion-border)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
                             {dirty && (
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--color-warning)' }}>
-                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-warning)' }} />
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--notion-orange)' }}>
+                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--notion-orange)' }} />
                                     Nao salvo
                                 </span>
                             )}
                             <button onClick={handleSave} disabled={!dirty}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-body)', color: dirty ? '#fff' : 'var(--color-text-tertiary)', border: dirty ? 'none' : '1px solid var(--border-color)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 16px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed', background: dirty ? 'var(--notion-blue)' : 'var(--notion-bg)', color: dirty ? '#fff' : 'var(--notion-text-secondary)', border: dirty ? 'none' : '1px solid var(--notion-border)', boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none', transition: 'all 0.2s', opacity: dirty ? 1 : 0.6 } as React.CSSProperties}>
                                 {dirty ? <Save size={12} /> : <CheckCircle size={12} />}
                                 {dirty ? 'Salvar' : 'Salvo'}
                             </button>
@@ -2550,7 +2562,7 @@ function DetranTab({ os, onRefresh, checklistComplete, veiculo, cliente }: {
     return (
         <div>
             <div className="flex items-center justify-between mb-3">
-                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--color-text-primary)' }}>Cadastro Detran-MG e DAE</h3>
+                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 700, color: 'var(--notion-text)' }}>Cadastro Detran-MG e DAE</h3>
                 <button
                     className="btn btn-primary btn-sm"
                     onClick={abrirDetranComContexto}
@@ -2563,7 +2575,7 @@ function DetranTab({ os, onRefresh, checklistComplete, veiculo, cliente }: {
 
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
                 <div>
-                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-gray-500)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Data do Cadastro</label>
+                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Data do Cadastro</label>
                     <input
                         type="date"
                         className="form-input"
@@ -2845,14 +2857,14 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
     // === Cores por status ===
     const statusInfo = (s: StatusVistoria) => {
         switch (s) {
-            case 'aprovada': return { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircle size={16} />, label: 'Aprovada' };
-            case 'reprovada': return { color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.12)', icon: <XCircle size={16} />, label: 'Reprovada' };
+            case 'aprovada': return { color: 'var(--notion-green)', bg: 'rgba(16,185,129,0.12)', icon: <CheckCircle size={16} />, label: 'Aprovada' };
+            case 'reprovada': return { color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.12)', icon: <XCircle size={16} />, label: 'Reprovada' };
             case 'agendada': return prazoVencido
-                ? { color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.12)', icon: <AlertTriangle size={16} />, label: '⚠ Reagendar' }
-                : { color: 'var(--color-info)', bg: 'rgba(59,130,246,0.12)', icon: <Calendar size={16} />, label: 'Agendada' };
-            case 'reagendar': return { color: 'var(--color-danger)', bg: 'rgba(239,68,68,0.12)', icon: <RotateCcw size={16} />, label: 'Reagendar' };
-            case 'aprovada_apontamento': return { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', icon: <AlertTriangle size={16} />, label: 'Aprovada c/ Apontamento' };
-            default: return { color: 'var(--color-purple)', bg: 'rgba(139,92,246,0.12)', icon: <Circle size={16} />, label: 'A Agendar' };
+                ? { color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.12)', icon: <AlertTriangle size={16} />, label: '⚠ Reagendar' }
+                : { color: 'var(--notion-blue)', bg: 'rgba(59,130,246,0.12)', icon: <Calendar size={16} />, label: 'Agendada' };
+            case 'reagendar': return { color: 'var(--notion-orange)', bg: 'rgba(239,68,68,0.12)', icon: <RotateCcw size={16} />, label: 'Reagendar' };
+            case 'aprovada_apontamento': return { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', icon: <AlertTriangle size={16} />, label: 'Aprovada c/ Apontamento' };
+            default: return { color: '#7c3aed', bg: 'rgba(124,58,237,0.12)', icon: <Circle size={16} />, label: 'A Agendar' };
         }
     };
 
@@ -2884,7 +2896,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
     };
 
     // === JSX: compact redesign ===
-    const VLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-text-tertiary)', marginBottom: 2 };
+    const VLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 2 };
     const VVAL: React.CSSProperties = { fontSize: 13 };
     const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -2907,7 +2919,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                         {si.icon}
                     </div>
                     <div>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             Vistoria Veicular
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
@@ -2915,7 +2927,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 {si.label}
                             </span>
                             {protocolo && (
-                                <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
+                                <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
                                     · Prot: {protocolo}
                                 </span>
                             )}
@@ -2928,13 +2940,13 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: 4,
                             padding: '5px 10px', borderRadius: 7,
-                            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                            color: 'var(--color-text-primary)', fontWeight: 700, fontSize: 11,
+                            background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
+                            color: 'var(--notion-text)', fontWeight: 700, fontSize: 11,
                             textDecoration: 'none', cursor: 'pointer',
                             transition: 'border-color 0.15s, background 0.15s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-card)'; }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--notion-border)'; e.currentTarget.style.background = 'var(--notion-surface)'; }}
                     >
                         <Calendar size={12} /> Agendar ECV
                     </button>
@@ -2942,13 +2954,13 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: 4,
                             padding: '5px 10px', borderRadius: 7,
-                            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                            color: 'var(--color-text-primary)', fontWeight: 600, fontSize: 11,
+                            background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
+                            color: 'var(--notion-text)', fontWeight: 600, fontSize: 11,
                             textDecoration: 'none', cursor: 'pointer',
                             transition: 'border-color 0.15s',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--notion-border)'; }}
                     >
                         <Search size={12} /> Consultar Laudo
                     </a>
@@ -2961,7 +2973,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                     marginBottom: 8, padding: '6px 10px', borderRadius: 7,
                     background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)',
                     display: 'flex', alignItems: 'center', gap: 6,
-                    fontSize: 11, fontWeight: 600, color: 'var(--color-danger)',
+                    fontSize: 11, fontWeight: 600, color: 'var(--notion-orange)',
                 }}>
                     <AlertTriangle size={12} />
                     Prazo para reagendamento: {new Date(vistoria.prazoReagendamento).toLocaleDateString('pt-BR')}
@@ -2982,13 +2994,13 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 display: 'inline-flex', alignItems: 'center', gap: 4,
                                 padding: '5px 10px', borderRadius: 6, border: 'none',
                                 fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                                background: isActive ? info.bg : 'var(--bg-body)',
-                                color: isActive ? info.color : 'var(--color-text-tertiary)',
-                                outline: isActive ? `2px solid ${info.color}` : '1px solid var(--border-color)',
+                                background: isActive ? info.bg : 'var(--notion-surface)',
+                                color: isActive ? info.color : 'var(--notion-text-secondary)',
+                                outline: isActive ? `2px solid ${info.color}` : '1px solid var(--notion-border)',
                                 transition: 'all 0.15s',
                             }}
                             onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = info.bg; e.currentTarget.style.color = info.color; }}}
-                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'var(--bg-body)'; e.currentTarget.style.color = 'var(--color-text-tertiary)'; }}}
+                            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'var(--notion-surface)'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}}
                         >
                             {info.icon} {info.label}
                         </button>
@@ -3000,16 +3012,16 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                             display: 'inline-flex', alignItems: 'center', gap: 5,
                             padding: '6px 14px', borderRadius: 7, border: 'none',
                             fontSize: 11, fontWeight: 700, cursor: (dirty && !saving) ? 'pointer' : 'not-allowed',
-                            background: (dirty && !saving) ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--bg-body)',
-                            color: (dirty && !saving) ? '#fff' : 'var(--color-text-tertiary)',
+                            background: (dirty && !saving) ? 'linear-gradient(135deg, #d4a843, #c49a3a)' : 'var(--notion-bg)',
+                            color: (dirty && !saving) ? '#fff' : 'var(--notion-text-secondary)',
                             boxShadow: (dirty && !saving) ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
                             transition: 'all 0.2s', opacity: (dirty && !saving) ? 1 : 0.6,
                         }}>
                         <Save size={12} /> {saving ? 'Salvando...' : 'Salvar'}
                     </button>
                     {dirty && !saving && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--color-warning)' }}>
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--color-warning)', animation: 'pulse 1.5s infinite' }} />
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--notion-orange)' }}>
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--notion-orange)', animation: 'pulse 1.5s infinite' }} />
                             Não salvo
                         </span>
                     )}
@@ -3019,14 +3031,14 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
             {/* Motivo reprovação / apontamento */}
             {status === 'reprovada' && vistoria.status !== 'reprovada' && (
                 <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}>
-                    <label style={{ ...VLBL, color: 'var(--color-danger)' }}>Motivo da Reprovação *</label>
+                    <label style={{ ...VLBL, color: 'var(--notion-orange)' }}>Motivo da Reprovação *</label>
                     <textarea className="form-textarea" value={motivo} onChange={(e) => setMotivo(e.target.value)}
                         placeholder="Descreva o motivo..." style={{ minHeight: 56, fontSize: 13, borderColor: 'rgba(239,68,68,0.3)' }} />
                 </div>
             )}
             {status === 'aprovada_apontamento' && vistoria.status !== 'aprovada_apontamento' && (
                 <div style={{ marginBottom: 10, padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                    <label style={{ ...VLBL, color: 'var(--color-warning)' }}>Apontamento *</label>
+                    <label style={{ ...VLBL, color: 'var(--notion-orange)' }}>Apontamento *</label>
                     <textarea className="form-textarea" value={apontamento} onChange={(e) => setApontamento(e.target.value)}
                         placeholder="Descreva os apontamentos..." style={{ minHeight: 56, fontSize: 13, borderColor: 'rgba(245,158,11,0.3)' }} />
                 </div>
@@ -3065,40 +3077,40 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                             <div style={{
                                 display: 'flex', gap: 10, flexWrap: 'wrap',
                                 padding: '5px 10px', borderRadius: 6,
-                                background: 'var(--bg-body)', border: '1px solid var(--border-color)',
+                                background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
                             }}>
                                 {dataAgendamento && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <Calendar size={10} style={{ color: 'var(--color-primary)' }} />
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                                        <Calendar size={10} style={{ color: 'var(--notion-blue)' }} />
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text)' }}>
                                             {(() => { const d = new Date(dataAgendamento + 'T12:00:00'); return isNaN(d.getTime()) ? dataAgendamento : d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }); })()}
                                         </span>
-                                        {horaAgendamento && <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>às {horaAgendamento}</span>}
+                                        {horaAgendamento && <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>às {horaAgendamento}</span>}
                                     </div>
                                 )}
                                 {local && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <Building2 size={10} style={{ color: 'var(--color-text-tertiary)' }} />
-                                        <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{local}</span>
+                                        <Building2 size={10} style={{ color: 'var(--notion-text-secondary)' }} />
+                                        <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>{local}</span>
                                     </div>
                                 )}
                             </div>
                         )}
 
                         {/* Pagamentos */}
-                        <div style={{ borderTop: '1px solid var(--border-color)', margin: '2px 0', paddingTop: 8 }}>
-                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-primary)', marginBottom: 4, display: 'block' }}>Pagamentos</span>
+                        <div style={{ borderTop: '1px solid var(--notion-border)', margin: '2px 0', paddingTop: 8 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-blue)', marginBottom: 4, display: 'block' }}>Pagamentos</span>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                 {/* Taxa Vistoria */}
                                 <div style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     padding: '8px 10px', borderRadius: 7,
-                                    background: taxaStatus === 'pago' ? 'rgba(16,185,129,0.06)' : 'var(--bg-body)',
-                                    border: `1px solid ${taxaStatus === 'pago' ? 'rgba(16,185,129,0.2)' : 'var(--border-color)'}`,
+                                    background: taxaStatus === 'pago' ? 'rgba(16,185,129,0.06)' : 'var(--notion-bg)',
+                                    border: `1px solid ${taxaStatus === 'pago' ? 'rgba(16,185,129,0.2)' : 'var(--notion-border)'}`,
                                 }}>
                                     <div>
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-primary)' }}>Taxa Vistoria</span>
-                                        <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--color-text-primary)', marginLeft: 8 }}>
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text)' }}>Taxa Vistoria</span>
+                                        <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--notion-text)', marginLeft: 8 }}>
                                             R$ {precoVistoria.toFixed(2).replace('.', ',')}
                                         </span>
                                     </div>
@@ -3124,7 +3136,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                             padding: '4px 10px', borderRadius: 6, border: 'none',
                                             fontSize: 10, fontWeight: 700, cursor: 'pointer',
                                             background: taxaStatus === 'pago' ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.12)',
-                                            color: taxaStatus === 'pago' ? 'var(--color-success)' : 'var(--color-warning)',
+                                            color: taxaStatus === 'pago' ? 'var(--notion-green)' : 'var(--notion-orange)',
                                         }}
                                     >
                                         {taxaStatus === 'pago' ? <><CheckCircle size={11} /> Pago</> : <><Clock size={11} /> Aguardando</>}
@@ -3143,7 +3155,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                 <CKColCard style={{ minWidth: 0 }}>
                     <CKColHeader label="Laudo da Vistoria" right={
                         os.vistoria?.vistoriaAnexadaEm
-                            ? <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--color-success)', background: 'rgba(16,185,129,0.12)', padding: '1px 6px', borderRadius: 4 }}>Anexado</span>
+                            ? <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--notion-green)', background: 'rgba(16,185,129,0.12)', padding: '1px 6px', borderRadius: 4 }}>Anexado</span>
                             : null
                     } />
                     <div style={{ padding: '10px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -3154,15 +3166,15 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 border: '1px solid rgba(16, 185, 129, 0.2)',
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                                    <CheckCircle size={12} style={{ color: 'var(--color-success)' }} />
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-success)' }}>
+                                    <CheckCircle size={12} style={{ color: 'var(--notion-green)' }} />
+                                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-green)' }}>
                                         Anexada em {new Date(os.vistoria!.vistoriaAnexadaEm!).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <FileText size={10} style={{ color: 'var(--color-text-tertiary)' }} />
+                                    <FileText size={10} style={{ color: 'var(--notion-text-secondary)' }} />
                                     <span style={{
-                                        fontSize: 10, fontWeight: 500, color: 'var(--color-text-secondary)',
+                                        fontSize: 10, fontWeight: 500, color: 'var(--notion-text-secondary)',
                                         flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                                     }}>
                                         {os.vistoria!.vistoriaNomeArquivo}
@@ -3173,7 +3185,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                                 display: 'inline-flex', alignItems: 'center', gap: 3,
                                                 padding: '3px 8px', borderRadius: 5, border: 'none',
                                                 fontSize: 10, fontWeight: 700, cursor: 'pointer',
-                                                background: 'rgba(16,185,129,0.15)', color: 'var(--color-success)',
+                                                background: 'rgba(16,185,129,0.15)', color: 'var(--notion-green)',
                                                 flexShrink: 0,
                                             }}>
                                             <Eye size={10} /> Ver PDF
@@ -3182,30 +3194,30 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 </div>
                             </div>
                         ) : (
-                            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>
+                            <p style={{ fontSize: 11, color: 'var(--notion-text-secondary)', margin: 0 }}>
                                 Nenhum laudo anexado.
                             </p>
                         )}
 
                         <div onClick={() => { if (!vistUploading) vistFileRef.current?.click(); }}
                             style={{
-                                border: '2px dashed var(--border-color)',
+                                border: '2px dashed var(--notion-border)',
                                 borderRadius: 8, padding: '12px 10px',
                                 textAlign: 'center', cursor: vistUploading ? 'wait' : 'pointer',
-                                background: 'var(--bg-body)',
+                                background: 'var(--notion-bg)',
                                 transition: 'border-color 0.15s, background 0.15s',
                             }}
-                            onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
-                            onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-body)'; }}
-                            onDrop={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-body)'; const f = e.dataTransfer.files[0]; if (f) handleVistoriaUpload(f); }}>
+                            onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--notion-blue)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
+                            onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--notion-border)'; e.currentTarget.style.background = 'var(--notion-bg)'; }}
+                            onDrop={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--notion-border)'; e.currentTarget.style.background = 'var(--notion-bg)'; const f = e.dataTransfer.files[0]; if (f) handleVistoriaUpload(f); }}>
                             {vistUploading ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                                     <div style={{
                                         width: 22, height: 22, borderRadius: '50%',
-                                        border: '2px solid var(--border-color)', borderTopColor: 'var(--color-primary)',
+                                        border: '2px solid var(--notion-border)', borderTopColor: 'var(--notion-blue)',
                                         animation: 'spin 0.8s linear infinite',
                                     }} />
-                                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>Enviando...</span>
+                                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)' }}>Enviando...</span>
                                 </div>
                             ) : (
                                 <div>
@@ -3215,12 +3227,12 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         margin: '0 auto 6px',
                                     }}>
-                                        <Upload size={14} style={{ color: 'var(--color-primary)' }} />
+                                        <Upload size={14} style={{ color: 'var(--notion-blue)' }} />
                                     </div>
-                                    <p style={{ margin: 0, fontWeight: 700, fontSize: 11, color: 'var(--color-text-primary)' }}>
+                                    <p style={{ margin: 0, fontWeight: 700, fontSize: 11, color: 'var(--notion-text)' }}>
                                         Clique ou arraste o PDF
                                     </p>
-                                    <p style={{ margin: '2px 0 0', fontSize: 10, color: 'var(--color-text-tertiary)' }}>
+                                    <p style={{ margin: '2px 0 0', fontSize: 10, color: 'var(--notion-text-secondary)' }}>
                                         OS #{os.numero} · {veiculo?.placa || 'Sem placa'}
                                     </p>
                                 </div>
@@ -3236,7 +3248,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                 background: vistUploadMsg.includes('❌') ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.08)',
                                 border: `1px solid ${vistUploadMsg.includes('❌') ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)'}`,
                                 fontSize: 11, fontWeight: 600,
-                                color: vistUploadMsg.includes('❌') ? 'var(--color-danger)' : 'var(--color-success)',
+                                color: vistUploadMsg.includes('❌') ? 'var(--notion-orange)' : 'var(--notion-green)',
                             }}>
                                 {vistUploadMsg}
                             </div>
@@ -3247,18 +3259,18 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                 {/* Troca de Placa */}
                 <div style={{
                     padding: '8px 12px', borderRadius: 8,
-                    background: trocaPlaca ? 'rgba(212,168,67,0.05)' : 'var(--bg-body)',
-                    border: `1px solid ${trocaPlaca ? 'rgba(212,168,67,0.25)' : 'var(--border-color)'}`,
+                    background: trocaPlaca ? 'rgba(212,168,67,0.05)' : 'var(--notion-bg)',
+                    border: `1px solid ${trocaPlaca ? 'rgba(212,168,67,0.25)' : 'var(--notion-border)'}`,
                     cursor: 'pointer', transition: 'all 0.15s',
                 }} onClick={() => { setTrocaPlaca(!trocaPlaca); setDirty(true); }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <input type="checkbox" checked={trocaPlaca} readOnly
-                            style={{ width: 14, height: 14, borderRadius: 3, accentColor: 'var(--color-primary)', cursor: 'pointer', flexShrink: 0 }} />
-                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)', flex: 1 }}>
+                            style={{ width: 14, height: 14, borderRadius: 3, accentColor: 'var(--notion-blue)', cursor: 'pointer', flexShrink: 0 }} />
+                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)', flex: 1 }}>
                             Troca de Placa
                         </span>
                         {trocaPlaca && (
-                            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--color-primary)', background: 'rgba(212,168,67,0.12)', padding: '1px 6px', borderRadius: 4 }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--notion-blue)', background: 'rgba(212,168,67,0.12)', padding: '1px 6px', borderRadius: 4 }}>
                                 SIM
                             </span>
                         )}
@@ -3270,18 +3282,18 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                     <CKColCard style={{ minWidth: 0 }}>
                         <div
                             onClick={() => setHistoryOpen(!historyOpen)}
-                            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: historyOpen ? '1px solid var(--border-color)' : 'none' }}
+                            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', borderBottom: historyOpen ? '1px solid var(--notion-border)' : 'none' }}
                         >
-                            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <Clock size={12} style={{ color: 'var(--color-primary)' }} />
+                            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Clock size={12} style={{ color: 'var(--notion-blue)' }} />
                                 Histórico ({os.vistoriaHistory.length})
                             </span>
-                            <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', transform: historyOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>&#9660;</span>
+                            <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', transform: historyOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>&#9660;</span>
                         </div>
                         {historyOpen && (
                         <div style={{ padding: '8px 14px 10px' }}>
                             <div style={{ position: 'relative', paddingLeft: 20 }}>
-                                <div style={{ position: 'absolute', left: 7, top: 6, bottom: 6, width: 2, background: 'var(--border-color)', borderRadius: 1 }} />
+                                <div style={{ position: 'absolute', left: 7, top: 6, bottom: 6, width: 2, background: 'var(--notion-border)', borderRadius: 1 }} />
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     {os.vistoriaHistory.map((h, idx) => {
                                         const hInfo = statusInfo(h.status);
@@ -3298,13 +3310,13 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                                         {h.status === 'reprovada' ? <XCircle size={7} /> : h.status === 'aprovada_apontamento' ? <AlertTriangle size={7} /> : <CheckCircle size={7} />}
                                                     </span>
                                                 </div>
-                                                <div style={{ padding: '6px 8px', borderRadius: 6, background: isLast ? hInfo.bg : 'var(--bg-body)', border: `1px solid ${isLast ? hInfo.color + '44' : 'var(--border-color)'}` }}>
+                                                <div style={{ padding: '6px 8px', borderRadius: 6, background: isLast ? hInfo.bg : 'var(--notion-bg)', border: `1px solid ${isLast ? hInfo.color + '44' : 'var(--notion-border)'}` }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
                                                         <span style={{ fontSize: 10, fontWeight: 700, color: hInfo.color, display: 'inline-flex', alignItems: 'center', gap: 2 }}>
                                                             {hInfo.label}
                                                         </span>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            <span style={{ fontSize: 9, color: 'var(--color-text-tertiary)' }}>
+                                                            <span style={{ fontSize: 9, color: 'var(--notion-text-secondary)' }}>
                                                                 #{os.vistoriaHistory.length - idx}ª
                                                             </span>
                                                             {(isAdmin || h.usuario === authUser?.nome) && (
@@ -3317,27 +3329,27 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                                                     await updateOrdem(os.id, { vistoriaHistory: novoHistorico });
                                                                     onRefresh();
                                                                 }}
-                                                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 1, color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', borderRadius: 3, opacity: 0.6 }}
-                                                                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-error)'; }}
-                                                                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-tertiary)'; }}
+                                                                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 1, color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', borderRadius: 3, opacity: 0.6 }}
+                                                                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--notion-orange)'; }}
+                                                                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--notion-text-secondary)'; }}
                                                             >
                                                                 <Trash2 size={10} />
                                                             </button>
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div style={{ fontSize: 10, color: 'var(--color-text-tertiary)' }}>
+                                                    <div style={{ fontSize: 10, color: 'var(--notion-text-secondary)' }}>
                                                         <Clock size={9} style={{ verticalAlign: -1, marginRight: 2 }} />
                                                         {new Date(h.registradoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                                                         {h.local && <> · <Building2 size={9} style={{ verticalAlign: -1, marginRight: 1 }} />{h.local}</>}
                                                     </div>
                                                     {h.motivo && (
-                                                        <p style={{ fontSize: 10, color: 'var(--color-danger)', margin: '3px 0 0', padding: '2px 6px', borderRadius: 4, background: 'rgba(239,68,68,0.07)' }}>
+                                                        <p style={{ fontSize: 10, color: 'var(--notion-orange)', margin: '3px 0 0', padding: '2px 6px', borderRadius: 4, background: 'rgba(239,68,68,0.07)' }}>
                                                             <strong>Motivo:</strong> {h.motivo}
                                                         </p>
                                                     )}
                                                     {h.apontamento && (
-                                                        <p style={{ fontSize: 10, color: 'var(--color-warning)', margin: '3px 0 0', padding: '2px 6px', borderRadius: 4, background: 'rgba(245,158,11,0.07)' }}>
+                                                        <p style={{ fontSize: 10, color: 'var(--notion-orange)', margin: '3px 0 0', padding: '2px 6px', borderRadius: 4, background: 'rgba(245,158,11,0.07)' }}>
                                                             <strong>Apontamento:</strong> {h.apontamento}
                                                         </p>
                                                     )}
@@ -3359,7 +3371,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
 }
 
 // label style helper (inline to avoid repetition)
-const LBL: React.CSSProperties = { display: 'block', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-gray-400)', marginBottom: 3 };
+const LBL: React.CSSProperties = { display: 'block', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 3 };
 
 
 // ===== DELEGACIA TAB (with SIFAP integrated) =====
@@ -3462,36 +3474,36 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
             {/* Top bar: Summary counters + Add button */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <MapPin size={12} style={{ color: 'var(--color-info)' }} />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Entradas</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', minWidth: 18, textAlign: 'center' }}>{totalEntradas}</span>
+                    <MapPin size={12} style={{ color: 'var(--notion-blue)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>Entradas</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)', minWidth: 18, textAlign: 'center' }}>{totalEntradas}</span>
                 </div>
-                <div style={{ width: 1, height: 20, background: 'var(--border-color)' }} />
+                <div style={{ width: 1, height: 20, background: 'var(--notion-border)' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <RotateCcw size={12} style={{ color: '#f59e0b' }} />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Reentradas</span>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', minWidth: 18, textAlign: 'center' }}>{totalReentradas}</span>
+                    <RotateCcw size={12} style={{ color: 'var(--notion-blue)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>Reentradas</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)', minWidth: 18, textAlign: 'center' }}>{totalReentradas}</span>
                 </div>
-                <div style={{ width: 1, height: 20, background: 'var(--border-color)' }} />
+                <div style={{ width: 1, height: 20, background: 'var(--notion-border)' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <FileCheck size={12} style={{ color: needsSifap ? (os.sifap?.dataRegistro ? 'var(--color-success)' : 'var(--color-danger)') : 'var(--color-text-tertiary)' }} />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>SIFAP</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: needsSifap ? (os.sifap?.dataRegistro ? 'var(--color-success)' : 'var(--color-danger)') : 'var(--color-text-tertiary)' }}>
+                    <FileCheck size={12} style={{ color: needsSifap ? (os.sifap?.dataRegistro ? 'var(--notion-green)' : 'var(--notion-orange)') : 'var(--notion-text-secondary)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>SIFAP</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: needsSifap ? (os.sifap?.dataRegistro ? 'var(--notion-green)' : 'var(--notion-orange)') : 'var(--notion-text-secondary)' }}>
                         {!needsSifap ? 'N/A' : os.sifap?.dataRegistro ? 'OK' : 'Pend.'}
                     </span>
                 </div>
                 <div style={{ flex: 1 }} />
-                <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>Resp: <strong style={{ color: 'var(--color-primary)' }}>{responsavelLogado}</strong></span>
+                <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>Resp: <strong style={{ color: 'var(--notion-blue)' }}>{responsavelLogado}</strong></span>
                 <button
                     onClick={() => { setShowForm(!showForm); if (entradas.length > 0) setTipo('reentrada'); else setTipo('entrada'); }}
                     style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: '5px 12px', borderRadius: 6,
-                        background: showForm ? 'transparent' : 'var(--color-primary)',
-                        color: showForm ? 'var(--color-text-tertiary)' : 'var(--bg-body)',
-                        border: showForm ? '1px solid var(--border-color)' : 'none',
+                        background: showForm ? 'transparent' : 'var(--notion-blue)',
+                        color: showForm ? 'var(--notion-text-secondary)' : 'var(--notion-bg)',
+                        border: showForm ? '1px solid var(--notion-border)' : 'none',
                         cursor: 'pointer', fontWeight: 700, fontSize: 11,
                         fontFamily: 'var(--font-family)',
                     }}
@@ -3503,21 +3515,21 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
 
             {/* Inline compact form */}
             {showForm && (
-                <div style={{ padding: '10px 14px', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ padding: '10px 14px', background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap' }}>
                         <div style={{ flex: '0 0 auto' }}>
-                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', marginBottom: 3 }}>Tipo</label>
-                            <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-body)' }}>
+                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)', marginBottom: 3 }}>Tipo</label>
+                            <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: '1px solid var(--notion-border)', background: 'var(--notion-bg)' }}>
                                 {(['entrada', 'reentrada', 'sifap', 'requerimento'] as const).map(t => {
                                     const label = t === 'entrada' ? 'Entrada' : t === 'sifap' ? 'SIFAP' : t === 'requerimento' ? 'Req.' : 'Reentrada';
-                                    const activeColor = t === 'entrada' ? 'var(--color-info)' : t === 'sifap' ? 'var(--color-success)' : t === 'requerimento' ? '#8b5cf6' : '#f59e0b';
+                                    const activeColor = t === 'entrada' ? 'var(--notion-blue)' : t === 'sifap' ? 'var(--notion-green)' : t === 'requerimento' ? '#8b5cf6' : 'var(--notion-blue)';
                                     return (
                                     <button key={t} type="button" onClick={() => setTipo(t)}
                                         style={{
                                             padding: '5px 10px', fontSize: 11, fontWeight: tipo === t ? 700 : 500,
                                             border: 'none', cursor: 'pointer', fontFamily: 'var(--font-family)',
                                             background: tipo === t ? `${activeColor}22` : 'transparent',
-                                            color: tipo === t ? activeColor : 'var(--color-text-tertiary)',
+                                            color: tipo === t ? activeColor : 'var(--notion-text-secondary)',
                                         }}
                                     >
                                         {label}
@@ -3527,18 +3539,18 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                             </div>
                         </div>
                         <div style={{ flex: '0 0 150px' }}>
-                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', marginBottom: 3 }}>Data</label>
+                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)', marginBottom: 3 }}>Data</label>
                             <input type="date" className="form-input" value={data} onChange={(e) => setData(e.target.value)} style={{ fontSize: 12, padding: '5px 8px' }} />
                         </div>
                         <div style={{ flex: '1 1 150px' }}>
-                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', marginBottom: 3 }}>Obs.</label>
+                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)', marginBottom: 3 }}>Obs.</label>
                             <input type="text" className="form-input" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Opcional..." style={{ fontSize: 12, padding: '5px 8px' }} />
                         </div>
                         <button type="button" onClick={handleAdd}
                             style={{
                                 display: 'flex', alignItems: 'center', gap: 5, height: 32,
                                 padding: '0 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                                background: 'var(--color-primary)', color: 'var(--bg-body)', fontWeight: 700, fontSize: 11,
+                                background: 'var(--notion-blue)', color: 'var(--notion-bg)', fontWeight: 700, fontSize: 11,
                                 fontFamily: 'var(--font-family)', whiteSpace: 'nowrap',
                             }}
                         >
@@ -3547,7 +3559,7 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                     </div>
                     {tipo === 'reentrada' && (
                         <div>
-                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#f59e0b', marginBottom: 3 }}><AlertTriangle size={10} style={{ verticalAlign: -1, marginRight: 3 }} />Motivo da Devolução *</label>
+                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--notion-blue)', marginBottom: 3 }}><AlertTriangle size={10} style={{ verticalAlign: -1, marginRight: 3 }} />Motivo da Devolução *</label>
                             <textarea className="form-textarea" value={motivoDevolucao} onChange={(e) => setMotivoDevolucao(e.target.value)}
                                 placeholder="Descreva o motivo..."
                                 style={{ minHeight: 40, fontSize: 12, resize: 'vertical', padding: '5px 8px' }} />
@@ -3564,22 +3576,22 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                     border: os.sifap?.dataRegistro ? '1px solid rgba(16,185,129,0.15)' : '1px solid rgba(245,158,11,0.15)',
                     display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
                 }}>
-                    <FileCheck size={13} style={{ color: os.sifap?.dataRegistro ? 'var(--color-success)' : '#f59e0b', flexShrink: 0 }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-primary)' }}>SIFAP</span>
+                    <FileCheck size={13} style={{ color: os.sifap?.dataRegistro ? 'var(--notion-green)' : 'var(--notion-blue)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text)' }}>SIFAP</span>
                     {os.sifap?.dataRegistro && !sifapDirty && (
-                        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--color-success)', padding: '2px 8px', borderRadius: 4, background: 'rgba(16,185,129,0.1)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--notion-green)', padding: '2px 8px', borderRadius: 4, background: 'rgba(16,185,129,0.1)' }}>
                             Registrado {formatDateLocal(os.sifap.dataRegistro)}
                         </span>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 auto' }}>
                         <div>
-                            <label style={{ display: 'block', fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 2 }}>Data</label>
+                            <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 2 }}>Data</label>
                             <input type="date" className="form-input" value={sifapData}
                                 onChange={(e) => { setSifapData(e.target.value); setSifapDirty(true); }}
                                 style={{ fontSize: 12, padding: '4px 6px' }} />
                         </div>
                         <div>
-                            <label style={{ display: 'block', fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 2 }}>Nova Placa</label>
+                            <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 2 }}>Nova Placa</label>
                             <input type="text" className="form-input" value={sifapPlaca}
                                 onChange={(e) => { setSifapPlaca(e.target.value.toUpperCase()); setSifapDirty(true); }}
                                 placeholder={veiculo?.placa || 'ABC1D23'} maxLength={7}
@@ -3590,7 +3602,7 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                         </button>
                         {os.sifap?.dataRegistro && !sifapDirty && (
                             <button onClick={handleCancelarSifap}
-                                style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 5, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.12)', color: 'var(--color-danger)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-family)', alignSelf: 'flex-end' }}>
+                                style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 5, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.12)', color: 'var(--notion-orange)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-family)', alignSelf: 'flex-end' }}>
                                 <XCircle size={10} /> Cancelar
                             </button>
                         )}
@@ -3599,26 +3611,26 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
             )}
 
             {needsSifap && entradas.length === 0 && (
-                <div style={{ padding: '8px 14px', borderRadius: 6, background: 'var(--bg-body)', border: '1px dashed var(--border-color)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <FileCheck size={12} style={{ color: 'var(--color-text-tertiary)' }} />
-                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>SIFAP disponível após a primeira entrada.</span>
+                <div style={{ padding: '8px 14px', borderRadius: 6, background: 'var(--notion-bg)', border: '1px dashed var(--notion-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <FileCheck size={12} style={{ color: 'var(--notion-text-secondary)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>SIFAP disponível após a primeira entrada.</span>
                 </div>
             )}
 
             {/* History table */}
-            <div style={{ background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', background: 'var(--bg-body)', borderBottom: '1px solid var(--border-color)', gap: 12 }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Histórico</span>
+            <div style={{ background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', background: 'var(--notion-bg)', borderBottom: '1px solid var(--notion-border)', gap: 12 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Histórico</span>
                     {entradas.length > 0 && (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 8, background: 'rgba(212,168,67,0.12)', color: 'var(--color-primary)' }}>{entradas.length}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 8, background: 'rgba(212,168,67,0.12)', color: 'var(--notion-blue)' }}>{entradas.length}</span>
                     )}
                 </div>
 
                 <div style={{ maxHeight: 400, overflowY: 'auto' }}>
                 {entradas.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '24px 14px' }}>
-                        <MapPin size={16} style={{ color: 'var(--color-text-tertiary)', marginBottom: 6 }} />
-                        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', margin: 0 }}>Nenhuma entrada registrada</p>
+                        <MapPin size={16} style={{ color: 'var(--notion-text-secondary)', marginBottom: 6 }} />
+                        <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', margin: 0 }}>Nenhuma entrada registrada</p>
                     </div>
                 ) : (() => {
                     const entradasFiltradas = entradas.filter(e => e.tipo === 'entrada');
@@ -3627,23 +3639,23 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                             const isEntrada = e.tipo === 'entrada';
                             const isSifap = e.tipo === 'sifap';
                             const isRequerimento = e.tipo === 'requerimento';
-                            const accentColor = isEntrada ? 'var(--color-info)' : isSifap ? 'var(--color-success)' : isRequerimento ? '#8b5cf6' : '#f59e0b';
+                            const accentColor = isEntrada ? 'var(--notion-blue)' : isSifap ? 'var(--notion-green)' : isRequerimento ? '#8b5cf6' : 'var(--notion-blue)';
                             const accentBg = isEntrada ? 'rgba(59,130,246,0.1)' : isSifap ? 'rgba(16,185,129,0.1)' : isRequerimento ? 'rgba(139,92,246,0.1)' : 'rgba(245,158,11,0.1)';
                             const isEditing = editingId === e.id;
                             const tipoLabel = isEntrada ? 'Entrada' : isSifap ? 'SIFAP' : isRequerimento ? 'Req.' : 'Reentrada';
 
                             if (isEditing) {
                                 return (
-                                    <div key={e.id} style={{ padding: '10px 14px', borderLeft: `3px solid ${accentColor}`, background: 'var(--bg-body)', borderBottom: '1px solid var(--border-color)' }}>
+                                    <div key={e.id} style={{ padding: '10px 14px', borderLeft: `3px solid ${accentColor}`, background: 'var(--notion-bg)', borderBottom: '1px solid var(--notion-border)' }}>
                                         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: e.tipo === 'reentrada' ? 8 : 0 }}>
                                             <div>
-                                                <label style={{ display: 'block', fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 2 }}>Data</label>
+                                                <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 2 }}>Data</label>
                                                 <input type="date" className="form-input" value={editData}
                                                     onChange={(ev) => setEditData(ev.target.value)}
                                                     style={{ fontSize: 12, padding: '4px 8px', borderRadius: 5 }} />
                                             </div>
                                             <div style={{ flex: 1 }}>
-                                                <label style={{ display: 'block', fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 2 }}>Obs.</label>
+                                                <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 2 }}>Obs.</label>
                                                 <input type="text" className="form-input" value={editObs}
                                                     onChange={(ev) => setEditObs(ev.target.value)}
                                                     placeholder="Opcional..."
@@ -3661,13 +3673,13 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                                                 <Save size={10} /> Salvar
                                             </button>
                                             <button onClick={() => setEditingId(null)}
-                                                style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 5, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--color-text-tertiary)', cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-family)' }}>
+                                                style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '5px 10px', borderRadius: 5, border: '1px solid var(--notion-border)', background: 'transparent', color: 'var(--notion-text-secondary)', cursor: 'pointer', fontSize: 11, fontWeight: 600, fontFamily: 'var(--font-family)' }}>
                                                 Cancelar
                                             </button>
                                         </div>
                                         {e.tipo === 'reentrada' && (
                                             <div>
-                                                <label style={{ display: 'block', fontSize: 11, color: '#f59e0b', marginBottom: 2 }}>Motivo</label>
+                                                <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-blue)', marginBottom: 2 }}>Motivo</label>
                                                 <textarea className="form-textarea" value={editMotivo}
                                                     onChange={(ev) => setEditMotivo(ev.target.value)}
                                                     style={{ fontSize: 12, padding: '4px 8px', borderRadius: 5, minHeight: 36, resize: 'vertical' }} />
@@ -3680,25 +3692,25 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                             return (
                                 <div key={e.id} style={{
                                     display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px',
-                                    borderLeft: `3px solid ${accentColor}`, borderBottom: '1px solid var(--border-color)',
+                                    borderLeft: `3px solid ${accentColor}`, borderBottom: '1px solid var(--notion-border)',
                                     minHeight: 40, transition: 'background 0.1s',
                                 }}
-                                onMouseEnter={(ev) => { ev.currentTarget.style.background = 'var(--bg-body)'; }}
+                                onMouseEnter={(ev) => { ev.currentTarget.style.background = 'var(--notion-bg)'; }}
                                 onMouseLeave={(ev) => { ev.currentTarget.style.background = 'transparent'; }}
                                 >
                                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 4, background: accentBg, color: accentColor, fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', minWidth: 68, justifyContent: 'center' }}>
                                         {isEntrada ? <MapPin size={10} /> : isSifap ? <FileCheck size={10} /> : isRequerimento ? <FileText size={10} /> : <RotateCcw size={10} />}
                                         {tipoLabel}
                                     </span>
-                                    <span style={{ fontSize: 12, color: 'var(--color-text-primary)', fontWeight: 600, whiteSpace: 'nowrap', minWidth: 70 }}>{formatDateLocal(e.data)}</span>
-                                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <span style={{ fontSize: 12, color: 'var(--notion-text)', fontWeight: 600, whiteSpace: 'nowrap', minWidth: 70 }}>{formatDateLocal(e.data)}</span>
+                                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 3 }}>
                                         <User size={10} /> {e.responsavel}
                                     </span>
-                                    <span style={{ fontSize: 10, color: e.conferido ? 'var(--color-success)' : 'var(--color-text-tertiary)' }}>
+                                    <span style={{ fontSize: 10, color: e.conferido ? 'var(--notion-green)' : 'var(--notion-text-secondary)' }}>
                                         {e.conferido ? <CheckCircle size={12} /> : null}
                                     </span>
-                                    <span style={{ flex: 1, fontSize: 11, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {e.motivoDevolucao ? <span style={{ color: '#f59e0b' }}>Motivo: {e.motivoDevolucao}</span> : e.observacao ? <span style={{ fontStyle: 'italic' }}>{e.observacao}</span> : ''}
+                                    <span style={{ flex: 1, fontSize: 11, color: 'var(--notion-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        {e.motivoDevolucao ? <span style={{ color: 'var(--notion-blue)' }}>Motivo: {e.motivoDevolucao}</span> : e.observacao ? <span style={{ fontStyle: 'italic' }}>{e.observacao}</span> : ''}
                                     </span>
                                     <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
                                         <button onClick={() => {
@@ -3707,16 +3719,16 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                                             setEditObs(e.observacao || '');
                                             setEditMotivo(e.motivoDevolucao || '');
                                         }} title="Editar"
-                                            style={{ padding: 3, borderRadius: 4, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', fontFamily: 'var(--font-family)' }}
-                                            onMouseEnter={(ev) => { ev.currentTarget.style.color = 'var(--color-info)'; }}
-                                            onMouseLeave={(ev) => { ev.currentTarget.style.color = 'var(--color-text-tertiary)'; }}
+                                            style={{ padding: 3, borderRadius: 4, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', fontFamily: 'var(--font-family)' }}
+                                            onMouseEnter={(ev) => { ev.currentTarget.style.color = 'var(--notion-blue)'; }}
+                                            onMouseLeave={(ev) => { ev.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                                         >
                                             <Edit2 size={11} />
                                         </button>
                                         <button onClick={() => onRemove(e.id)} title="Remover"
-                                            style={{ padding: 3, borderRadius: 4, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', fontFamily: 'var(--font-family)' }}
-                                            onMouseEnter={(ev) => { ev.currentTarget.style.color = 'var(--color-danger)'; }}
-                                            onMouseLeave={(ev) => { ev.currentTarget.style.color = 'var(--color-text-tertiary)'; }}
+                                            style={{ padding: 3, borderRadius: 4, border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', fontFamily: 'var(--font-family)' }}
+                                            onMouseEnter={(ev) => { ev.currentTarget.style.color = 'var(--notion-orange)'; }}
+                                            onMouseLeave={(ev) => { ev.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                                         >
                                             <Trash2 size={11} />
                                         </button>
@@ -3730,14 +3742,14 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                                 <div>
                                     <button onClick={() => setAccordionEntradas(v => !v)} style={{
                                         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '6px 14px', background: 'var(--bg-body)', border: 'none', borderBottom: '1px solid var(--border-color)',
+                                        padding: '6px 14px', background: 'var(--notion-bg)', border: 'none', borderBottom: '1px solid var(--notion-border)',
                                         cursor: 'pointer', fontFamily: 'var(--font-family)',
                                     }}>
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <MapPin size={11} style={{ color: 'var(--color-info)' }} /> Entradas
-                                            <span style={{ background: 'rgba(59,130,246,0.12)', color: 'var(--color-info)', borderRadius: 8, padding: '0px 6px', fontSize: 10, fontWeight: 700 }}>{entradasFiltradas.length}</span>
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <MapPin size={11} style={{ color: 'var(--notion-blue)' }} /> Entradas
+                                            <span style={{ background: 'rgba(59,130,246,0.12)', color: 'var(--notion-blue)', borderRadius: 8, padding: '0px 6px', fontSize: 10, fontWeight: 700 }}>{entradasFiltradas.length}</span>
                                         </span>
-                                        {accordionEntradas ? <ChevronUp size={12} style={{ color: 'var(--color-text-tertiary)' }} /> : <ChevronDown size={12} style={{ color: 'var(--color-text-tertiary)' }} />}
+                                        {accordionEntradas ? <ChevronUp size={12} style={{ color: 'var(--notion-text-secondary)' }} /> : <ChevronDown size={12} style={{ color: 'var(--notion-text-secondary)' }} />}
                                     </button>
                                     {accordionEntradas && entradasFiltradas.map((e, idx) => renderEntry(e, idx))}
                                 </div>
@@ -3746,14 +3758,14 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                                 <div>
                                     <button onClick={() => setAccordionReentradas(v => !v)} style={{
                                         width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '6px 14px', background: 'var(--bg-body)', border: 'none', borderBottom: '1px solid var(--border-color)',
+                                        padding: '6px 14px', background: 'var(--notion-bg)', border: 'none', borderBottom: '1px solid var(--notion-border)',
                                         cursor: 'pointer', fontFamily: 'var(--font-family)',
                                     }}>
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <RotateCcw size={11} style={{ color: '#f59e0b' }} /> Reentradas / SIFAP / Req.
-                                            <span style={{ background: 'rgba(245,158,11,0.12)', color: '#f59e0b', borderRadius: 8, padding: '0px 6px', fontSize: 10, fontWeight: 700 }}>{reentradas.length}</span>
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <RotateCcw size={11} style={{ color: 'var(--notion-blue)' }} /> Reentradas / SIFAP / Req.
+                                            <span style={{ background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)', borderRadius: 8, padding: '0px 6px', fontSize: 10, fontWeight: 700 }}>{reentradas.length}</span>
                                         </span>
-                                        {accordionReentradas ? <ChevronUp size={12} style={{ color: 'var(--color-text-tertiary)' }} /> : <ChevronDown size={12} style={{ color: 'var(--color-text-tertiary)' }} />}
+                                        {accordionReentradas ? <ChevronUp size={12} style={{ color: 'var(--notion-text-secondary)' }} /> : <ChevronDown size={12} style={{ color: 'var(--notion-text-secondary)' }} />}
                                     </button>
                                     {accordionReentradas && reentradas.map((e, idx) => renderEntry(e, idx))}
                                 </div>
@@ -3795,8 +3807,8 @@ function CrlvDigitalPanel({ cliente, veiculo, os }: { cliente: any; veiculo: any
                     style={{
                         display: 'flex', alignItems: 'center', gap: 5,
                         padding: '5px 12px', borderRadius: 7, border: 'none', cursor: 'pointer',
-                        background: 'linear-gradient(135deg, var(--color-info), var(--color-info-hover))',
-                        color: 'var(--color-white)', fontWeight: 700, fontSize: 11,
+                        background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue-hover))',
+                        color: 'var(--notion-text)', fontWeight: 700, fontSize: 11,
                         fontFamily: 'var(--font-family)',
                         boxShadow: '0 2px 6px rgba(59,130,246,0.3)',
                     }}
@@ -3804,7 +3816,7 @@ function CrlvDigitalPanel({ cliente, veiculo, os }: { cliente: any; veiculo: any
                     <ExternalLink size={12} /> Consultar CRLV
                 </button>
             } />
-            <div style={{ padding: '12px 18px', fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+            <div style={{ padding: '12px 18px', fontSize: 11, color: 'var(--notion-text-secondary)' }}>
                 Verifique se a documentação do veículo está OK no portal MG antes de realizar a entrega.
             </div>
         </CKColCard>
@@ -4176,25 +4188,25 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
             {/* Compact progress bar */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '8px 14px', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '8px 14px', background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)' }}>
                 {steps.map((step, i) => (
                     <div key={step.label} style={{ display: 'contents' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <div style={{
                                 width: 22, height: 22, borderRadius: '50%',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                background: step.done ? 'var(--color-success)' : 'var(--border-color)',
-                                color: step.done ? '#fff' : 'var(--color-text-tertiary)',
+                                background: step.done ? 'var(--notion-green)' : 'var(--notion-border)',
+                                color: step.done ? '#fff' : 'var(--notion-text-secondary)',
                                 fontSize: 10, fontWeight: 700,
                             }}>
                                 {step.done ? <CheckCircle size={12} /> : i + 1}
                             </div>
-                            <span style={{ fontSize: 11, fontWeight: step.done ? 700 : 500, color: step.done ? 'var(--color-success)' : 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: 11, fontWeight: step.done ? 700 : 500, color: step.done ? 'var(--notion-green)' : 'var(--notion-text-secondary)', whiteSpace: 'nowrap' }}>
                                 {step.label}
                             </span>
                         </div>
                         {i < steps.length - 1 && (
-                            <div style={{ flex: 1, height: 2, margin: '0 10px', borderRadius: 1, background: steps[i + 1]!.done || step.done ? 'var(--color-success)' : 'var(--border-color)', opacity: steps[i + 1]!.done ? 1 : 0.4 }} />
+                            <div style={{ flex: 1, height: 2, margin: '0 10px', borderRadius: 1, background: steps[i + 1]!.done || step.done ? 'var(--notion-green)' : 'var(--notion-border)', opacity: steps[i + 1]!.done ? 1 : 0.4 }} />
                         )}
                     </div>
                 ))}
@@ -4210,24 +4222,24 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                     <input ref={validarFileRef} type="file" accept=".pdf" hidden
                         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleValidarManual(f); e.target.value = ''; }} />
                     <button onClick={() => validarFileRef.current?.click()}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--bg-body)', color: 'var(--color-text-tertiary)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-family)' }}>
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 6, border: '1px solid var(--notion-border)', background: 'var(--notion-bg)', color: 'var(--notion-text-secondary)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-family)' }}>
                         <FileSearch size={12} /> Validar CRLV (PDF)
                     </button>
 
                     {validando && (
-                        <div style={{ padding: 10, textAlign: 'center', color: 'var(--color-primary)', fontSize: 11, fontWeight: 600 }}>
+                        <div style={{ padding: 10, textAlign: 'center', color: 'var(--notion-blue)', fontSize: 11, fontWeight: 600 }}>
                             Validando documento...
                         </div>
                     )}
 
                     {validacaoCrlv && (
-                        <div style={{ background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: 'var(--bg-body)', borderBottom: '1px solid var(--border-color)' }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Validação CRLV</span>
+                        <div style={{ background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: 'var(--notion-bg)', borderBottom: '1px solid var(--notion-border)' }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Validação CRLV</span>
                                 <span style={{
                                     display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 4,
                                     background: validacaoCrlv.aprovado ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
-                                    color: validacaoCrlv.aprovado ? 'var(--color-success)' : 'var(--color-danger)',
+                                    color: validacaoCrlv.aprovado ? 'var(--notion-green)' : 'var(--notion-orange)',
                                     fontSize: 10, fontWeight: 700,
                                 }}>
                                     {validacaoCrlv.aprovado ? '✅ Aprovado' : '⚠️ Divergências'}
@@ -4242,18 +4254,18 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                                     }}>
                                         <span style={{ fontSize: 12, flexShrink: 0 }}>{item.ok ? '✅' : '❌'}</span>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-primary)' }}>{item.campo}</span>
-                                            <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', marginLeft: 6 }}>
-                                                {item.ok ? item.recebido : (<><span style={{ color: 'var(--color-danger)' }}>{item.recebido}</span> <span>| Esp: {item.esperado}</span></>)}
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text)' }}>{item.campo}</span>
+                                            <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', marginLeft: 6 }}>
+                                                {item.ok ? item.recebido : (<><span style={{ color: 'var(--notion-orange)' }}>{item.recebido}</span> <span>| Esp: {item.esperado}</span></>)}
                                             </span>
                                             {item.detalhe && !item.ok && (
-                                                <div style={{ fontSize: 10, color: 'var(--color-danger)', fontStyle: 'italic' }}>{item.detalhe}</div>
+                                                <div style={{ fontSize: 10, color: 'var(--notion-orange)', fontStyle: 'italic' }}>{item.detalhe}</div>
                                             )}
                                         </div>
                                     </div>
                                 ))}
                                 {validacaoCrlv.aprovado && (
-                                    <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: 'var(--color-success)', textAlign: 'center' }}>
+                                    <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: 'var(--notion-green)', textAlign: 'center' }}>
                                         Documento validado — marcado como PRONTO
                                     </p>
                                 )}
@@ -4263,9 +4275,9 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
 
                     {/* Consultas CRLV */}
                     {os.auditLog && os.auditLog.filter((log: any) => log.acao === 'Consulta CRLV').length > 0 && (
-                        <div style={{ background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                            <div style={{ padding: '6px 12px', background: 'var(--bg-body)', borderBottom: '1px solid var(--border-color)' }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Consultas CRLV</span>
+                        <div style={{ background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
+                            <div style={{ padding: '6px 12px', background: 'var(--notion-bg)', borderBottom: '1px solid var(--notion-border)' }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Consultas CRLV</span>
                             </div>
                             <div style={{ padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 160, overflowY: 'auto' }}>
                                 {os.auditLog
@@ -4274,11 +4286,11 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                                     .map((log: any) => {
                                         const isOk = !log.detalhes.toLowerCase().includes('error');
                                         return (
-                                            <div key={log.id} style={{ padding: '4px 8px', borderRadius: 5, background: 'var(--bg-body)', borderLeft: `3px solid ${isOk ? 'var(--color-success)' : 'var(--color-danger)'}` }}>
-                                                <div style={{ fontSize: 10, color: 'var(--color-primary)', fontWeight: 600 }}>
+                                            <div key={log.id} style={{ padding: '4px 8px', borderRadius: 5, background: 'var(--notion-bg)', borderLeft: `3px solid ${isOk ? 'var(--notion-green)' : 'var(--notion-orange)'}` }}>
+                                                <div style={{ fontSize: 10, color: 'var(--notion-blue)', fontWeight: 600 }}>
                                                     {log.dataHora ? new Date(log.dataHora).toLocaleString('pt-BR') : '—'} — {log.usuario}
                                                 </div>
-                                                <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{log.detalhes}</div>
+                                                <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>{log.detalhes}</div>
                                             </div>
                                         );
                                     })
@@ -4292,15 +4304,15 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
 
                     {/* Status compact row */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 14px', background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Status</span>
                             {isDocPronto && (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 4, background: 'rgba(16,185,129,0.12)', color: 'var(--color-success)', fontSize: 10, fontWeight: 700 }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 4, background: 'rgba(16,185,129,0.12)', color: 'var(--notion-green)', fontSize: 10, fontWeight: 700 }}>
                                     <CheckCircle size={10} /> Pronto
                                 </span>
                             )}
-                            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>
+                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>
                                 {isDocPronto
                                     ? `em ${new Date(os.docProntoEm || os.atualizadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}`
                                     : 'Marque quando concluído'}
@@ -4309,45 +4321,45 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                         {isDocPronto ? (
                             !isEntregue && (
                                 <button onClick={handleCancelarDocPronto} title="Desfazer"
-                                    style={{ padding: '4px 8px', borderRadius: 5, border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer', background: 'rgba(239,68,68,0.06)', color: 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-family)' }}>
+                                    style={{ padding: '4px 8px', borderRadius: 5, border: '1px solid rgba(239,68,68,0.15)', cursor: 'pointer', background: 'rgba(239,68,68,0.06)', color: 'var(--notion-orange)', display: 'flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 600, fontFamily: 'var(--font-family)' }}>
                                     <XCircle size={10} /> Desfazer
                                 </button>
                             )
                         ) : (
                             <button onClick={handleDocPronto} disabled={bloqueadoPorDebito}
                                 title={bloqueadoPorDebito ? 'Pague os débitos pendentes' : ''}
-                                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 6, border: 'none', cursor: bloqueadoPorDebito ? 'not-allowed' : 'pointer', background: bloqueadoPorDebito ? 'var(--color-text-tertiary)' : 'var(--color-primary)', color: bloqueadoPorDebito ? 'var(--color-text-tertiary)' : 'var(--bg-body)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-family)', opacity: bloqueadoPorDebito ? 0.6 : 1 }}>
+                                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 6, border: 'none', cursor: bloqueadoPorDebito ? 'not-allowed' : 'pointer', background: bloqueadoPorDebito ? 'var(--notion-text-secondary)' : 'var(--notion-blue)', color: bloqueadoPorDebito ? 'var(--notion-text-secondary)' : 'var(--notion-bg)', fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-family)', opacity: bloqueadoPorDebito ? 0.6 : 1 }}>
                                 {bloqueadoPorDebito ? <AlertTriangle size={11} /> : <CheckCircle size={11} />} {bloqueadoPorDebito ? 'Débitos Pend.' : 'Marcar Pronto'}
                             </button>
                         )}
                     </div>
 
                     {/* Upload PDF compact */}
-                    <div style={{ opacity: isDocPronto ? 1 : 0.4, pointerEvents: isDocPronto ? 'auto' : 'none', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ opacity: isDocPronto ? 1 : 0.4, pointerEvents: isDocPronto ? 'auto' : 'none', background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>PDF Final</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>PDF Final</span>
                             {isDocAnexado && (
-                                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-success)', background: 'rgba(16,185,129,0.12)', padding: '1px 7px', borderRadius: 4 }}>Anexado</span>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--notion-green)', background: 'rgba(16,185,129,0.12)', padding: '1px 7px', borderRadius: 4 }}>Anexado</span>
                             )}
                         </div>
                         {isDocAnexado && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 6, background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.12)' }}>
-                                <FileText size={12} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
-                                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-primary)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <FileText size={12} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
+                                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     {os.docFinalNome}
                                 </span>
                                 {os.docFinalUrl && (
                                     <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
                                         <button onClick={() => onOpenViewer(os.docFinalUrl!, os.docFinalNome || 'Documento Final')}
-                                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, border: 'none', background: 'rgba(16,185,129,0.15)', color: 'var(--color-success)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)' }}>
+                                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, border: 'none', background: 'rgba(16,185,129,0.15)', color: 'var(--notion-green)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)' }}>
                                             <Eye size={10} /> Ver
                                         </button>
                                         <button onClick={handleValidarDocAnexado} disabled={validando}
-                                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, border: 'none', background: 'rgba(59,130,246,0.15)', color: 'var(--color-info)', fontSize: 10, fontWeight: 700, cursor: validando ? 'wait' : 'pointer', fontFamily: 'var(--font-family)', opacity: validando ? 0.6 : 1 }}>
+                                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, border: 'none', background: 'rgba(59,130,246,0.15)', color: 'var(--notion-blue)', fontSize: 10, fontWeight: 700, cursor: validando ? 'wait' : 'pointer', fontFamily: 'var(--font-family)', opacity: validando ? 0.6 : 1 }}>
                                             <FileSearch size={10} /> {validando ? '...' : 'Validar'}
                                         </button>
                                         <button onClick={handleApagarDocFinal}
-                                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.12)', color: 'var(--color-danger)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)' }}>
+                                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '2px 7px', borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.12)', color: 'var(--notion-orange)', fontSize: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-family)' }}>
                                             <Trash2 size={10} /> Apagar
                                         </button>
                                     </div>
@@ -4356,24 +4368,24 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                         )}
 
                         <div onClick={() => { if (!uploading) docFileRef.current?.click(); }}
-                            style={{ border: '1px dashed var(--border-color)', borderRadius: 6, padding: '12px 14px', textAlign: 'center', cursor: uploading ? 'wait' : 'pointer', background: 'var(--bg-body)' }}
+                            style={{ border: '1px dashed var(--notion-border)', borderRadius: 6, padding: '12px 14px', textAlign: 'center', cursor: uploading ? 'wait' : 'pointer', background: 'var(--notion-bg)' }}
                             onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#8b5cf6'; }}
-                            onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
-                            onDrop={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--border-color)'; const f = e.dataTransfer.files[0]; if (f) handleUploadDocFinal(f); }}
+                            onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--notion-border)'; }}
+                            onDrop={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--notion-border)'; const f = e.dataTransfer.files[0]; if (f) handleUploadDocFinal(f); }}
                         >
                             {uploading ? (
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--border-color)', borderTopColor: '#8b5cf6', animation: 'spin 0.8s linear infinite' }} />
-                                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>Enviando...</span>
+                                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--notion-border)', borderTopColor: '#8b5cf6', animation: 'spin 0.8s linear infinite' }} />
+                                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)' }}>Enviando...</span>
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
                                     <Upload size={14} style={{ color: '#8b5cf6' }} />
                                     <div style={{ textAlign: 'left' }}>
-                                        <p style={{ margin: 0, fontWeight: 700, fontSize: 11, color: 'var(--color-text-primary)' }}>
+                                        <p style={{ margin: 0, fontWeight: 700, fontSize: 11, color: 'var(--notion-text)' }}>
                                             {isDocAnexado ? 'Enviar novo PDF (substitui)' : 'Clique ou arraste o PDF'}
                                         </p>
-                                        <p style={{ margin: 0, fontSize: 10, color: 'var(--color-text-tertiary)' }}>
+                                        <p style={{ margin: 0, fontSize: 10, color: 'var(--notion-text-secondary)' }}>
                                             {cliente?.nome || 'CLIENTE'} · {veiculo?.placa || veiculo?.chassi || ''}
                                         </p>
                                     </div>
@@ -4392,7 +4404,7 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                                 background: uploadMsg.includes('❌') ? 'rgba(239,68,68,0.06)' : 'rgba(16,185,129,0.06)',
                                 border: `1px solid ${uploadMsg.includes('❌') ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)'}`,
                                 fontSize: 11, fontWeight: 600,
-                                color: uploadMsg.includes('❌') ? 'var(--color-danger)' : 'var(--color-success)',
+                                color: uploadMsg.includes('❌') ? 'var(--notion-orange)' : 'var(--notion-green)',
                             }}>
                                 {uploadMsg}
                             </div>
@@ -4400,15 +4412,15 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                     </div>
 
                     {/* Delivery compact */}
-                    <div style={{ opacity: isDocPronto ? 1 : 0.4, pointerEvents: isDocPronto ? 'auto' : 'none', background: 'var(--bg-body)', borderRadius: 8, border: '1px solid var(--border-color)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ opacity: isDocPronto ? 1 : 0.4, pointerEvents: isDocPronto ? 'auto' : 'none', background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Entrega</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Entrega</span>
                             {isEntregue ? (
-                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: 'var(--color-success)', background: 'rgba(16,185,129,0.12)', padding: '2px 8px', borderRadius: 4 }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 10, fontWeight: 700, color: 'var(--notion-green)', background: 'rgba(16,185,129,0.12)', padding: '2px 8px', borderRadius: 4 }}>
                                     <CheckCircle size={10} /> Entregue
                                 </span>
                             ) : isDocPronto ? (
-                                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-primary)', background: 'rgba(212,168,67,0.12)', padding: '2px 8px', borderRadius: 4 }}>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--notion-blue)', background: 'rgba(212,168,67,0.12)', padding: '2px 8px', borderRadius: 4 }}>
                                     Aguardando
                                 </span>
                             ) : null}
@@ -4416,16 +4428,16 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                         {isEntregue ? (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <UserCheck size={14} style={{ color: 'var(--color-success)' }} />
+                                    <UserCheck size={14} style={{ color: 'var(--notion-green)' }} />
                                     <div>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-primary)' }}>{os.entregueParaNome}</span>
-                                        <span style={{ fontSize: 10, color: 'var(--color-success)', display: 'block' }}>
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)' }}>{os.entregueParaNome}</span>
+                                        <span style={{ fontSize: 10, color: 'var(--notion-green)', display: 'block' }}>
                                             {new Date(os.entregueEm!).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
                                 </div>
                                 <button onClick={handleCancelarEntrega} title="Cancelar entrega"
-                                    style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 5, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', color: 'var(--color-danger)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-family)', flexShrink: 0 }}>
+                                    style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 5, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)', color: 'var(--notion-orange)', fontSize: 10, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-family)', flexShrink: 0 }}>
                                     <XCircle size={10} /> Cancelar
                                 </button>
                             </div>
@@ -4433,8 +4445,8 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                             <>
                                 {os.trocaPlaca && (
                                     <div style={{ padding: '6px 10px', background: 'rgba(59,130,246,0.04)', borderRadius: 6, border: '1px solid rgba(59,130,246,0.12)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <input type="checkbox" id="chk-placa-doc" checked={placaTrocada} onChange={(e) => setPlacaTrocada(e.target.checked)} style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--color-info)' }} />
-                                        <label htmlFor="chk-placa-doc" style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-text-primary)', cursor: 'pointer', margin: 0, userSelect: 'none' }}>
+                                        <input type="checkbox" id="chk-placa-doc" checked={placaTrocada} onChange={(e) => setPlacaTrocada(e.target.checked)} style={{ width: 14, height: 14, cursor: 'pointer', accentColor: 'var(--notion-blue)' }} />
+                                        <label htmlFor="chk-placa-doc" style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-text)', cursor: 'pointer', margin: 0, userSelect: 'none' }}>
                                             Nova placa instalada no veículo
                                         </label>
                                     </div>
@@ -4453,7 +4465,7 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                                             {prereqs.map(p => (
                                                 <div key={p.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                     <span style={{ fontSize: 11 }}>{p.ok ? '✅' : '⚠️'}</span>
-                                                    <span style={{ fontSize: 10, fontWeight: p.ok ? 500 : 600, color: p.ok ? 'var(--color-text-tertiary)' : 'var(--color-primary)' }}>{p.label}</span>
+                                                    <span style={{ fontSize: 10, fontWeight: p.ok ? 500 : 600, color: p.ok ? 'var(--notion-text-secondary)' : 'var(--notion-blue)' }}>{p.label}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -4461,15 +4473,15 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
                                 })()}
                                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
                                     <div style={{ flex: 1 }}>
-                                        <label style={{ display: 'block', fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 2 }}><User size={10} style={{ verticalAlign: -1, marginRight: 3 }} />Nome de quem retirou *</label>
+                                        <label style={{ display: 'block', fontSize: 11, color: 'var(--notion-text-secondary)', marginBottom: 2 }}><User size={10} style={{ verticalAlign: -1, marginRight: 3 }} />Nome de quem retirou *</label>
                                         <input type="text" className="form-input" value={nomeRetirada} onChange={(e) => setNomeRetirada(e.target.value)} placeholder="Nome completo" style={{ fontSize: 12, padding: '5px 8px' }} />
                                     </div>
                                     <button onClick={handleEntrega} disabled={!nomeRetirada.trim() || (os.trocaPlaca && !placaTrocada)}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: 5, padding: '6px 14px', borderRadius: 6, border: 'none',
                                             cursor: (nomeRetirada.trim() && (!os.trocaPlaca || placaTrocada)) ? 'pointer' : 'not-allowed',
-                                            background: (nomeRetirada.trim() && (!os.trocaPlaca || placaTrocada)) ? 'var(--color-success)' : 'var(--border-color)',
-                                            color: (nomeRetirada.trim() && (!os.trocaPlaca || placaTrocada)) ? '#fff' : 'var(--color-text-tertiary)',
+                                            background: (nomeRetirada.trim() && (!os.trocaPlaca || placaTrocada)) ? 'var(--notion-green)' : 'var(--notion-border)',
+                                            color: (nomeRetirada.trim() && (!os.trocaPlaca || placaTrocada)) ? '#fff' : 'var(--notion-text-secondary)',
                                             fontWeight: 700, fontSize: 11, fontFamily: 'var(--font-family)',
                                         }}>
                                         <Package size={11} /> Confirmar Entrega
@@ -4513,27 +4525,27 @@ function ComunicacaoTab({ os, onAdd, onRemove }: {
     return (
         <div style={{ padding: '16px 0' }}>
             <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <select value={canal} onChange={e => setCanal(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)', fontSize: 13 }}>
+                <select value={canal} onChange={e => setCanal(e.target.value)} style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--notion-border)', background: 'var(--notion-bg-alt)', color: 'var(--notion-text)', fontSize: 13 }}>
                     {['WhatsApp', 'Telefone', 'E-mail', 'Presencial'].map(c => <option key={c}>{c}</option>)}
                 </select>
-                <input value={mensagem} onChange={e => setMensagem(e.target.value)} placeholder="Registrar comunicação..." style={{ flex: 1, minWidth: 200, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--color-bg-secondary)', color: 'var(--color-text-primary)', fontSize: 13 }} />
-                <button onClick={handleAdd} disabled={saving || !mensagem.trim()} style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--color-primary)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13 }}>
+                <input value={mensagem} onChange={e => setMensagem(e.target.value)} placeholder="Registrar comunicação..." style={{ flex: 1, minWidth: 200, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--notion-border)', background: 'var(--notion-bg-alt)', color: 'var(--notion-text)', fontSize: 13 }} />
+                <button onClick={handleAdd} disabled={saving || !mensagem.trim()} style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--notion-blue)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13 }}>
                     {saving ? 'Salvando...' : 'Adicionar'}
                 </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[...(os.comunicacoes || [])].reverse().map(com => (
-                    <div key={com.id} style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--color-bg-secondary)', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                    <div key={com.id} style={{ padding: '10px 14px', borderRadius: 8, background: 'var(--notion-bg-alt)', border: '1px solid var(--notion-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                         <div>
-                            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginRight: 8 }}>{com.canal}</span>
-                            <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)' }}>{new Date(com.data).toLocaleString('pt-BR')}</span>
-                            {com.usuario && <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginLeft: 8 }}>— {com.usuario}</span>}
-                            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--color-text-primary)' }}>{com.mensagem}</p>
+                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginRight: 8 }}>{com.canal}</span>
+                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>{new Date(com.data).toLocaleString('pt-BR')}</span>
+                            {com.usuario && <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginLeft: 8 }}>— {com.usuario}</span>}
+                            <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--notion-text)' }}>{com.mensagem}</p>
                         </div>
-                        <button onClick={() => onRemove(com.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger, #ef4444)', fontSize: 18, lineHeight: 1, padding: 0 }} title="Apagar">×</button>
+                        <button onClick={() => onRemove(com.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--notion-orange)', fontSize: 18, lineHeight: 1, padding: 0 }} title="Apagar">×</button>
                     </div>
                 ))}
-                {(os.comunicacoes || []).length === 0 && <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>Nenhuma comunicação registrada.</p>}
+                {(os.comunicacoes || []).length === 0 && <p style={{ color: 'var(--notion-text-secondary)', fontSize: 13 }}>Nenhuma comunicação registrada.</p>}
             </div>
         </div>
     );
@@ -4541,12 +4553,12 @@ function ComunicacaoTab({ os, onAdd, onRemove }: {
 
 function historicoIconConfig(acao: string): { color: string } {
     const a = (acao || '').toLowerCase();
-    if (a.includes('cria')) return { color: 'var(--color-success, #16a34a)' };
-    if (a.includes('upload') || a.includes('anex')) return { color: 'var(--color-info, #3b82f6)' };
-    if (a.includes('remov') || a.includes('exclui') || a.includes('apag')) return { color: 'var(--color-danger, #ef4444)' };
-    if (a.includes('status') || a.includes('alter')) return { color: 'var(--color-warning, #f59e0b)' };
-    if (a.includes('pagamento') || a.includes('financ')) return { color: 'var(--color-purple, #8b5cf6)' };
-    return { color: 'var(--color-text-tertiary)' };
+    if (a.includes('cria')) return { color: 'var(--notion-green)' };
+    if (a.includes('upload') || a.includes('anex')) return { color: 'var(--notion-blue)' };
+    if (a.includes('remov') || a.includes('exclui') || a.includes('apag')) return { color: 'var(--notion-orange)' };
+    if (a.includes('status') || a.includes('alter')) return { color: 'var(--notion-orange)' };
+    if (a.includes('pagamento') || a.includes('financ')) return { color: 'var(--notion-purple, #9065B0)' };
+    return { color: 'var(--notion-text-secondary)' };
 }
 
 function HistoricoTab({ os }: { os: OrdemDeServico }) {
@@ -4557,17 +4569,17 @@ function HistoricoTab({ os }: { os: OrdemDeServico }) {
             {/* Header */}
             <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '12px 16px', background: 'var(--bg-card)', borderRadius: '12px 12px 0 0',
-                border: '1px solid var(--border-color)', borderBottom: '2px solid var(--color-primary)',
+                padding: '12px 16px', background: 'var(--notion-surface)', borderRadius: '12px 12px 0 0',
+                border: '1px solid var(--notion-border)', borderBottom: '2px solid var(--notion-blue)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <History size={16} style={{ color: 'var(--color-primary)' }} />
-                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>Linha do Tempo</span>
+                    <History size={16} style={{ color: 'var(--notion-blue)' }} />
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>Linha do Tempo</span>
                 </div>
                 <span style={{
-                    fontSize: 12, fontWeight: 600, color: 'var(--color-text-tertiary)',
-                    background: 'var(--bg-body)', padding: '3px 10px', borderRadius: 8,
-                    border: '1px solid var(--border-color)',
+                    fontSize: 12, fontWeight: 600, color: 'var(--notion-text-secondary)',
+                    background: 'var(--notion-bg)', padding: '3px 10px', borderRadius: 8,
+                    border: '1px solid var(--notion-border)',
                 }}>
                     {entries.length} evento{entries.length !== 1 ? 's' : ''}
                 </span>
@@ -4575,15 +4587,15 @@ function HistoricoTab({ os }: { os: OrdemDeServico }) {
 
             {/* Log entries */}
             <div style={{
-                background: 'var(--bg-card)', borderRadius: '0 0 12px 12px', border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)', borderRadius: '0 0 12px 12px', border: '1px solid var(--notion-border)',
                 borderTop: 'none',
                 padding: entries.length === 0 ? '40px 20px' : '8px 0',
                 maxHeight: 600, overflowY: 'auto',
             }}>
                 {entries.length === 0 ? (
                     <div style={{ textAlign: 'center' }}>
-                        <History size={32} style={{ color: 'var(--color-text-tertiary)', marginBottom: 8 }} />
-                        <p style={{ margin: 0, fontSize: 14, color: 'var(--color-text-tertiary)' }}>Nenhum registro de atividade encontrado.</p>
+                        <History size={32} style={{ color: 'var(--notion-text-secondary)', marginBottom: 8 }} />
+                        <p style={{ margin: 0, fontSize: 14, color: 'var(--notion-text-secondary)' }}>Nenhum registro de atividade encontrado.</p>
                     </div>
                 ) : (
                     entries.map((entry, idx) => {
@@ -4593,10 +4605,10 @@ function HistoricoTab({ os }: { os: OrdemDeServico }) {
                             <div key={entry.id} style={{
                                 display: 'flex', alignItems: 'flex-start', gap: 12,
                                 padding: '12px 16px',
-                                borderBottom: idx < entries.length - 1 ? '1px solid var(--border-color)' : 'none',
+                                borderBottom: idx < entries.length - 1 ? '1px solid var(--notion-border)' : 'none',
                                 transition: 'background 0.1s',
                             }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
+                                onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
                                 {/* Colored dot + line */}
@@ -4609,19 +4621,19 @@ function HistoricoTab({ os }: { os: OrdemDeServico }) {
                                 {/* Content */}
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 2 }}>
-                                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                                             {entry.acao}
                                         </span>
-                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', flexShrink: 0 }}>
+                                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--notion-blue)', flexShrink: 0 }}>
                                             {entry.usuario}
                                         </span>
                                     </div>
                                     {entry.detalhes && (
-                                        <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+                                        <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--notion-text-secondary)', lineHeight: 1.4 }}>
                                             {entry.detalhes}
                                         </p>
                                     )}
-                                    <span style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 500, marginTop: 4, display: 'inline-block' }}>
+                                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', fontWeight: 500, marginTop: 4, display: 'inline-block' }}>
                                         {date.toLocaleDateString('pt-BR')} {date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>

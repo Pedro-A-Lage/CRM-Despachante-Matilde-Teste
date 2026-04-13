@@ -221,9 +221,9 @@ export default function ClienteDetail() {
                                     key={v.id}
                                     style={{
                                         padding: 'var(--space-4)',
-                                        background: 'var(--color-gray-50)',
+                                        background: 'var(--notion-bg-alt)',
                                         borderRadius: 'var(--radius-md)',
-                                        border: '1px solid var(--border-color)',
+                                        border: '1px solid var(--notion-border)',
                                     }}
                                 >
                                     <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-2)' }}>
@@ -268,11 +268,11 @@ export default function ClienteDetail() {
                                                         borderRadius: 'var(--radius-sm)',
                                                         marginTop: 'var(--space-1)',
                                                         cursor: 'pointer',
-                                                        border: '1px solid var(--border-color)',
+                                                        border: '1px solid var(--notion-border)',
                                                     }}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <FileText size={14} style={{ color: 'var(--color-primary)' }} />
+                                                        <FileText size={14} style={{ color: 'var(--notion-blue)' }} />
                                                         <span className="text-sm font-semibold">OS #{os.numero}</span>
                                                         <span className="text-xs text-gray">— {getServicoLabel(serviceLabels, os.tipoServico)}</span>
                                                     </div>
@@ -429,17 +429,17 @@ function DocumentSlot({
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: 'var(--space-4)',
-                background: uploaded ? 'var(--color-success-light)' : 'var(--color-gray-50)',
+                background: uploaded ? 'var(--notion-green)' : 'var(--notion-bg-alt)',
                 borderRadius: 'var(--radius-md)',
-                border: `1px solid ${uploaded ? 'var(--color-success)' : 'var(--border-color)'}`,
+                border: `1px solid ${uploaded ? 'var(--notion-green)' : 'var(--notion-border)'}`,
                 transition: 'all var(--transition-fast)',
             }}
         >
             <div className="flex items-center gap-3">
                 {uploaded ? (
-                    <CheckCircle size={20} style={{ color: 'var(--color-success)', flexShrink: 0 }} />
+                    <CheckCircle size={20} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
                 ) : (
-                    <File size={20} style={{ color: 'var(--color-gray-400)', flexShrink: 0 }} />
+                    <File size={20} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                 )}
                 <div>
                     <p className="font-semibold text-sm">{label}</p>
@@ -450,7 +450,7 @@ function DocumentSlot({
                     ) : (
                         <p className="text-xs text-gray">Nenhum arquivo enviado</p>
                     )}
-                    {error && <p className="text-xs" style={{ color: 'var(--color-danger)' }}>{error}</p>}
+                    {error && <p className="text-xs" style={{ color: 'var(--notion-orange)' }}>{error}</p>}
                 </div>
             </div>
 
