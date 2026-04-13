@@ -1198,14 +1198,16 @@ export default function OSDetail() {
                                             <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>NF:</span>
                                             <input
                                                 type="text"
-                                                value={os.empresaFinanceiro?.numero_nf || ''}
+                                                defaultValue={os.empresaFinanceiro?.numero_nf || ''}
                                                 placeholder="—"
-                                                onChange={async (e) => {
+                                                onBlur={async (e) => {
                                                     const nf = e.target.value;
+                                                    if (nf === (os.empresaFinanceiro?.numero_nf || '')) return;
                                                     const newFin = { ...(os.empresaFinanceiro || { recebido: false }), numero_nf: nf };
                                                     await updateOrdem(os.id, { empresaFinanceiro: newFin });
                                                     setOs({ ...os, empresaFinanceiro: newFin });
                                                 }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
                                                 style={{
                                                     background: 'var(--notion-bg-alt)',
                                                     border: '1px solid var(--notion-border)',
