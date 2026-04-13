@@ -184,23 +184,21 @@ export default function OSList() {
             result = result.filter((o) => o.tipoServico === tipoFilter);
         }
         if (search.trim()) {
-            const term = search.toLowerCase();
+            const term = search.trim().toLowerCase();
+            const termDigits = term.replace(/\D/g, '');
             result = result.filter((o) => {
                 const cliente = clientes.find((c) => c.id === o.clienteId);
                 const veiculo = veiculos.find((v) => v.id === o.veiculoId);
                 const nomeCliente = (cliente?.nome ?? '').toLowerCase();
                 const placaVeiculo = (veiculo?.placa ?? '').toLowerCase();
                 const chassiVeiculo = (veiculo?.chassi ?? '').toLowerCase();
-                const cpfCliente = (cliente?.cpfCnpj ?? '').replace(/\D/g, '');
                 const numOS = String(o.numero ?? '');
-                const tipoServ = (o.tipoServico ?? '').toLowerCase();
                 return (
                     numOS.includes(term) ||
                     nomeCliente.includes(term) ||
                     placaVeiculo.includes(term) ||
                     chassiVeiculo.includes(term) ||
-                    tipoServ.includes(term) ||
-                    cpfCliente.includes(term.replace(/\D/g, ''))
+                    (termDigits.length > 0 && (cliente?.cpfCnpj ?? '').replace(/\D/g, '').includes(termDigits))
                 );
             });
         }
