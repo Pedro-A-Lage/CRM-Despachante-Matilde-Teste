@@ -8,9 +8,14 @@ import { supabase } from './supabaseClient';
  * @param bucketName O nome do bucket no Supabase. O padrão é "documentos".
  * @returns Retorna a URL pública do arquivo caso tenha sucesso.
  */
+const MAX_UPLOAD_SIZE = 20 * 1024 * 1024; // 20MB
+
 export async function uploadFileToSupabase(file: File | Blob, path: string, bucketName: string = 'documentos'): Promise<string> {
+    // Validar tamanho do arquivo
+    if (file.size > MAX_UPLOAD_SIZE) {
+        throw new Error(`Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Máximo permitido: ${MAX_UPLOAD_SIZE / 1024 / 1024}MB.`);
+    }
     try {
-        console.log(`[Supabase Storage] Iniciando upload para: ${bucketName}/${path}`);
 
         const { data, error } = await supabase.storage
             .from(bucketName)

@@ -72,7 +72,7 @@ export default function ProtocoloDiario() {
         return [...osComEntrada, ...sifapExtras];
     }, [osComEntrada, osComSifap]);
 
-    useMemo(() => {
+    useEffect(() => {
         if (protocoloHoje) {
             const manuais = protocoloHoje.processos.filter((p: any) => p.manual);
             setManualProcessos(manuais);

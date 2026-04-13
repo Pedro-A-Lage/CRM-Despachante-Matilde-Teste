@@ -69,7 +69,7 @@ function ModalNovoUsuario({ onClose, onSalvar }: ModalNovoProps) {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!nome.trim() || !senha.trim()) { setErro('Preencha todos os campos.'); return; }
-        if (senha.length < 4) { setErro('Senha deve ter ao menos 4 caracteres.'); return; }
+        if (senha.length < 8) { setErro('Senha deve ter ao menos 8 caracteres.'); return; }
         setSalvando(true);
         setErro('');
         try {
@@ -149,7 +149,7 @@ function ModalResetarSenha({ usuario, onClose, onSalvar }: ModalSenhaProps) {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (senha.length < 4) { setErro('Senha deve ter ao menos 4 caracteres.'); return; }
+        if (senha.length < 8) { setErro('Senha deve ter ao menos 8 caracteres.'); return; }
         setSalvando(true);
         setErro('');
         try {

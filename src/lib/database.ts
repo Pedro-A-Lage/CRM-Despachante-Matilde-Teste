@@ -9,10 +9,25 @@ import type {
     OrdemDeServico,
     ProtocoloDiario,
     AuditEntry,
+    StatusOS,
 } from '../types';
 
+// Transições de status permitidas
+const VALID_STATUS_TRANSITIONS: Record<StatusOS, StatusOS[]> = {
+    aguardando_documentacao: ['vistoria', 'delegacia'],
+    vistoria: ['delegacia', 'aguardando_documentacao'],
+    delegacia: ['doc_pronto', 'vistoria', 'aguardando_documentacao'],
+    doc_pronto: ['entregue', 'delegacia'],
+    entregue: [], // estado final — não permite transição a partir daqui
+};
+
+export function isValidStatusTransition(from: StatusOS, to: StatusOS): boolean {
+    if (from === to) return true; // Nenhuma mudança
+    return VALID_STATUS_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
 export function generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    return crypto.randomUUID();
 }
 
 function now(): string {
@@ -551,14 +566,9 @@ export async function saveOrdem(ordem: Partial<OrdemDeServico> & { clienteId: st
         atualizadoEm: timestamp,
     };
     const dbData = ordemToDb(nova);
-    // Calcular próximo numero = MAX(numero) + 1 (permite reutilizar ao deletar a última)
-    const { data: maxRow } = await supabase
-        .from('ordens_de_servico')
-        .select('numero')
-        .order('numero', { ascending: false })
-        .limit(1)
-        .single();
-    dbData.numero = (maxRow?.numero ?? 0) + 1;
+    // Usar DB SERIAL para gerar numero automaticamente (evita race condition)
+    // Não definimos 'numero' — o DEFAULT nextval() do banco gera o próximo valor
+    delete dbData.numero;
     const { data, error } = await supabase
         .from('ordens_de_servico')
         .insert(dbData)
@@ -581,16 +591,10 @@ export async function updateOrdem(id: string, updates: Partial<OrdemDeServico>):
 }
 
 export async function deleteOrdem(id: string): Promise<void> {
-    // Delete related payments via finance_charges
-    const { data: charges } = await supabase
-        .from('finance_charges')
-        .select('id')
-        .eq('os_id', id);
-    if (charges && charges.length > 0) {
-        const chargeIds = charges.map((c: any) => c.id);
-        await supabase.from('payments').delete().in('charge_id', chargeIds);
-        await supabase.from('finance_charges').delete().eq('os_id', id);
-    }
+    // Delete related payments (by os_id to catch payments with charge_id=null)
+    await supabase.from('payments').delete().eq('os_id', id);
+    // Delete related finance charges
+    await supabase.from('finance_charges').delete().eq('os_id', id);
 
     const { error } = await supabase.from('ordens_de_servico').delete().eq('id', id);
     if (error) { console.error('Erro deleteOrdem:', error); throw error; }
@@ -671,36 +675,55 @@ export async function exportAllData(): Promise<string> {
         getOrdens(),
         getProtocolos(),
     ]);
+    // Incluir dados financeiros no backup
+    const { data: financeCharges } = await supabase.from('finance_charges').select('*');
+    const { data: payments } = await supabase.from('payments').select('*');
     return JSON.stringify({
         clientes,
         veiculos,
         ordens,
         protocolos,
+        financeCharges: financeCharges || [],
+        payments: payments || [],
         exportedAt: now(),
     }, null, 2);
 }
 
 export async function importAllData(jsonString: string): Promise<void> {
     const data = JSON.parse(jsonString);
+    const errors: string[] = [];
 
     if (data.clientes && data.clientes.length > 0) {
         const rows = data.clientes.map((c: Cliente) => clienteToDb(c));
         const { error } = await supabase.from('clientes').upsert(rows, { onConflict: 'id' });
-        if (error) console.error('Erro importAllData clientes:', error);
+        if (error) errors.push(`Clientes: ${error.message}`);
     }
     if (data.veiculos && data.veiculos.length > 0) {
         const rows = data.veiculos.map((v: Veiculo) => veiculoToDb(v));
         const { error } = await supabase.from('veiculos').upsert(rows, { onConflict: 'id' });
-        if (error) console.error('Erro importAllData veiculos:', error);
+        if (error) errors.push(`Veículos: ${error.message}`);
     }
     if (data.ordens && data.ordens.length > 0) {
         const rows = data.ordens.map((o: OrdemDeServico) => ordemToDb(o));
         const { error } = await supabase.from('ordens_de_servico').upsert(rows, { onConflict: 'id' });
-        if (error) console.error('Erro importAllData ordens:', error);
+        if (error) errors.push(`Ordens: ${error.message}`);
     }
     if (data.protocolos && data.protocolos.length > 0) {
         const rows = data.protocolos.map((p: ProtocoloDiario) => protocoloToDb(p));
         const { error } = await supabase.from('protocolos_diarios').upsert(rows, { onConflict: 'id' });
-        if (error) console.error('Erro importAllData protocolos:', error);
+        if (error) errors.push(`Protocolos: ${error.message}`);
+    }
+    // Restaurar dados financeiros se presentes
+    if (data.financeCharges && data.financeCharges.length > 0) {
+        const { error } = await supabase.from('finance_charges').upsert(data.financeCharges, { onConflict: 'id' });
+        if (error) errors.push(`Finance Charges: ${error.message}`);
+    }
+    if (data.payments && data.payments.length > 0) {
+        const { error } = await supabase.from('payments').upsert(data.payments, { onConflict: 'id' });
+        if (error) errors.push(`Payments: ${error.message}`);
+    }
+
+    if (errors.length > 0) {
+        throw new Error(`Erros na importação:\n${errors.join('\n')}`);
     }
 }

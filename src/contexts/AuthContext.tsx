@@ -14,6 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const SESSION_KEY = 'matilde_session';
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 horas
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [usuario, setUsuario] = useState<Usuario | null>(null);
@@ -25,7 +26,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             try {
                 const saved = localStorage.getItem(SESSION_KEY);
                 if (saved) {
-                    const { userId } = JSON.parse(saved);
+                    const { userId, timestamp } = JSON.parse(saved);
+                    // Verificar expiração da sessão
+                    if (timestamp && Date.now() - timestamp > SESSION_TTL_MS) {
+                        localStorage.removeItem(SESSION_KEY);
+                        setCarregando(false);
+                        return;
+                    }
                     const user = await buscarUsuarioPorId(userId);
                     if (user) {
                         setUsuario(user);
@@ -48,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!user) return false;
         setUsuario(user);
         setCurrentUser(user.nome);
-        localStorage.setItem(SESSION_KEY, JSON.stringify({ userId: user.id }));
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ userId: user.id, timestamp: Date.now() }));
         return true;
     }, []);
 

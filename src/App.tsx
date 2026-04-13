@@ -63,6 +63,8 @@ function ExtensionListener() {
 
     useEffect(() => {
         const handleMessage = async (event: MessageEvent) => {
+            // Validar origem da mensagem — aceitar apenas extensão do mesmo origin ou chrome-extension
+            if (event.origin !== window.location.origin && !event.origin.startsWith('chrome-extension://')) return;
             // Check if message comes from our extension
             if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'PROCESS_DETRAN_PDF') {
                 const { fileUrl, fileName, placa, chassi, crmServico, confirmarDadosText, osId: pdfOsId } = event.data.payload;
@@ -309,7 +311,7 @@ function ExtensionListener() {
                         source: 'MATILDE_CRM',
                         action: 'DEFINIR_OS_PRIMEIRO_EMPLACAMENTO',
                         payload: { osId: osFinal.id },
-                    }, '*');
+                    }, window.location.origin);
 
                     // === 5. Toast ===
                     const numeroOS = (osFinal as any).numero || osFinal.id.slice(0, 6);
@@ -688,14 +690,14 @@ function ExtensionListener() {
                             await saveOrdem({ ...ordem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
                             await addAuditEntry(ordem.id, 'upload', `PDF Detran anexado automaticamente: ${safeName}`);
 
-                            try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch {}
+                            try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch (e) { console.error('Erro ao finalizar OS (gerar cobranças):', e); }
 
                             // Limpa storage da extensão (osId + servico_ativo + dados pendentes)
                             window.postMessage({
                                 source: 'MATILDE_CRM',
                                 action: 'CLEANUP_CAPTURA',
                                 payload: {},
-                            }, '*');
+                            }, window.location.origin);
 
                             showToast(`PDF anexado à OS #${ordem.numero || ordem.id.slice(0,6)}`, 'success');
                         } catch (err: any) {
@@ -813,7 +815,7 @@ function ExtensionListener() {
                         }
                         await saveOrdem({ ...novaOrdem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
                         await addAuditEntry(novaOrdem.id, 'upload', `Decalque/DAE anexado: ${safeName}`);
-                        try { await finalizarOS(novaOrdem.id, tipoServicoCapturado, 'carro', false); } catch {}
+                        try { await finalizarOS(novaOrdem.id, tipoServicoCapturado, 'carro', false); } catch (e) { console.error('Erro ao finalizar OS (gerar cobranças):', e); }
 
                         const dadosIniciais = {
                             osId: novaOrdem.id, clienteId, veiculoId: veiculo.id,
@@ -995,14 +997,14 @@ function ExtensionListener() {
                         try {
                             const tv = (tipoVeiculo === 'motocicleta' ? 'moto' : 'carro') as import('./types/finance').TipoVeiculo;
                             await finalizarOS(novaOrdem.id, 'primeiro_emplacamento', tv, true);
-                        } catch {}
+                        } catch (e) { console.error('Erro ao finalizar OS (gerar cobranças):', e); }
 
                         // Notificar extensão com osId
                         window.postMessage({
                             source: 'MATILDE_CRM',
                             action: 'DEFINIR_OS_PRIMEIRO_EMPLACAMENTO',
                             payload: { osId: novaOrdem.id },
-                        }, '*');
+                        }, window.location.origin);
 
                         console.log('[Matilde] OS Primeiro Emplacamento criada:', novaOrdem.id);
 
@@ -1182,7 +1184,7 @@ function ExtensionListener() {
                                 source: 'MATILDE_CRM',
                                 action: 'CLEANUP_VISTORIA',
                                 payload: {},
-                            }, '*');
+                            }, window.location.origin);
 
                             // Navegar para a OS com reload forçado
                             const targetUrl = `/ordens/${resolvedOsId}`;
@@ -1327,7 +1329,7 @@ function ExtensionListener() {
                         await saveOrdem({ ...novaOrdem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
                         await addAuditEntry(novaOrdem.id, 'upload', `Ficha de Cadastro/DAE anexada automaticamente: ${safeName}`);
 
-                        try { await finalizarOS(novaOrdem.id, 'segunda_via', 'carro', false); } catch {}
+                        try { await finalizarOS(novaOrdem.id, 'segunda_via', 'carro', false); } catch (e) { console.error('Erro ao finalizar OS (gerar cobranças):', e); }
 
                         console.log('[Matilde] OS 2ª Via criada:', novaOrdem.id);
 
@@ -1436,13 +1438,13 @@ function ExtensionListener() {
 
                             await saveOrdem({ ...ordem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
                             await addAuditEntry(ordem.id, 'upload', `Ficha Primeiro Emplacamento anexada automaticamente: ${safeName}`);
-                            try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch {}
+                            try { await finalizarOS(ordem.id, ordem.tipoServico, ordem.tipoVeiculo || 'carro', false); } catch (e) { console.error('Erro ao finalizar OS (gerar cobranças):', e); }
 
                             window.postMessage({
                                 source: 'MATILDE_CRM',
                                 action: 'CLEANUP_CAPTURA',
                                 payload: {},
-                            }, '*');
+                            }, window.location.origin);
 
                             showToast(`PDF anexado à OS #${ordem.numero || ordem.id.slice(0,6)}`, 'success');
                         } catch (err: any) {
@@ -1544,7 +1546,7 @@ function ExtensionListener() {
                         }
                         await saveOrdem({ ...novaOrdem, checklist: checklistAtualizado, pdfDetranUrl: pdfUrl } as any);
                         await addAuditEntry(novaOrdem.id, 'upload', `Ficha de Cadastro/DAE anexada: ${safeName}`);
-                        try { await finalizarOS(novaOrdem.id, 'primeiro_emplacamento', 'carro', false); } catch {}
+                        try { await finalizarOS(novaOrdem.id, 'primeiro_emplacamento', 'carro', false); } catch (e) { console.error('Erro ao finalizar OS (gerar cobranças):', e); }
 
                         console.log('[Matilde] OS Primeiro Emplacamento criada:', novaOrdem.id);
 
@@ -1605,7 +1607,7 @@ function ExtensionListener() {
             source: 'MATILDE_CRM',
             action: 'CLEANUP_PRIMEIRO_EMPLACAMENTO',
             payload: {},
-        }, '*');
+        }, window.location.origin);
     }
 
     const fecharTelefoneModal = () => { setTelefoneModal(null); setTelefoneInput(''); };

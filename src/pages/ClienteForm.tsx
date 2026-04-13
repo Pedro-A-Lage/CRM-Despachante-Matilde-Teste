@@ -88,22 +88,25 @@ export default function ClienteForm() {
         }
 
         setSaving(true);
+        try {
+            // Save client first
+            await saveCliente({
+                id: id || undefined,
+                tipo,
+                nome: nome.trim(),
+                cpfCnpj: cpfCnpj.trim(),
+                telefones: telefones.filter((t) => t.trim() !== ''),
+                email: email.trim() || undefined,
+                observacoes: observacoes.trim() || undefined,
+            });
 
-        // Save client first
-        const cliente = await saveCliente({
-            id: id || undefined,
-            tipo,
-            nome: nome.trim(),
-            cpfCnpj: cpfCnpj.trim(),
-            telefones: telefones.filter((t) => t.trim() !== ''),
-            email: email.trim() || undefined,
-            observacoes: observacoes.trim() || undefined,
-        });
-
-        // Removed Google Drive folder creation since Supabase handles virtual paths
-
-        setSaving(false);
-        navigate(id ? `/clientes/${id}` : '/clientes');
+            navigate(id ? `/clientes/${id}` : '/clientes');
+        } catch (err) {
+            alert('Erro ao salvar cliente. Tente novamente.');
+            console.error('Erro saveCliente:', err);
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (

@@ -1,9 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const sb = createClient(
-  'https://mrcclxbzdwarfhgygikc.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yY2NseGJ6ZHdhcmZoZ3lnaWtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1MzQ1NTAsImV4cCI6MjA4ODExMDU1MH0.J4bYHtJRT6AEhThY1RvovpTPUC_kjakH6U7S-NXVeno'
-);
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) { console.error('SUPABASE_URL e SUPABASE_ANON_KEY devem estar definidos como variáveis de ambiente.'); process.exit(1); }
+const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const { data: cl } = await sb.from('clientes').select('id').limit(1).single();
 const { data: vc } = await sb.from('veiculos').select('id').limit(1).single();

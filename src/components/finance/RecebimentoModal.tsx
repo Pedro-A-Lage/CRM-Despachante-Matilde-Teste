@@ -140,7 +140,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--notion-surface))',
+          background: 'var(--notion-surface)',
           color: 'var(--notion-text)',
           borderRadius: 16,
           boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
