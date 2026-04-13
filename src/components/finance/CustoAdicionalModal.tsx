@@ -23,12 +23,12 @@ interface Props {
 const inputStyle: React.CSSProperties = {
   marginTop: 4,
   width: '100%',
-  border: '1px solid var(--border-color)',
+  border: '1px solid var(--notion-border)',
   borderRadius: 8,
   padding: '8px 12px',
   fontSize: 14,
   background: 'var(--bg-surface)',
-  color: 'var(--color-text-primary)',
+  color: 'var(--notion-text)',
   outline: 'none',
   fontFamily: 'inherit',
 };
@@ -75,7 +75,7 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
         onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--bg-surface)',
-          color: 'var(--color-text-primary)',
+          color: 'var(--notion-text)',
           borderRadius: 12,
           boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
           width: '100%',
@@ -88,7 +88,7 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
             fontSize: 18,
             fontWeight: 700,
             marginBottom: 16,
-            color: 'var(--color-text-primary)',
+            color: 'var(--notion-text)',
           }}
         >
           Adicionar Custo Extra
@@ -96,7 +96,7 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
-            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--notion-text-secondary)' }}>
               Descrição *
             </label>
             <input
@@ -109,7 +109,7 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
           </div>
 
           <div>
-            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--color-text-secondary)' }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--notion-text-secondary)' }}>
               Valor (R$) *
             </label>
             <input
@@ -130,8 +130,8 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
                 padding: '10px 14px',
                 fontSize: 13,
                 background: 'rgba(220,38,38,0.08)',
-                color: 'var(--color-danger)',
-                border: '1px solid var(--color-danger)',
+                color: 'var(--notion-orange)',
+                border: '1px solid var(--notion-orange)',
               }}
             >
               {erro}
@@ -146,9 +146,9 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
                 padding: '8px 16px',
                 fontSize: 14,
                 borderRadius: 8,
-                border: '1px solid var(--border-color)',
+                border: '1px solid var(--notion-border)',
                 background: 'transparent',
-                color: 'var(--color-text-secondary)',
+                color: 'var(--notion-text-secondary)',
                 cursor: 'pointer',
               }}
             >
@@ -162,8 +162,8 @@ export default function CustoAdicionalModal({ osId, onClose, onSaved }: Props) {
                 fontSize: 14,
                 borderRadius: 8,
                 border: 'none',
-                background: 'var(--color-primary)',
-                color: 'var(--color-text-on-primary, #fff)',
+                background: 'var(--notion-blue)',
+                color: 'var(--notion-bg)',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1,
                 fontWeight: 600,

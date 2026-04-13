@@ -196,3 +196,92 @@ export function removerEtapa(envios: EtapaEnvioStatus[], etapaIndex: number): Et
         .filter((_, i) => i !== etapaIndex)
         .map((etapa, i) => ({ ...etapa, etapa: i + 1 }));
 }
+
+/**
+ * Sincroniza o enviosStatus de uma OS com a config atual da empresa.
+ * Adiciona documentos/etapas novos sem perder uploads existentes.
+ */
+export function sincronizarEnviosComEtapas(
+    enviosAtuais: EtapaEnvioStatus[],
+    etapasConfig: EtapaEnvioConfig[],
+    trocaPlaca = true
+): { envios: EtapaEnvioStatus[]; mudou: boolean } {
+    let mudou = false;
+
+    const enviosSincronizados = etapasConfig.map((configEtapa) => {
+        const docsPermitidos = configEtapa.documentos.filter(
+            (tipo) => trocaPlaca || !DOCS_PLACA.has(tipo)
+        );
+
+        // Encontrar etapa correspondente no status atual (por ordem)
+        const etapaExistente = enviosAtuais.find((e) => e.etapa === configEtapa.ordem);
+
+        if (!etapaExistente) {
+            // Etapa nova — criar do zero
+            mudou = true;
+            return {
+                etapa: configEtapa.ordem,
+                nome: configEtapa.nome,
+                documentos: docsPermitidos.map((tipo) => ({
+                    tipo,
+                    pronto: false,
+                    arquivo_id: null,
+                })),
+                enviado: false,
+                enviado_em: null,
+            };
+        }
+
+        // Etapa existe — sincronizar documentos
+        const docsExistentes = new Map(
+            etapaExistente.documentos.map((d) => [d.tipo, d])
+        );
+
+        const documentosSincronizados = docsPermitidos.map((tipo) => {
+            const docExistente = docsExistentes.get(tipo);
+            if (docExistente) return docExistente;
+            // Documento novo na config — adicionar
+            mudou = true;
+            return { tipo, pronto: false, arquivo_id: null };
+        });
+
+        // Preservar documentos que já têm upload mesmo se removidos da config
+        for (const doc of etapaExistente.documentos) {
+            if (
+                !docsPermitidos.includes(doc.tipo) &&
+                (doc.pronto || doc.arquivo_id || (doc as any).arquivo_url)
+            ) {
+                documentosSincronizados.push(doc);
+            }
+        }
+
+        if (documentosSincronizados.length !== etapaExistente.documentos.length) {
+            mudou = true;
+        } else {
+            // Verificar se a ordem/composição mudou
+            for (let i = 0; i < documentosSincronizados.length; i++) {
+                if (documentosSincronizados[i].tipo !== etapaExistente.documentos[i]?.tipo) {
+                    mudou = true;
+                    break;
+                }
+            }
+        }
+
+        // Atualizar nome da etapa se mudou na config
+        if (etapaExistente.nome !== configEtapa.nome) {
+            mudou = true;
+        }
+
+        return {
+            ...etapaExistente,
+            nome: configEtapa.nome,
+            documentos: documentosSincronizados,
+        };
+    });
+
+    if (enviosSincronizados.length !== enviosAtuais.length) {
+        mudou = true;
+    }
+
+    return { envios: enviosSincronizados, mudou };
+}

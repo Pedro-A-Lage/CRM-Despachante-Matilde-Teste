@@ -1,37 +1,45 @@
-type BadgeVariant = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'primary';
-type BadgeSize = 'sm' | 'md';
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
 
-interface BadgeProps {
-    variant?: BadgeVariant;
-    size?: BadgeSize;
-    children: React.ReactNode;
-    dot?: boolean;
+const badgeVariants = cva(
+  'inline-flex items-center whitespace-nowrap font-bold uppercase tracking-[0.04em]',
+  {
+    variants: {
+      variant: {
+        default: 'bg-badge-bg text-badge-text',
+        success: 'bg-[rgba(16,185,129,0.12)] text-[#10B981]',
+        warning: 'bg-[rgba(245,158,11,0.12)] text-[#F59E0B]',
+        danger: 'bg-[rgba(239,68,68,0.12)] text-[#EF4444]',
+        info: 'bg-[rgba(59,130,246,0.12)] text-[#3B82F6]',
+        neutral: 'bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.08)] text-text-secondary',
+        primary: 'bg-[rgba(0,117,222,0.12)] text-blue',
+        secondary: 'bg-[rgba(0,0,0,0.05)] dark:bg-[rgba(255,255,255,0.08)] text-text-secondary',
+      },
+      size: {
+        sm: 'text-[9px] px-1.5 py-0.5 rounded-micro gap-1',
+        md: 'text-[11px] px-2.5 py-[3px] rounded-subtle gap-[5px]',
+      },
+    },
+    defaultVariants: { variant: 'neutral', size: 'md' },
+  }
+);
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof badgeVariants> {
+  dot?: boolean;
 }
 
-const VARIANT_MAP: Record<BadgeVariant, { color: string; bg: string; dot: string }> = {
-    success:  { color: '#10B981', bg: 'rgba(16,185,129,0.12)',  dot: '#10B981' },
-    warning:  { color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', dot: '#F59E0B' },
-    danger:   { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',  dot: '#EF4444' },
-    info:     { color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', dot: '#3B82F6' },
-    neutral:  { color: '#6B7280', bg: 'rgba(107,114,128,0.12)',dot: '#6B7280' },
-    primary:  { color: 'var(--color-primary)', bg: 'var(--color-primary-50, rgba(245,158,11,0.12))', dot: 'var(--color-primary)' },
-};
-
-export function Badge({ variant = 'neutral', size = 'md', children, dot = false }: BadgeProps) {
-    const v = VARIANT_MAP[variant];
-    const isSmall = size === 'sm';
-    return (
-        <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: dot ? 5 : 0,
-            fontSize: isSmall ? 9 : 11, fontWeight: 700,
-            color: v.color, background: v.bg,
-            padding: isSmall ? '2px 6px' : '3px 9px',
-            borderRadius: isSmall ? 4 : 6,
-            textTransform: 'uppercase', letterSpacing: '0.04em',
-            whiteSpace: 'nowrap',
-        }}>
-            {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: v.dot, flexShrink: 0 }} />}
-            {children}
-        </span>
-    );
+export function Badge({ className, variant, size, dot = false, children, ...props }: BadgeProps) {
+  return (
+    <span className={cn(badgeVariants({ variant, size }), className)} {...props}>
+      {dot && (
+        <span className="w-[5px] h-[5px] rounded-full bg-current shrink-0" />
+      )}
+      {children}
+    </span>
+  );
 }
+
+export { badgeVariants };

@@ -427,9 +427,9 @@ export default function FinancePainel({
     fontSize: 13,
     padding: '6px 10px',
     borderRadius: 7,
-    border: '1.5px solid var(--color-primary)',
+    border: '1.5px solid var(--notion-blue)',
     background: 'var(--bg-surface)',
-    color: 'var(--color-text-primary)',
+    color: 'var(--notion-text)',
     outline: 'none',
     boxSizing: 'border-box',
   };
@@ -450,8 +450,8 @@ export default function FinancePainel({
 
       {/* ===== BANNER HEADER ===== */}
       {(() => {
-        const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-text-tertiary)', marginBottom: 2 };
-        const bannerColor = isQuitado ? 'var(--color-success)' : faltaReceber > 0 ? 'var(--color-danger)' : 'var(--color-warning)';
+        const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 2 };
+        const bannerColor = isQuitado ? 'var(--notion-green)' : faltaReceber > 0 ? 'var(--notion-orange)' : 'var(--notion-orange)';
         const bannerBg = isQuitado ? 'rgba(16,185,129,0.08)' : faltaReceber > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)';
         const bannerBorder = isQuitado ? 'rgba(16,185,129,0.25)' : faltaReceber > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)';
         const statusLabel = isQuitado ? 'QUITADO' : faltaReceber > 0 ? 'DEVENDO' : 'EM DIA';
@@ -472,14 +472,14 @@ export default function FinancePainel({
                 <IconDollar />
               </div>
               <div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                   Financeiro
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: bannerColor }}>
                     {statusLabel}
                   </span>
-                  <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
+                  <span style={{ fontSize: 10, color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
                     · {Math.round(progressoPct)}% recebido
                   </span>
                 </div>
@@ -496,25 +496,25 @@ export default function FinancePainel({
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
               <div style={{ textAlign: 'right' }}>
                 <span style={FLBL}>Servico</span>
-                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-primary)' }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--notion-blue)' }}>
                   {descontoValor > 0 && <span style={{ textDecoration: 'line-through', opacity: 0.45, fontSize: 12, marginRight: 4 }}>{fmt(valorServico)}</span>}
                   {fmt(valorServicoEfetivo)}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span style={FLBL}>Recebido</span>
-                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-success)' }}>{fmt(totalRecebido)}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--notion-green)' }}>{fmt(totalRecebido)}</div>
               </div>
               {faltaReceber > 0 && (
                 <div style={{ textAlign: 'right' }}>
                   <span style={FLBL}>Falta</span>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-danger)' }}>{fmt(faltaReceber)}</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--notion-orange)' }}>{fmt(faltaReceber)}</div>
                 </div>
               )}
               {descontoValor > 0 && (
                 <div style={{ textAlign: 'right' }}>
                   <span style={FLBL}>Desconto</span>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)' }}>-{fmt(descontoValor)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-green)' }}>-{fmt(descontoValor)}</div>
                 </div>
               )}
               {!readOnly && (
@@ -523,12 +523,12 @@ export default function FinancePainel({
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     padding: '5px 10px', borderRadius: 7,
-                    background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                    color: 'var(--color-text-primary)', fontWeight: 700, fontSize: 11,
+                    background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
+                    color: 'var(--notion-text)', fontWeight: 700, fontSize: 11,
                     cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-card)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--notion-border)'; e.currentTarget.style.background = 'var(--notion-surface)'; }}
                 >
                   <IconPlus /> Registrar
                 </button>
@@ -539,54 +539,54 @@ export default function FinancePainel({
       })()}
 
       {/* ===== RECEBIMENTOS LIST (main card, checklist-style rows) ===== */}
-      <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
         <div style={{
           display: 'flex', alignItems: 'center', padding: '8px 12px',
-          borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)',
+          borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)',
         }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
+          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
             Recebimentos
           </span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-blue)', opacity: 0.7 }}>
             {payments.length} {payments.length === 1 ? 'recebimento' : 'recebimentos'}
           </span>
         </div>
 
         {payments.length === 0 ? (
           <div style={{ padding: '16px 12px', textAlign: 'center' }}>
-            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+            <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
               Nenhum recebimento registrado.
             </p>
           </div>
         ) : (
           payments.map((p, idx) => (
-            <div key={p.id} style={{ borderBottom: idx < payments.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+            <div key={p.id} style={{ borderBottom: idx < payments.length - 1 ? '1px solid var(--notion-border)' : 'none' }}>
               <div
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42,
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 {/* Status dot */}
                 <div style={{
                   width: 9, height: 9, borderRadius: '50%', flexShrink: 0,
-                  background: 'var(--color-success)',
+                  background: 'var(--notion-green)',
                   boxShadow: '0 0 4px rgba(22,163,74,0.3)',
                 }} />
 
                 {/* Date */}
                 <span style={{
-                  fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)',
-                  background: 'rgba(128,128,128,0.07)', border: '1px solid var(--border-color)',
+                  fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)',
+                  background: 'rgba(128,128,128,0.07)', border: '1px solid var(--notion-border)',
                   borderRadius: 5, padding: '2px 7px', whiteSpace: 'nowrap', flexShrink: 0,
                 }}>
                   {new Date(p.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR')}
                 </span>
 
                 {/* Value */}
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-green)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {fmt(p.valor)}
                 </span>
 
@@ -597,14 +597,14 @@ export default function FinancePainel({
 
                 {/* Instituicao */}
                 {p.instituicao && (
-                  <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ fontSize: 13, color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {p.instituicao}
                   </span>
                 )}
 
                 {/* Recebido por */}
                 {p.recebido_por && (
-                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     por {p.recebido_por}
                   </span>
                 )}
@@ -613,7 +613,7 @@ export default function FinancePainel({
 
                 {/* Status badge */}
                 <span style={{
-                  fontSize: 12, fontWeight: 800, color: 'var(--color-success)',
+                  fontSize: 12, fontWeight: 800, color: 'var(--notion-green)',
                   background: 'rgba(22,163,74,0.12)', padding: '2px 6px', borderRadius: 99,
                   textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0,
                   border: '1px solid rgba(22,163,74,0.15)', minWidth: 44, textAlign: 'center',
@@ -630,7 +630,7 @@ export default function FinancePainel({
                         width: 26, height: 26, borderRadius: 6,
                         background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'var(--color-info)', transition: 'background 0.15s',
+                        color: 'var(--notion-blue)', transition: 'background 0.15s',
                       }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
@@ -643,7 +643,7 @@ export default function FinancePainel({
                         width: 26, height: 26, borderRadius: 6,
                         background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'var(--color-danger)', transition: 'background 0.15s',
+                        color: 'var(--notion-orange)', transition: 'background 0.15s',
                       }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
@@ -657,7 +657,7 @@ export default function FinancePainel({
               {/* Observacao sub-row */}
               {p.observacao && (
                 <div style={{ padding: '0 12px 6px 29px' }}>
-                  <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+                  <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
                     Obs: {p.observacao}
                   </span>
                 </div>
@@ -673,14 +673,14 @@ export default function FinancePainel({
         padding: '6px 12px', background: 'rgba(212,168,67,0.04)', borderRadius: 8,
         border: '1px solid rgba(212,168,67,0.1)',
       }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-blue)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
           <IconDollar /> Valor:
         </span>
 
         {/* Valor badge */}
         {editandoValor ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>R$</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-text-secondary)' }}>R$</span>
             <input
               autoFocus type="text" inputMode="numeric"
               value={valorTemp}
@@ -696,8 +696,8 @@ export default function FinancePainel({
           <span
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 5,
-              fontSize: 12, fontWeight: 700, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border-color)',
-              color: 'var(--color-text-primary)',
+              fontSize: 12, fontWeight: 700, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--notion-border)',
+              color: 'var(--notion-text)',
               cursor: !readOnly && onValorServicoChange ? 'pointer' : 'default',
             }}
             onClick={() => {
@@ -715,12 +715,12 @@ export default function FinancePainel({
           </span>
         )}
 
-        <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
+        <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
 
         {/* Desconto badge */}
         {editandoDesconto ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Desconto R$</span>
+            <span style={{ fontSize: 13, color: 'var(--notion-text-secondary)' }}>Desconto R$</span>
             <input
               autoFocus type="text" inputMode="numeric"
               value={descontoTemp}
@@ -739,7 +739,7 @@ export default function FinancePainel({
                 fontSize: 13, fontWeight: 600,
                 background: descontoValor > 0 ? 'rgba(22,163,74,0.08)' : 'transparent',
                 border: descontoValor > 0 ? '1px solid rgba(22,163,74,0.2)' : '1px solid transparent',
-                color: descontoValor > 0 ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                color: descontoValor > 0 ? 'var(--notion-green)' : 'var(--notion-text-secondary)',
                 cursor: 'pointer',
               }}
               onClick={() => { setDescontoTemp(desconto || '0,00'); setEditandoDesconto(true); }}
@@ -752,8 +752,8 @@ export default function FinancePainel({
         {/* Data prevista */}
         {!isQuitado && (
           <>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-secondary)' }}>
+            <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--notion-text-secondary)' }}>
               <IconCalendar /> Previsao:
             </span>
             {!readOnly ? (
@@ -761,13 +761,13 @@ export default function FinancePainel({
                 type="date" value={dataPrevista}
                 onChange={e => salvarDataPrevista(e.target.value)}
                 style={{
-                  fontSize: 13, fontWeight: 600, border: '1px solid var(--border-color)',
+                  fontSize: 13, fontWeight: 600, border: '1px solid var(--notion-border)',
                   borderRadius: 5, padding: '2px 6px', background: 'var(--bg-surface)',
-                  color: 'var(--color-text-primary)', outline: 'none', cursor: 'pointer',
+                  color: 'var(--notion-text)', outline: 'none', cursor: 'pointer',
                 }}
               />
             ) : (
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>
                 {dataPrevista ? new Date(dataPrevista + 'T00:00:00').toLocaleDateString('pt-BR') : 'Nao definida'}
               </span>
             )}
@@ -777,11 +777,11 @@ export default function FinancePainel({
         {/* Composicao (admin only) */}
         {isAdmin && !ocultarCustos && !ocultarHonorarios && (
           <>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-danger)' }}>
+            <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-orange)' }}>
               Custos: {fmt(totalCustos)}
             </span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: honorario >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: honorario >= 0 ? 'var(--notion-green)' : 'var(--notion-orange)' }}>
               Honorario: {fmt(honorario)}
             </span>
           </>
@@ -790,7 +790,7 @@ export default function FinancePainel({
         {/* Metodos de pagamento usados */}
         {payments.length > 0 && (
           <>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
+            <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
             {Array.from(new Set(payments.map(p => p.metodo))).map(m => (
               <span key={m} className="finance-metodo-badge">
                 {PAYMENT_METODO_LABELS[m as keyof typeof PAYMENT_METODO_LABELS] ?? m}
@@ -802,17 +802,17 @@ export default function FinancePainel({
 
       {/* ===== CUSTOS LIST (admin only, checklist-style rows) ===== */}
       {isAdmin && !ocultarCustos && (
-        <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
           <div style={{
             display: 'flex', alignItems: 'center', padding: '8px 12px',
-            borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)',
+            borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)',
           }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
+            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
               Custos do Servico
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {charges.length > 0 && (
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-blue)', opacity: 0.7 }}>
                   {charges.length} {charges.length === 1 ? 'custo' : 'custos'} | {custosPagos} pagos | {custosPendentes} pendentes
                 </span>
               )}
@@ -822,7 +822,7 @@ export default function FinancePainel({
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
                     fontSize: 13, fontWeight: 700,
-                    color: 'var(--color-primary)', background: 'none', border: 'none',
+                    color: 'var(--notion-blue)', background: 'none', border: 'none',
                     cursor: 'pointer', padding: 0, transition: 'opacity 0.15s',
                   }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7'; }}
@@ -836,20 +836,20 @@ export default function FinancePainel({
 
           {charges.length === 0 ? (
             <div style={{ padding: '16px 12px', textAlign: 'center' }}>
-              <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+              <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
                 Nenhum custo registrado.
               </p>
             </div>
           ) : (
             charges.map((c, idx) => {
               const statusInfo = {
-                pago: { color: 'var(--color-success)', bg: 'rgba(22,163,74,0.12)', label: 'Pago' },
-                a_pagar: { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' },
-                cancelado: { color: 'var(--color-neutral)', bg: 'rgba(107,114,128,0.12)', label: 'Cancelado' },
-              }[c.status] ?? { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
+                pago: { color: 'var(--notion-green)', bg: 'rgba(22,163,74,0.12)', label: 'Pago' },
+                a_pagar: { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' },
+                cancelado: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.12)', label: 'Cancelado' },
+              }[c.status] ?? { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
 
               return (
-                <div key={c.id} style={{ borderBottom: idx < charges.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                <div key={c.id} style={{ borderBottom: idx < charges.length - 1 ? '1px solid var(--notion-border)' : 'none' }}>
                   {editandoCusto === c.id ? (
                     <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <input
@@ -858,7 +858,7 @@ export default function FinancePainel({
                         style={{ ...inputStyle, flex: 1, minWidth: 120, fontSize: 12, padding: '4px 8px' }}
                       />
                       <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>R$</span>
+                        <span style={{ fontSize: 13, color: 'var(--notion-text-secondary)' }}>R$</span>
                         <input
                           type="text" inputMode="numeric"
                           value={custoValorTemp} onChange={e => setCustoValorTemp(maskMoney(e.target.value))}
@@ -875,7 +875,7 @@ export default function FinancePainel({
                         display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42,
                         transition: 'background 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       {/* Status dot */}
@@ -888,7 +888,7 @@ export default function FinancePainel({
                       {/* Name */}
                       <span style={{
                         flex: 1, fontSize: 12.5, fontWeight: 600, minWidth: 0,
-                        color: c.status === 'cancelado' ? 'var(--color-text-secondary)' : 'var(--color-text-primary)',
+                        color: c.status === 'cancelado' ? 'var(--notion-text-secondary)' : 'var(--notion-text)',
                         textDecoration: c.status === 'cancelado' ? 'line-through' : 'none',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
@@ -896,7 +896,7 @@ export default function FinancePainel({
                       </span>
 
                       {/* Value */}
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                         {fmt(c.valor_previsto)}
                       </span>
 
@@ -920,7 +920,7 @@ export default function FinancePainel({
                                 height: 26, padding: '0 8px', borderRadius: 6,
                                 background: 'rgba(22,163,74,0.1)', border: 'none', cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', gap: 4,
-                                fontSize: 12, fontWeight: 700, color: 'var(--color-success)',
+                                fontSize: 12, fontWeight: 700, color: 'var(--notion-green)',
                                 transition: 'background 0.15s',
                               }}
                               onMouseEnter={e => e.currentTarget.style.background = 'rgba(22,163,74,0.2)'}
@@ -936,7 +936,7 @@ export default function FinancePainel({
                                 height: 26, padding: '0 8px', borderRadius: 6,
                                 background: 'rgba(245,158,11,0.1)', border: 'none', cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', gap: 4,
-                                fontSize: 12, fontWeight: 700, color: 'var(--color-warning)',
+                                fontSize: 12, fontWeight: 700, color: 'var(--notion-orange)',
                                 transition: 'background 0.15s',
                               }}
                               onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
@@ -951,7 +951,7 @@ export default function FinancePainel({
                               width: 26, height: 26, borderRadius: 6,
                               background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: 'var(--color-info)', transition: 'background 0.15s',
+                              color: 'var(--notion-blue)', transition: 'background 0.15s',
                             }}
                             onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
                             onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
@@ -964,11 +964,11 @@ export default function FinancePainel({
                               width: 22, height: 22, borderRadius: 5,
                               background: 'transparent', border: 'none', cursor: 'pointer',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: 'var(--color-text-secondary)', opacity: 0.2,
+                              color: 'var(--notion-text-secondary)', opacity: 0.2,
                               transition: 'opacity 0.15s, color 0.15s',
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--color-danger)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+                            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                           >
                             <IconTrash />
                           </button>
@@ -985,12 +985,12 @@ export default function FinancePainel({
           {charges.length > 0 && (
             <div style={{
               display: 'flex', alignItems: 'center', padding: '8px 12px',
-              borderTop: '1px solid var(--border-color)', background: 'var(--bg-body)',
+              borderTop: '1px solid var(--notion-border)', background: 'var(--notion-bg)',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
                 Total Custos
               </span>
-              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-primary)' }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--notion-text)' }}>
                 {fmt(totalCustos)}
               </span>
             </div>

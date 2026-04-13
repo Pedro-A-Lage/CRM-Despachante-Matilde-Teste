@@ -30,7 +30,7 @@ interface Props {
 const labelStyle: React.CSSProperties = {
   fontSize: 11,
   fontWeight: 700,
-  color: 'var(--color-text-secondary)',
+  color: 'var(--notion-text-secondary)',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
   marginBottom: 4,
@@ -39,12 +39,12 @@ const labelStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  border: '1.5px solid var(--border-color)',
+  border: '1.5px solid var(--notion-border)',
   borderRadius: 10,
   padding: '10px 14px',
   fontSize: 15,
   background: 'var(--bg-surface)',
-  color: 'var(--color-text-primary)',
+  color: 'var(--notion-text)',
   outline: 'none',
   fontFamily: 'inherit',
   transition: 'border-color 0.15s',
@@ -140,8 +140,8 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--bg-card, var(--bg-surface))',
-          color: 'var(--color-text-primary)',
+          background: 'var(--notion-surface))',
+          color: 'var(--notion-text)',
           borderRadius: 16,
           boxShadow: '0 12px 40px rgba(0,0,0,0.3)',
           width: '100%',
@@ -152,18 +152,18 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
         {/* Header */}
         <div style={{
           padding: '20px 24px 16px',
-          borderBottom: '1px solid var(--border-color)',
+          borderBottom: '1px solid var(--notion-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--notion-text)', margin: 0 }}>
               {isEdit ? 'Editar Recebimento' : 'Registrar Recebimento'}
             </h3>
             {!isEdit && (
-              <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 4 }}>
-                Saldo restante: <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{fmt(saldoRestante)}</span>
+              <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', marginTop: 4 }}>
+                Saldo restante: <span style={{ fontWeight: 700, color: 'var(--notion-blue)' }}>{fmt(saldoRestante)}</span>
               </p>
             )}
           </div>
@@ -172,7 +172,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
             style={{
               width: 32, height: 32, borderRadius: 8,
               border: 'none', background: 'rgba(128,128,128,0.1)',
-              color: 'var(--color-text-secondary)', cursor: 'pointer',
+              color: 'var(--notion-text-secondary)', cursor: 'pointer',
               fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
@@ -188,7 +188,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
               <div style={{ position: 'relative' }}>
                 <span style={{
                   position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-                  fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)',
+                  fontSize: 14, fontWeight: 600, color: 'var(--notion-text-secondary)',
                 }}>
                   R$
                 </span>
@@ -223,9 +223,9 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
                 padding: '10px 14px',
                 borderRadius: 10,
                 background: 'rgba(128,128,128,0.06)',
-                border: '1.5px solid var(--border-color)',
+                border: '1.5px solid var(--notion-border)',
                 fontSize: 15,
-                color: 'var(--color-text-primary)',
+                color: 'var(--notion-text)',
                 fontWeight: 500,
               }}>
                 {nomeUsuario}
@@ -245,9 +245,9 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
                   style={{
                     padding: '8px 14px',
                     borderRadius: 10,
-                    border: metodo === k ? '2px solid var(--color-primary)' : '1.5px solid var(--border-color)',
+                    border: metodo === k ? '2px solid var(--notion-blue)' : '1.5px solid var(--notion-border)',
                     background: metodo === k ? 'rgba(59,130,246,0.08)' : 'var(--bg-surface)',
-                    color: metodo === k ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                    color: metodo === k ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
                     cursor: 'pointer',
                     fontSize: 13,
                     fontWeight: metodo === k ? 700 : 500,
@@ -283,7 +283,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
               padding: '10px 14px',
               fontSize: 13,
               background: 'rgba(220,38,38,0.08)',
-              color: 'var(--color-danger)',
+              color: 'var(--notion-orange)',
               border: '1px solid rgba(220,38,38,0.3)',
               marginBottom: 16,
               display: 'flex',
@@ -306,9 +306,9 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
                 fontSize: 14,
                 fontWeight: 600,
                 borderRadius: 10,
-                border: '1.5px solid var(--border-color)',
+                border: '1.5px solid var(--notion-border)',
                 background: 'transparent',
-                color: 'var(--color-text-secondary)',
+                color: 'var(--notion-text-secondary)',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
               }}
@@ -325,8 +325,8 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
                 fontWeight: 700,
                 borderRadius: 10,
                 border: 'none',
-                background: 'var(--color-primary)',
-                color: 'var(--color-text-on-primary, #fff)',
+                background: 'var(--notion-blue)',
+                color: 'var(--notion-bg)',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.6 : 1,
                 fontFamily: 'inherit',
