@@ -55,7 +55,8 @@ async function comprimirImagem(file: File): Promise<{ base64: string; mimeType: 
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
-            const ctx = canvas.getContext('2d')!;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { reject(new Error('Não foi possível criar contexto de canvas para compressão de imagem')); return; }
             ctx.drawImage(img, 0, 0, width, height);
             const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
             const b64 = dataUrl.split(',')[1]!;

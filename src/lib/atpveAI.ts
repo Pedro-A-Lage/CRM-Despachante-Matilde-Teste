@@ -431,7 +431,12 @@ async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt
     throw new Error('Gemini: máximo de tentativas excedido');
 }
 
+const MAX_GEMINI_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 export async function extrairDadosATPVeComIA(file: File): Promise<DadosExtraidos> {
+    if (file.size > MAX_GEMINI_FILE_SIZE) {
+        throw new Error(`Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Máximo para análise IA: 10MB.`);
+    }
     const arrayBuffer = await file.arrayBuffer();
     const dataBase64 = arrayBufferToBase64(arrayBuffer);
     const mimeType = detectarMimeType(file);

@@ -1,29 +1,43 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Download, Upload, AlertTriangle } from 'lucide-react';
 import { exportAllData, importAllData } from '../lib/database';
+import { useConfirm } from '../components/ConfirmProvider';
 
 export default function Backup() {
     const [importStatus, setImportStatus] = useState<string>('');
+    const confirm = useConfirm();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleExport = async () => {
-        const data = await exportAllData();
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `despachante-matilde-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        try {
+            const data = await exportAllData();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `despachante-matilde-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch {
+            setImportStatus('Erro ao exportar dados.');
+        }
     };
 
-    const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (!confirm('ATENÇÃO: Isso vai substituir TODOS os dados atuais. Deseja continuar?')) {
-            e.target.value = '';
+        const ok = await confirm({
+            title: 'Restaurar Dados',
+            message: 'ATENÇÃO: Isso vai substituir TODOS os dados atuais. Deseja continuar?',
+            confirmText: 'Restaurar',
+            cancelText: 'Cancelar',
+            danger: true,
+        });
+        if (!ok) {
+            if (fileInputRef.current) fileInputRef.current.value = '';
             return;
         }
 
@@ -32,9 +46,9 @@ export default function Backup() {
             try {
                 const json = event.target?.result as string;
                 await importAllData(json);
-                setImportStatus('✅ Dados restaurados com sucesso! Recarregue a página.');
-            } catch {
-                setImportStatus('❌ Erro ao importar. Verifique o arquivo.');
+                setImportStatus('Dados restaurados com sucesso! Recarregue a página.');
+            } catch (err: any) {
+                setImportStatus(`Erro ao importar: ${err.message || 'Verifique o arquivo.'}`);
             }
         };
         reader.readAsText(file);
@@ -83,6 +97,7 @@ export default function Backup() {
                     </p>
                 </div>
                 <input
+                    ref={fileInputRef}
                     type="file"
                     accept=".json"
                     onChange={handleImport}

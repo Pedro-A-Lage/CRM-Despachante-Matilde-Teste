@@ -4,6 +4,7 @@ import { Plus, Search, Eye, Pencil, Trash2, User, MapPin, Phone, Calendar, Grid3
 import { getClientes, deleteCliente } from '../lib/database';
 import type { Cliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { useConfirm } from '../components/ConfirmProvider';
 
 function formatCpfCnpj(value: string): string {
     if (!value) return '—';
@@ -17,6 +18,7 @@ function formatCpfCnpj(value: string): string {
 }
 
 export default function ClientesList() {
+    const confirm = useConfirm();
     const [search, setSearch] = useState('');
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [loading, setLoading] = useState(true);
@@ -96,15 +98,18 @@ export default function ClientesList() {
     );
 
     const handleDelete = async (cliente: Cliente) => {
-        if (
-            confirm(`Deseja excluir o cliente "${cliente.nome}"? Esta ação não pode ser desfeita.`)
-        ) {
-            try {
-                await deleteCliente(cliente.id);
-                loadClientes();
-            } catch (err: any) {
-                alert(err.message || 'Erro ao excluir cliente.');
-            }
+        const ok = await confirm({
+            title: 'Excluir Cliente',
+            message: `Deseja excluir o cliente "${cliente.nome}"? Esta ação não pode ser desfeita.`,
+            confirmText: 'Excluir',
+            danger: true,
+        });
+        if (!ok) return;
+        try {
+            await deleteCliente(cliente.id);
+            loadClientes();
+        } catch (err: any) {
+            alert(err.message || 'Erro ao excluir cliente.');
         }
     };
 

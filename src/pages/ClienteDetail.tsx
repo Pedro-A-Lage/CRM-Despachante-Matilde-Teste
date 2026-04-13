@@ -60,15 +60,20 @@ export default function ClienteDetail() {
     const loadData = async () => {
         if (!id) return;
         setLoading(true);
-        const [c, v, o] = await Promise.all([
-            getCliente(id),
-            getVeiculosByCliente(id),
-            getOrdensByCliente(id),
-        ]);
-        setCliente(c ?? null);
-        setVeiculos(v);
-        setOrdens(o);
-        setLoading(false);
+        try {
+            const [c, v, o] = await Promise.all([
+                getCliente(id),
+                getVeiculosByCliente(id),
+                getOrdensByCliente(id),
+            ]);
+            setCliente(c ?? null);
+            setVeiculos(v);
+            setOrdens(o);
+        } catch (err) {
+            console.error('Erro ao carregar dados do cliente:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => { loadData(); }, [id]);
