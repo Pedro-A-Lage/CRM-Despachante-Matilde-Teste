@@ -20,7 +20,6 @@ import {
     Settings,
     Building2,
     CreditCard,
-    LayoutDashboard,
     Search,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -49,7 +48,6 @@ const navGroups: NavGroup[] = [
         title: 'Operações',
         defaultOpen: true,
         items: [
-            { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
             { to: '/ordens', icon: FileText, label: 'Ordens de Serviço' },
             { to: '/servicos', icon: ExternalLink, label: 'Serviços Detran', permissao: 'servicos_detran' },
             { to: '/protocolos', icon: ClipboardList, label: 'Protocolo Diário', permissao: 'protocolo_diario' },
@@ -238,7 +236,7 @@ export default function Layout({ children }: LayoutProps) {
     // Page title
     const getPageTitle = () => {
         const path = location.pathname;
-        if (path === '/') return 'Dashboard';
+        if (path === '/' || path.startsWith('/ordens')) return 'Ordens de Serviço';
         if (path.startsWith('/clientes')) return 'Clientes';
         if (path.startsWith('/veiculos')) return 'Veículos';
         if (path.startsWith('/ordens')) return 'Ordens de Serviço';
