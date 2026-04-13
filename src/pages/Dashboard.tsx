@@ -83,15 +83,20 @@ export default function Dashboard() {
 
     const loadData = async (silently = false) => {
         if (!silently) setLoading(true);
-        const [c, v, o] = await Promise.all([
-            getClientes(),
-            getVeiculos(),
-            getOrdens(),
-        ]);
-        setClientes(c);
-        setVeiculos(v);
-        setOrdens(o);
-        if (!silently) setLoading(false);
+        try {
+            const [c, v, o] = await Promise.all([
+                getClientes(),
+                getVeiculos(),
+                getOrdens(),
+            ]);
+            setClientes(c);
+            setVeiculos(v);
+            setOrdens(o);
+        } catch (err) {
+            console.error('Erro ao carregar dados do dashboard:', err);
+        } finally {
+            if (!silently) setLoading(false);
+        }
     };
 
     useEffect(() => {

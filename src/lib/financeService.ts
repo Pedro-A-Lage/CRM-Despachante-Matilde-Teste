@@ -368,14 +368,18 @@ export async function gerarCobrancasIniciais(
 
 export async function getPaymentsTotalByOSIds(osIds: string[]): Promise<Record<string, number>> {
   if (osIds.length === 0) return {};
-  const { data, error } = await supabase
-    .from('payments')
-    .select('os_id, valor')
-    .in('os_id', osIds);
-  if (error) throw error;
+  // Usar batching para evitar URL muito longo
   const totals: Record<string, number> = {};
-  for (const p of (data ?? []) as { os_id: string; valor: number }[]) {
-    totals[p.os_id] = (totals[p.os_id] || 0) + Number(p.valor);
+  for (let i = 0; i < osIds.length; i += BATCH_SIZE) {
+    const chunk = osIds.slice(i, i + BATCH_SIZE);
+    const { data, error } = await supabase
+      .from('payments')
+      .select('os_id, valor')
+      .in('os_id', chunk);
+    if (error) throw error;
+    for (const p of (data ?? []) as { os_id: string; valor: number }[]) {
+      totals[p.os_id] = (totals[p.os_id] || 0) + Number(p.valor);
+    }
   }
   return totals;
 }
@@ -472,10 +476,10 @@ export function calcularResumo(
   payments: Payment[],
 ): FinanceResumo {
   const custosAtivos = charges.filter(c => c.status !== 'cancelado');
-  const totalCustos = custosAtivos.reduce((s, c) => s + c.valor_previsto, 0);
-  const totalRecebido = payments.reduce((s, p) => s + p.valor, 0);
-  const faltaReceber = Math.max(0, valorServico - totalRecebido);
-  const honorario = valorServico - totalCustos;
+  const totalCustos = Math.round(custosAtivos.reduce((s, c) => s + c.valor_previsto, 0) * 100) / 100;
+  const totalRecebido = Math.round(payments.reduce((s, p) => s + p.valor, 0) * 100) / 100;
+  const faltaReceber = Math.max(0, Math.round((valorServico - totalRecebido) * 100) / 100);
+  const honorario = Math.max(0, Math.round((valorServico - totalCustos) * 100) / 100);
 
   const statusRecebimento: FinanceResumo['statusRecebimento'] =
     valorServico === 0
@@ -546,7 +550,7 @@ export async function getRelatorio(
     periodo: { inicio, fim },
     receita,
     totalCustos,
-    honorarios: receita - totalCustos,
+    honorarios: Math.max(0, Math.round((receita - totalCustos) * 100) / 100),
     totalRecebido,
     aReceber: Math.max(0, receita - totalRecebido),
     osCount: ordens.length,

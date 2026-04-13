@@ -4,8 +4,10 @@ import { Plus, Search, Pencil, Trash2, Car, Gauge, Grid3x3, List } from 'lucide-
 import { getVeiculos, getClientes, deleteVeiculo } from '../lib/database';
 import type { Veiculo, Cliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { useConfirm } from '../components/ConfirmProvider';
 
 export default function VeiculosList() {
+    const confirm = useConfirm();
     const [search, setSearch] = useState('');
     const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -103,13 +105,18 @@ export default function VeiculosList() {
         clientes.find((c) => c.id === clienteId)?.nome || '—';
 
     const handleDelete = async (veiculo: Veiculo) => {
-        if (confirm(`Deseja excluir o veículo "${veiculo.placa || veiculo.chassi}"?`)) {
-            try {
-                await deleteVeiculo(veiculo.id);
-                loadData();
-            } catch (err: any) {
-                alert(err.message || 'Erro ao excluir veículo.');
-            }
+        const ok = await confirm({
+            title: 'Excluir Veículo',
+            message: `Deseja excluir o veículo "${veiculo.placa || veiculo.chassi}"? Esta ação não pode ser desfeita.`,
+            confirmText: 'Excluir',
+            danger: true,
+        });
+        if (!ok) return;
+        try {
+            await deleteVeiculo(veiculo.id);
+            loadData();
+        } catch (err: any) {
+            alert(err.message || 'Erro ao excluir veículo.');
         }
     };
 

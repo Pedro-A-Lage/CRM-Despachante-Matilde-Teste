@@ -188,16 +188,19 @@ export default function OSList() {
             result = result.filter((o) => {
                 const cliente = clientes.find((c) => c.id === o.clienteId);
                 const veiculo = veiculos.find((v) => v.id === o.veiculoId);
-                const nomeCliente = cliente?.nome ?? '';
-                const placaVeiculo = veiculo?.placa ?? '';
-                const chassiVeiculo = veiculo?.chassi ?? '';
-                const cpfCliente = cliente?.cpfCnpj ?? '';
+                const nomeCliente = (cliente?.nome ?? '').toLowerCase();
+                const placaVeiculo = (veiculo?.placa ?? '').toLowerCase();
+                const chassiVeiculo = (veiculo?.chassi ?? '').toLowerCase();
+                const cpfCliente = (cliente?.cpfCnpj ?? '').replace(/\D/g, '');
+                const numOS = String(o.numero ?? '');
+                const tipoServ = (o.tipoServico ?? '').toLowerCase();
                 return (
-                    o.numero.toString().includes(term) ||
-                    nomeCliente.toLowerCase().includes(term) ||
-                    placaVeiculo.toLowerCase().includes(term) ||
-                    chassiVeiculo.toLowerCase().includes(term) ||
-                    cpfCliente.replace(/\D/g, '').includes(term.replace(/\D/g, ''))
+                    numOS.includes(term) ||
+                    nomeCliente.includes(term) ||
+                    placaVeiculo.includes(term) ||
+                    chassiVeiculo.includes(term) ||
+                    tipoServ.includes(term) ||
+                    cpfCliente.includes(term.replace(/\D/g, ''))
                 );
             });
         }
@@ -212,7 +215,7 @@ export default function OSList() {
             return result.sort((a, b) => {
                 const modifier = sortConfig.direction === 'asc' ? 1 : -1;
                 switch (sortConfig.key) {
-                    case 'os': return (a.numero - b.numero) * modifier;
+                    case 'os': return ((a.numero ?? 0) - (b.numero ?? 0)) * modifier;
                     case 'cliente': {
                         const ca = clientes.find(c => c.id === a.clienteId)?.nome || '';
                         const cb = clientes.find(c => c.id === b.clienteId)?.nome || '';

@@ -172,7 +172,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                 return (
                     veiculo?.placa?.toLowerCase().includes(term) ||
                     cliente?.nome?.toLowerCase().includes(term) ||
-                    o.numero.toString().includes(term)
+                    String(o.numero ?? '').includes(term)
                 );
             });
         }
@@ -580,7 +580,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                             {/* Card header */}
                                             <div className="kanban-card-header">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                    <span className="kanban-card-number">OS #{os.numero}</span>
+                                                    <span className="kanban-card-number">OS #{os.numero ?? '—'}</span>
                                                     {hasPrio && (
                                                         <span style={{
                                                             fontSize: 9, fontWeight: 800, padding: '1px 6px',

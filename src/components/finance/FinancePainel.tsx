@@ -275,6 +275,8 @@ export default function FinancePainel({
             if (novoValor > 0) onValorServicoChange(novoValor);
           }
           await carregar(true);
+        } catch (err) {
+          console.error('Erro ao sincronizar cobrança de placa:', err);
         } finally {
           syncingPlaca.current = false;
         }
@@ -289,6 +291,8 @@ export default function FinancePainel({
             if (novoValor > 0) onValorServicoChange(novoValor);
           }
           await carregar(true);
+        } catch (err) {
+          console.error('Erro ao remover cobrança de placa:', err);
         } finally {
           syncingPlaca.current = false;
         }

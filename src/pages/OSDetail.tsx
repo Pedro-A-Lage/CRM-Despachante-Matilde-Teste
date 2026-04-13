@@ -431,11 +431,6 @@ export default function OSDetail() {
     const podeEditarDelegacia = temPermissao(usuario, 'os', 'editar_delegacia');
     const podeExcluirOs = temPermissao(usuario, 'os', 'excluir_os');
 
-    // ── Estado do visualizador de documentos
-    const [viewerUrl, setViewerUrl] = useState<string>('');
-    const [viewerTitle, setViewerTitle] = useState<string>('');
-    const [viewerOpen, setViewerOpen] = useState(false);
-
     const openDocumentViewer = (url: string, _title?: string) => {
         window.open(url, '_blank');
     };
@@ -1252,13 +1247,6 @@ export default function OSDetail() {
                                 onPaymentChange={() => refresh()}
                             />
                         )}
-                        {/* Document Viewer Modal */}
-                        <DocumentViewer
-                            url={viewerUrl}
-                            fileName={viewerTitle}
-                            isOpen={viewerOpen}
-                            onClose={() => setViewerOpen(false)}
-                        />
                     </div>
                 </div>
 

@@ -369,26 +369,23 @@ export async function deleteCliente(id: string): Promise<void> {
         throw new Error('Não é possível excluir cliente com ordens de serviço vinculadas');
     }
 
-    // Check for veiculos with related OS
+    // Check for veiculos with related OS (batch query em vez de N+1)
     const { data: veiculos } = await supabase
         .from('veiculos')
         .select('id')
         .eq('cliente_id', id);
     if (veiculos && veiculos.length > 0) {
-        for (const v of veiculos) {
-            const { data: vOs } = await supabase
-                .from('ordens_de_servico')
-                .select('id')
-                .eq('veiculo_id', v.id)
-                .limit(1);
-            if (vOs && vOs.length > 0) {
-                throw new Error('Não é possível excluir cliente pois possui veículos com ordens de serviço vinculadas');
-            }
+        const veiculoIds = veiculos.map(v => v.id);
+        const { data: vOs } = await supabase
+            .from('ordens_de_servico')
+            .select('id')
+            .in('veiculo_id', veiculoIds)
+            .limit(1);
+        if (vOs && vOs.length > 0) {
+            throw new Error('Não é possível excluir cliente pois possui veículos com ordens de serviço vinculadas');
         }
-        // Delete veiculos with no OS
-        for (const v of veiculos) {
-            await supabase.from('veiculos').delete().eq('id', v.id);
-        }
+        // Delete all veiculos in one query
+        await supabase.from('veiculos').delete().in('id', veiculoIds);
     }
 
     const { error } = await supabase.from('clientes').delete().eq('id', id);

@@ -1074,6 +1074,12 @@ textarea:focus {
   cursor: pointer;
   appearance: auto;
 }
+/* Garantir que opções de select sejam legíveis em dark mode */
+.form-select option,
+select option {
+  background: var(--notion-surface);
+  color: var(--notion-text);
+}
 .form-hint {
   font-size: 0.75rem;
   color: var(--notion-text-muted);
