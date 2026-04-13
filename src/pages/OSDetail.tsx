@@ -365,7 +365,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                             <div style={{ textAlign: 'center' }}>
                                 <input
                                     type="file"
-                                    accept=".pdf"
+                                    accept=".pdf,.jpg,.jpeg,.png,.webp,.heic"
                                     id="upload-pdf-detran-deleg"
                                     style={{ display: 'none' }}
                                     onChange={async (e) => {
@@ -373,14 +373,15 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                                         if (!file) return;
                                         try {
                                             const { uploadFileToSupabase } = await import('../lib/fileStorage');
-                                            const path = `ordens/${os.id}/pdf_detran_${Date.now()}.pdf`;
+                                            const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+                                            const path = `ordens/${os.id}/pdf_detran_${Date.now()}.${ext}`;
                                             const publicUrl = await uploadFileToSupabase(file, path);
                                             await updateOrdem(os.id, { pdfDetranUrl: publicUrl });
-                                            await addAuditEntry(os.id, 'PDF Detran Anexado', 'Folha de cadastro do Detran anexada manualmente.');
+                                            await addAuditEntry(os.id, 'PDF Detran Anexado', `Folha de cadastro anexada manualmente (${ext}).`);
                                             onRefresh();
                                         } catch (err) {
                                             console.error('Erro ao anexar PDF:', err);
-                                            alert('Erro ao anexar PDF. Tente novamente.');
+                                            alert('Erro ao anexar arquivo. Tente novamente.');
                                         }
                                         e.target.value = '';
                                     }}
@@ -393,7 +394,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                                 }}>
                                     <Upload size={20} color="var(--notion-blue)" />
                                     <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--notion-text-secondary)' }}>Anexar Folha do Detran</span>
-                                    <span style={{ fontSize: '0.55rem', color: 'var(--notion-text-secondary)' }}>Clique para selecionar PDF</span>
+                                    <span style={{ fontSize: '0.55rem', color: 'var(--notion-text-secondary)' }}>PDF ou foto (JPG, PNG)</span>
                                 </label>
                             </div>
                         )}
@@ -984,16 +985,17 @@ export default function OSDetail() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <input type="file" accept=".pdf" id="upload-pdf-detran-header" style={{ display: 'none' }}
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic" id="upload-pdf-detran-header" style={{ display: 'none' }}
                         onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
                             try {
                                 const { uploadFileToSupabase } = await import('../lib/fileStorage');
-                                const path = `ordens/${os.id}/pdf_detran_${Date.now()}.pdf`;
+                                const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
+                                const path = `ordens/${os.id}/pdf_detran_${Date.now()}.${ext}`;
                                 const publicUrl = await uploadFileToSupabase(file, path);
                                 await updateOrdem(os.id, { pdfDetranUrl: publicUrl });
-                                await addAuditEntry(os.id, 'PDF Detran Anexado', 'Folha de cadastro do Detran anexada manualmente.');
+                                await addAuditEntry(os.id, 'PDF Detran Anexado', `Folha de cadastro anexada manualmente (${ext}).`);
                                 refresh();
                             } catch (err) { console.error('Erro ao anexar PDF:', err); }
                             e.target.value = '';
@@ -1028,7 +1030,7 @@ export default function OSDetail() {
                                 color: 'var(--notion-orange)', fontWeight: 800, fontSize: 10,
                                 display: 'flex', alignItems: 'center', gap: 4, textTransform: 'uppercase',
                             }}>
-                                <Upload size={11} /> Anexar PDF
+                                <Upload size={11} /> Anexar PDF/Foto
                             </label>
                         )
                     )}
