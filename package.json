@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -27,6 +28,7 @@
     "date-fns": "^4.1.0",
     "docx": "^9.6.1",
     "docxtemplater": "^3.68.3",
+    "express": "^5.2.1",
     "file-saver": "^2.0.5",
     "lucide-react": "^0.460.0",
     "pdfjs-dist": "^3.11.174",
