@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import Dashboard from './pages/Dashboard';
 import ClientesList from './pages/ClientesList';
 import ClienteForm from './pages/ClienteForm';
 import ClienteDetail from './pages/ClienteDetail';
@@ -1743,7 +1744,7 @@ function AppInner() {
                                 <ExtensionListener />
                                 <Layout>
                                     <Routes>
-                                        <Route path="/" element={<Navigate to="/ordens" replace />} />
+                                        <Route path="/" element={<Dashboard />} />
                                         {/* Clientes */}
                                         <Route path="/clientes" element={<ClientesList />} />
                                         <Route path="/clientes/novo" element={<ClienteForm />} />

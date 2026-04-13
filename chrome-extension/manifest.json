@@ -29,15 +29,22 @@
   "background": {
     "service_worker": "background.js"
   },
+  "web_accessible_resources": [{
+    "resources": ["inject-error-interceptor.js", "inject-pdf-interceptor.js"],
+    "matches": ["*://detran.mg.gov.br/*", "*://*.detran.mg.gov.br/*",
+                 "*://transito.mg.gov.br/*", "*://*.transito.mg.gov.br/*",
+                 "*://*.cidadao.mg.gov.br/*"]
+  }],
   "content_scripts": [
     {
       "matches": [
         "*://detran.mg.gov.br/*",
         "*://*.detran.mg.gov.br/*",
         "*://transito.mg.gov.br/*",
-        "*://*.transito.mg.gov.br/*"
+        "*://*.transito.mg.gov.br/*",
+        "*://*.cidadao.mg.gov.br/*"
       ],
-      "js": ["content_detran.js", "content_vistoria.js"]
+      "js": ["content_detran.js", "content_vistoria.js", "content.js"]
     },
     {
       "matches": [

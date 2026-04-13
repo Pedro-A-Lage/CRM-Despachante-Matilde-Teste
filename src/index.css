@@ -1950,6 +1950,78 @@ td {
     width: 100%;
     justify-content: center;
   }
+
+  /* Dashboard responsive: stack sidebar below main content */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* --- Page-level entrance animation -------------------------- */
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.main-body > * {
+  animation: page-fade-in 0.22s ease-out both;
+}
+
+/* --- Focus-visible rings ------------------------------------ */
+*:focus-visible {
+  outline: 2px solid var(--notion-blue-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Sidebar logo area -------------------------------------- */
+.sidebar-logo-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--notion-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Sidebar: better hover/active pill effect -------------- */
+.sidebar-link {
+  position: relative;
+}
+
+.sidebar-link.active {
+  background: rgba(0, 117, 222, 0.1);
+  font-weight: 600;
+}
+
+.dark .sidebar-link.active {
+  background: rgba(43, 143, 232, 0.15);
+}
+
+/* --- Table improvements ------------------------------------- */
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* --- Smooth card hover -------------------------------------- */
+.stat-card {
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+/* --- OS Status bar (responsive) ----------------------------- */
+@media (max-width: 900px) {
+  .oslist-statusbar {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .oslist-statusbar > button {
+    flex: 0 0 80px !important;
+    min-width: 80px;
+  }
 }
 
 /* --- Utilities --- */

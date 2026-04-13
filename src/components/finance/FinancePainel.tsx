@@ -427,9 +427,9 @@ export default function FinancePainel({
     fontSize: 13,
     padding: '6px 10px',
     borderRadius: 7,
-    border: '1.5px solid var(--color-primary)',
+    border: '1.5px solid var(--notion-blue)',
     background: 'var(--bg-surface)',
-    color: 'var(--color-text-primary)',
+    color: 'var(--notion-text)',
     outline: 'none',
     boxSizing: 'border-box',
   };
@@ -438,7 +438,7 @@ export default function FinancePainel({
   // RENDER — Checklist-style layout
   // =====================================================
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 900 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%' }}>
 
       {/* ---- toast feedback ---- */}
       {mensagem && (
@@ -448,145 +448,228 @@ export default function FinancePainel({
         </div>
       )}
 
-      {/* ===== BANNER HEADER ===== */}
+      {/* ===== BANNER HEADER UNIFICADO ===== */}
       {(() => {
-        const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--color-text-tertiary)', marginBottom: 2 };
-        const bannerColor = isQuitado ? 'var(--color-success)' : faltaReceber > 0 ? 'var(--color-danger)' : 'var(--color-warning)';
-        const bannerBg = isQuitado ? 'rgba(16,185,129,0.08)' : faltaReceber > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.06)';
-        const bannerBorder = isQuitado ? 'rgba(16,185,129,0.25)' : faltaReceber > 0 ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)';
+        const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 2 };
+        const bannerColor = isQuitado ? 'var(--notion-green)' : faltaReceber > 0 ? 'var(--notion-orange)' : 'var(--notion-orange)';
+        const bannerBg = isQuitado ? 'rgba(16,185,129,0.06)' : faltaReceber > 0 ? 'rgba(239,68,68,0.04)' : 'rgba(245,158,11,0.04)';
+        const bannerBorder = isQuitado ? 'rgba(16,185,129,0.18)' : faltaReceber > 0 ? 'rgba(239,68,68,0.18)' : 'rgba(245,158,11,0.18)';
         const statusLabel = isQuitado ? 'QUITADO' : faltaReceber > 0 ? 'DEVENDO' : 'EM DIA';
         return (
           <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 14px', borderRadius: 10, flexWrap: 'wrap', gap: 12,
+            borderRadius: 10,
             background: bannerBg, border: `1px solid ${bannerBorder}`,
+            overflow: 'hidden',
           }}>
-            {/* Left: icon + title + status */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                width: 30, height: 30, borderRadius: 8,
-                background: bannerColor + '22',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: bannerColor,
-              }}>
-                <IconDollar />
-              </div>
-              <div>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                  Financeiro
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: bannerColor }}>
-                    {statusLabel}
-                  </span>
-                  <span style={{ fontSize: 10, color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
-                    · {Math.round(progressoPct)}% recebido
-                  </span>
-                </div>
-              </div>
-              {/* Progress bar */}
-              <div style={{ width: 80, height: 4, borderRadius: 2, background: 'rgba(128,128,128,0.15)', overflow: 'hidden', marginLeft: 4 }}>
+            {/* Row 1: Status + Métricas + Ações */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 16px', flexWrap: 'wrap', gap: 12,
+            }}>
+              {/* Left: icon + title + status + progress */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{
-                  height: '100%', borderRadius: 2, width: `${progressoPct}%`,
-                  background: bannerColor, transition: 'width 0.5s ease',
-                }} />
+                  width: 32, height: 32, borderRadius: 8,
+                  background: bannerColor + '18',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: bannerColor,
+                }}>
+                  <IconDollar />
+                </div>
+                <div>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
+                    Financeiro
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: bannerColor }}>
+                      {statusLabel}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
+                      · {Math.round(progressoPct)}% recebido
+                    </span>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div style={{ width: 100, height: 5, borderRadius: 3, background: 'rgba(128,128,128,0.12)', overflow: 'hidden', marginLeft: 6 }}>
+                  <div style={{
+                    height: '100%', borderRadius: 3, width: `${progressoPct}%`,
+                    background: bannerColor, transition: 'width 0.5s ease',
+                  }} />
+                </div>
+              </div>
+
+              {/* Right: key numbers + action */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexShrink: 0 }}>
+                {/* Serviço — clicável para editar */}
+                <div style={{ textAlign: 'center' }}>
+                  <span style={FLBL}>Servico</span>
+                  {editandoValor ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)' }}>R$</span>
+                      <input
+                        autoFocus type="text" inputMode="numeric"
+                        value={valorTemp}
+                        onChange={e => setValorTemp(maskMoney(e.target.value))}
+                        onBlur={salvarValorServico}
+                        onKeyDown={e => { if (e.key === 'Enter') salvarValorServico(); if (e.key === 'Escape') setEditandoValor(false); }}
+                        style={{ ...inputStyle, fontSize: 13, fontWeight: 700, width: 90, textAlign: 'right', padding: '2px 6px' }}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      style={{ fontSize: 16, fontWeight: 800, color: 'var(--notion-blue)', cursor: !readOnly && onValorServicoChange ? 'pointer' : 'default', whiteSpace: 'nowrap' }}
+                      onClick={() => {
+                        if (!readOnly && onValorServicoChange) {
+                          setValorTemp(maskMoney((isNaN(valorServico) ? 0 : valorServico).toFixed(2).replace('.', '')));
+                          setEditandoValor(true);
+                        }
+                      }}
+                      title={!readOnly && onValorServicoChange ? 'Clique para editar' : undefined}
+                    >
+                      {descontoValor > 0 && <span style={{ textDecoration: 'line-through', opacity: 0.4, fontSize: 12, marginRight: 4 }}>{fmt(valorServico)}</span>}
+                      {fmt(valorServicoEfetivo)}
+                      {!readOnly && onValorServicoChange && <span style={{ fontSize: 10, opacity: 0.4, marginLeft: 3 }}>✎</span>}
+                    </div>
+                  )}
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <span style={FLBL}>Recebido</span>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--notion-green)' }}>{fmt(totalRecebido)}</div>
+                </div>
+                {faltaReceber > 0 && (
+                  <div style={{ textAlign: 'center' }}>
+                    <span style={FLBL}>Falta</span>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--notion-orange)' }}>{fmt(faltaReceber)}</div>
+                  </div>
+                )}
+                {!readOnly && (
+                  <button
+                    onClick={() => setShowRecebimento(true)}
+                    className="btn btn-primary btn-sm"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }}
+                  >
+                    <IconPlus /> Registrar
+                  </button>
+                )}
               </div>
             </div>
-            {/* Right: key numbers */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-              <div style={{ textAlign: 'right' }}>
-                <span style={FLBL}>Servico</span>
-                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-primary)' }}>
-                  {descontoValor > 0 && <span style={{ textDecoration: 'line-through', opacity: 0.45, fontSize: 12, marginRight: 4 }}>{fmt(valorServico)}</span>}
-                  {fmt(valorServicoEfetivo)}
-                </div>
+
+            {/* Row 2: Desconto destacado + Previsão */}
+            {(!isQuitado || descontoValor > 0) && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+                padding: '10px 16px',
+                borderTop: `1px solid ${bannerBorder}`,
+              }}>
+                {/* Desconto — grande e clicável */}
+                {editandoDesconto ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)' }}>Desconto R$</span>
+                    <input
+                      autoFocus type="text" inputMode="numeric"
+                      value={descontoTemp}
+                      onChange={e => setDescontoTemp(maskMoney(e.target.value))}
+                      onBlur={salvarDesconto}
+                      onKeyDown={e => { if (e.key === 'Enter') salvarDesconto(); if (e.key === 'Escape') setEditandoDesconto(false); }}
+                      style={{ ...inputStyle, fontSize: 14, fontWeight: 700, width: 110, textAlign: 'right', padding: '5px 10px' }}
+                    />
+                    <Btn variant="success" small onClick={salvarDesconto}><IconSave /></Btn>
+                  </div>
+                ) : (
+                  !readOnly && (
+                    <span
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8,
+                        fontSize: 14, fontWeight: 700,
+                        background: descontoValor > 0 ? 'rgba(22,163,74,0.1)' : 'rgba(128,128,128,0.06)',
+                        border: descontoValor > 0 ? '1.5px solid rgba(22,163,74,0.25)' : '1.5px dashed var(--notion-border)',
+                        color: descontoValor > 0 ? 'var(--notion-green)' : 'var(--notion-text-secondary)',
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                      onClick={() => { setDescontoTemp(desconto || '0,00'); setEditandoDesconto(true); }}
+                    >
+                      {descontoValor > 0 ? `Desconto: -${fmt(descontoValor)}` : '+ Adicionar desconto'}
+                    </span>
+                  )
+                )}
+
+                {/* Data prevista */}
+                {!isQuitado && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <IconCalendar />
+                    <span style={{ fontSize: 13, color: 'var(--notion-text-secondary)', fontWeight: 600 }}>Previsao:</span>
+                    {!readOnly ? (
+                      <input
+                        type="date" value={dataPrevista}
+                        onChange={e => salvarDataPrevista(e.target.value)}
+                        style={{
+                          fontSize: 13, fontWeight: 600, border: '1.5px solid var(--notion-border)',
+                          borderRadius: 8, padding: '5px 10px', background: 'var(--bg-surface)',
+                          color: 'var(--notion-text)', outline: 'none', cursor: 'pointer',
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>
+                        {dataPrevista ? new Date(dataPrevista + 'T00:00:00').toLocaleDateString('pt-BR') : 'Nao definida'}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={FLBL}>Recebido</span>
-                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-success)' }}>{fmt(totalRecebido)}</div>
-              </div>
-              {faltaReceber > 0 && (
-                <div style={{ textAlign: 'right' }}>
-                  <span style={FLBL}>Falta</span>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-danger)' }}>{fmt(faltaReceber)}</div>
-                </div>
-              )}
-              {descontoValor > 0 && (
-                <div style={{ textAlign: 'right' }}>
-                  <span style={FLBL}>Desconto</span>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)' }}>-{fmt(descontoValor)}</div>
-                </div>
-              )}
-              {!readOnly && (
-                <button
-                  onClick={() => setShowRecebimento(true)}
-                  style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                    padding: '5px 10px', borderRadius: 7,
-                    background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                    color: 'var(--color-text-primary)', fontWeight: 700, fontSize: 11,
-                    cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'rgba(212,168,67,0.06)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.background = 'var(--bg-card)'; }}
-                >
-                  <IconPlus /> Registrar
-                </button>
-              )}
-            </div>
+            )}
           </div>
         );
       })()}
 
-      {/* ===== RECEBIMENTOS LIST (main card, checklist-style rows) ===== */}
-      <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+      {/* ===== RECEBIMENTOS ===== */}
+      <div style={{ borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', padding: '8px 12px',
-          borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)',
+          display: 'flex', alignItems: 'center', padding: '10px 16px',
+          borderBottom: payments.length > 0 ? '1px solid var(--notion-border)' : 'none',
         }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1 }}>
             Recebimentos
           </span>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>
-            {payments.length} {payments.length === 1 ? 'recebimento' : 'recebimentos'}
-          </span>
+          {payments.length > 0 && (
+            <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', opacity: 0.6 }}>
+              {payments.length}
+            </span>
+          )}
         </div>
 
         {payments.length === 0 ? (
           <div style={{ padding: '16px 12px', textAlign: 'center' }}>
-            <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+            <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
               Nenhum recebimento registrado.
             </p>
           </div>
         ) : (
           payments.map((p, idx) => (
-            <div key={p.id} style={{ borderBottom: idx < payments.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+            <div key={p.id} style={{ borderBottom: idx < payments.length - 1 ? '1px solid var(--notion-border)' : 'none' }}>
               <div
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42,
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px',
                   transition: 'background 0.15s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(128,128,128,0.03)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 {/* Status dot */}
                 <div style={{
-                  width: 9, height: 9, borderRadius: '50%', flexShrink: 0,
-                  background: 'var(--color-success)',
-                  boxShadow: '0 0 4px rgba(22,163,74,0.3)',
+                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                  background: 'var(--notion-green)',
                 }} />
 
                 {/* Date */}
                 <span style={{
-                  fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)',
-                  background: 'rgba(128,128,128,0.07)', border: '1px solid var(--border-color)',
-                  borderRadius: 5, padding: '2px 7px', whiteSpace: 'nowrap', flexShrink: 0,
+                  fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)',
+                  whiteSpace: 'nowrap', flexShrink: 0,
                 }}>
                   {new Date(p.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR')}
                 </span>
 
                 {/* Value */}
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-success)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--notion-green)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {fmt(p.valor)}
                 </span>
 
@@ -595,58 +678,44 @@ export default function FinancePainel({
                   {PAYMENT_METODO_LABELS[p.metodo as keyof typeof PAYMENT_METODO_LABELS] ?? p.metodo}
                 </span>
 
-                {/* Instituicao */}
-                {p.instituicao && (
-                  <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.instituicao}
-                  </span>
-                )}
-
                 {/* Recebido por */}
                 {p.recebido_por && (
-                  <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap' }}>
                     por {p.recebido_por}
                   </span>
                 )}
 
                 <div style={{ flex: 1 }} />
 
-                {/* Status badge */}
-                <span style={{
-                  fontSize: 12, fontWeight: 800, color: 'var(--color-success)',
-                  background: 'rgba(22,163,74,0.12)', padding: '2px 6px', borderRadius: 99,
-                  textTransform: 'uppercase', letterSpacing: '0.04em', flexShrink: 0,
-                  border: '1px solid rgba(22,163,74,0.15)', minWidth: 44, textAlign: 'center',
-                }}>
-                  Recebido
-                </span>
-
                 {/* Actions */}
                 {!readOnly && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, opacity: 0.6, transition: 'opacity 0.15s' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '0.6'}
+                  >
                     <button
                       onClick={() => setEditandoPagamento(p)} title="Editar recebimento"
                       style={{
-                        width: 26, height: 26, borderRadius: 6,
-                        background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer',
+                        width: 28, height: 28, borderRadius: 6,
+                        background: 'transparent', border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'var(--color-info)', transition: 'background 0.15s',
+                        color: 'var(--notion-blue)', transition: 'background 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                     >
                       <IconEdit />
                     </button>
                     <button
                       onClick={() => handleRemoverPagamento(p.id)} title="Remover recebimento"
                       style={{
-                        width: 26, height: 26, borderRadius: 6,
-                        background: 'rgba(239,68,68,0.08)', border: 'none', cursor: 'pointer',
+                        width: 28, height: 28, borderRadius: 6,
+                        background: 'transparent', border: 'none', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'var(--color-danger)', transition: 'background 0.15s',
+                        color: 'var(--notion-text-secondary)', transition: 'background 0.15s, color 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.18)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.08)'}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                     >
                       <IconTrash />
                     </button>
@@ -656,9 +725,9 @@ export default function FinancePainel({
 
               {/* Observacao sub-row */}
               {p.observacao && (
-                <div style={{ padding: '0 12px 6px 29px' }}>
-                  <span style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
-                    Obs: {p.observacao}
+                <div style={{ padding: '0 16px 8px 32px' }}>
+                  <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
+                    {p.observacao}
                   </span>
                 </div>
               )}
@@ -667,153 +736,22 @@ export default function FinancePainel({
         )}
       </div>
 
-      {/* ===== VALOR DO SERVICO — compact chips bar (like client docs bar) ===== */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
-        padding: '6px 12px', background: 'rgba(212,168,67,0.04)', borderRadius: 8,
-        border: '1px solid rgba(212,168,67,0.1)',
-      }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-          <IconDollar /> Valor:
-        </span>
-
-        {/* Valor badge */}
-        {editandoValor ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)' }}>R$</span>
-            <input
-              autoFocus type="text" inputMode="numeric"
-              value={valorTemp}
-              onChange={e => setValorTemp(maskMoney(e.target.value))}
-              onBlur={salvarValorServico}
-              onKeyDown={e => { if (e.key === 'Enter') salvarValorServico(); if (e.key === 'Escape') setEditandoValor(false); }}
-              style={{ ...inputStyle, fontSize: 12, fontWeight: 700, width: 100, textAlign: 'right', padding: '3px 8px' }}
-            />
-            <Btn variant="success" small onClick={salvarValorServico}><IconSave /></Btn>
-            <Btn variant="ghost" small onClick={() => setEditandoValor(false)}>&times;</Btn>
-          </div>
-        ) : (
-          <span
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 5,
-              fontSize: 12, fontWeight: 700, background: 'rgba(128,128,128,0.06)', border: '1px solid var(--border-color)',
-              color: 'var(--color-text-primary)',
-              cursor: !readOnly && onValorServicoChange ? 'pointer' : 'default',
-            }}
-            onClick={() => {
-              if (!readOnly && onValorServicoChange) {
-                setValorTemp(maskMoney((isNaN(valorServico) ? 0 : valorServico).toFixed(2).replace('.', '')));
-                setEditandoValor(true);
-              }
-            }}
-          >
-            {descontoValor > 0 && (
-              <span style={{ textDecoration: 'line-through', opacity: 0.5, marginRight: 4 }}>{fmt(valorServico)}</span>
-            )}
-            {fmt(valorServicoEfetivo)}
-            {!readOnly && onValorServicoChange && <IconEdit />}
-          </span>
-        )}
-
-        <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
-
-        {/* Desconto badge */}
-        {editandoDesconto ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Desconto R$</span>
-            <input
-              autoFocus type="text" inputMode="numeric"
-              value={descontoTemp}
-              onChange={e => setDescontoTemp(maskMoney(e.target.value))}
-              onBlur={salvarDesconto}
-              onKeyDown={e => { if (e.key === 'Enter') salvarDesconto(); if (e.key === 'Escape') setEditandoDesconto(false); }}
-              style={{ ...inputStyle, fontSize: 13, fontWeight: 700, width: 80, textAlign: 'right', padding: '2px 6px' }}
-            />
-            <Btn variant="success" small onClick={salvarDesconto}><IconSave /></Btn>
-          </div>
-        ) : (
-          !readOnly && (
-            <span
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 5,
-                fontSize: 13, fontWeight: 600,
-                background: descontoValor > 0 ? 'rgba(22,163,74,0.08)' : 'transparent',
-                border: descontoValor > 0 ? '1px solid rgba(22,163,74,0.2)' : '1px solid transparent',
-                color: descontoValor > 0 ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                cursor: 'pointer',
-              }}
-              onClick={() => { setDescontoTemp(desconto || '0,00'); setEditandoDesconto(true); }}
-            >
-              {descontoValor > 0 ? `Desconto: -${fmt(descontoValor)}` : '+ Desconto'}
-            </span>
-          )
-        )}
-
-        {/* Data prevista */}
-        {!isQuitado && (
-          <>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, color: 'var(--color-text-secondary)' }}>
-              <IconCalendar /> Previsao:
-            </span>
-            {!readOnly ? (
-              <input
-                type="date" value={dataPrevista}
-                onChange={e => salvarDataPrevista(e.target.value)}
-                style={{
-                  fontSize: 13, fontWeight: 600, border: '1px solid var(--border-color)',
-                  borderRadius: 5, padding: '2px 6px', background: 'var(--bg-surface)',
-                  color: 'var(--color-text-primary)', outline: 'none', cursor: 'pointer',
-                }}
-              />
-            ) : (
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                {dataPrevista ? new Date(dataPrevista + 'T00:00:00').toLocaleDateString('pt-BR') : 'Nao definida'}
-              </span>
-            )}
-          </>
-        )}
-
-        {/* Composicao (admin only) */}
-        {isAdmin && !ocultarCustos && !ocultarHonorarios && (
-          <>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-danger)' }}>
-              Custos: {fmt(totalCustos)}
-            </span>
-            <span style={{ fontSize: 12, fontWeight: 600, color: honorario >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}>
-              Honorario: {fmt(honorario)}
-            </span>
-          </>
-        )}
-
-        {/* Metodos de pagamento usados */}
-        {payments.length > 0 && (
-          <>
-            <span style={{ color: 'var(--color-text-secondary)', fontSize: 13, opacity: 0.3 }}>|</span>
-            {Array.from(new Set(payments.map(p => p.metodo))).map(m => (
-              <span key={m} className="finance-metodo-badge">
-                {PAYMENT_METODO_LABELS[m as keyof typeof PAYMENT_METODO_LABELS] ?? m}
-              </span>
-            ))}
-          </>
-        )}
-      </div>
+      {/* Barra VALOR removida — info absorvida pelo banner e footer de custos */}
 
       {/* ===== CUSTOS LIST (admin only, checklist-style rows) ===== */}
       {isAdmin && !ocultarCustos && (
-        <div style={{ background: 'var(--bg-body)', borderRadius: 10, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+        <div style={{ borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
           <div style={{
-            display: 'flex', alignItems: 'center', padding: '8px 12px',
-            borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)',
+            display: 'flex', alignItems: 'center', padding: '10px 16px',
+            borderBottom: charges.length > 0 ? '1px solid var(--notion-border)' : 'none',
           }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
-              Custos do Servico
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1 }}>
+              Custos
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {charges.length > 0 && (
-                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-primary)', opacity: 0.7 }}>
-                  {charges.length} {charges.length === 1 ? 'custo' : 'custos'} | {custosPagos} pagos | {custosPendentes} pendentes
+                <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', opacity: 0.6 }}>
+                  {custosPagos}/{charges.length} pagos
                 </span>
               )}
               {!readOnly && (
@@ -821,12 +759,12 @@ export default function FinancePainel({
                   onClick={() => setShowCustoExtra(true)}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 4,
-                    fontSize: 13, fontWeight: 700,
-                    color: 'var(--color-primary)', background: 'none', border: 'none',
-                    cursor: 'pointer', padding: 0, transition: 'opacity 0.15s',
+                    fontSize: 12, fontWeight: 600,
+                    color: 'var(--notion-blue)', background: 'none', border: 'none',
+                    cursor: 'pointer', padding: 0, opacity: 0.7, transition: 'opacity 0.15s',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7'; }}
                 >
                   <IconPlus /> Custo extra
                 </button>
@@ -836,20 +774,20 @@ export default function FinancePainel({
 
           {charges.length === 0 ? (
             <div style={{ padding: '16px 12px', textAlign: 'center' }}>
-              <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
+              <p style={{ fontSize: 12, color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
                 Nenhum custo registrado.
               </p>
             </div>
           ) : (
             charges.map((c, idx) => {
               const statusInfo = {
-                pago: { color: 'var(--color-success)', bg: 'rgba(22,163,74,0.12)', label: 'Pago' },
-                a_pagar: { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' },
-                cancelado: { color: 'var(--color-neutral)', bg: 'rgba(107,114,128,0.12)', label: 'Cancelado' },
-              }[c.status] ?? { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
+                pago: { color: 'var(--notion-green)', bg: 'rgba(22,163,74,0.12)', label: 'Pago' },
+                a_pagar: { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' },
+                cancelado: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.12)', label: 'Cancelado' },
+              }[c.status] ?? { color: 'var(--notion-orange)', bg: 'rgba(245,158,11,0.12)', label: 'Pendente' };
 
               return (
-                <div key={c.id} style={{ borderBottom: idx < charges.length - 1 ? '1px solid var(--border-color)' : 'none' }}>
+                <div key={c.id} style={{ borderBottom: idx < charges.length - 1 ? '1px solid var(--notion-border)' : 'none' }}>
                   {editandoCusto === c.id ? (
                     <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <input
@@ -858,7 +796,7 @@ export default function FinancePainel({
                         style={{ ...inputStyle, flex: 1, minWidth: 120, fontSize: 12, padding: '4px 8px' }}
                       />
                       <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                        <span style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>R$</span>
+                        <span style={{ fontSize: 13, color: 'var(--notion-text-secondary)' }}>R$</span>
                         <input
                           type="text" inputMode="numeric"
                           value={custoValorTemp} onChange={e => setCustoValorTemp(maskMoney(e.target.value))}
@@ -872,11 +810,11 @@ export default function FinancePainel({
                   ) : (
                     <div
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minHeight: 42,
+                        display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px',
                         transition: 'background 0.15s',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-body)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(128,128,128,0.03)'; const a = e.currentTarget.querySelector('.finance-row-actions') as HTMLElement; if (a) a.style.opacity = '1'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; const a = e.currentTarget.querySelector('.finance-row-actions') as HTMLElement; if (a) a.style.opacity = '0'; }}
                     >
                       {/* Status dot */}
                       <div style={{
@@ -888,7 +826,7 @@ export default function FinancePainel({
                       {/* Name */}
                       <span style={{
                         flex: 1, fontSize: 12.5, fontWeight: 600, minWidth: 0,
-                        color: c.status === 'cancelado' ? 'var(--color-text-secondary)' : 'var(--color-text-primary)',
+                        color: c.status === 'cancelado' ? 'var(--notion-text-secondary)' : 'var(--notion-text)',
                         textDecoration: c.status === 'cancelado' ? 'line-through' : 'none',
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
@@ -896,7 +834,7 @@ export default function FinancePainel({
                       </span>
 
                       {/* Value */}
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                         {fmt(c.valor_previsto)}
                       </span>
 
@@ -910,9 +848,9 @@ export default function FinancePainel({
                         {statusInfo.label}
                       </span>
 
-                      {/* Actions */}
+                      {/* Actions — visíveis no hover da linha */}
                       {!readOnly && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                        <div className="finance-row-actions" style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, opacity: 0, transition: 'opacity 0.15s' }}>
                           {c.status === 'a_pagar' && (
                             <button
                               onClick={() => handlePagarCusto(c.id)} title="Marcar como pago"
@@ -920,7 +858,7 @@ export default function FinancePainel({
                                 height: 26, padding: '0 8px', borderRadius: 6,
                                 background: 'rgba(22,163,74,0.1)', border: 'none', cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', gap: 4,
-                                fontSize: 12, fontWeight: 700, color: 'var(--color-success)',
+                                fontSize: 12, fontWeight: 700, color: 'var(--notion-green)',
                                 transition: 'background 0.15s',
                               }}
                               onMouseEnter={e => e.currentTarget.style.background = 'rgba(22,163,74,0.2)'}
@@ -933,14 +871,13 @@ export default function FinancePainel({
                             <button
                               onClick={() => handleDesfazerPagoCusto(c.id)} title="Desfazer pagamento"
                               style={{
-                                height: 26, padding: '0 8px', borderRadius: 6,
-                                background: 'rgba(245,158,11,0.1)', border: 'none', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', gap: 4,
-                                fontSize: 12, fontWeight: 700, color: 'var(--color-warning)',
-                                transition: 'background 0.15s',
+                                width: 28, height: 28, borderRadius: 6,
+                                background: 'transparent', border: 'none', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'var(--notion-orange)', transition: 'background 0.15s',
                               }}
-                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
-                              onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
+                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
+                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
                               <IconUndo />
                             </button>
@@ -948,27 +885,26 @@ export default function FinancePainel({
                           <button
                             onClick={() => iniciarEdicaoCusto(c)} title="Editar custo"
                             style={{
-                              width: 26, height: 26, borderRadius: 6,
-                              background: 'rgba(59,130,246,0.1)', border: 'none', cursor: 'pointer',
+                              width: 28, height: 28, borderRadius: 6,
+                              background: 'transparent', border: 'none', cursor: 'pointer',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: 'var(--color-info)', transition: 'background 0.15s',
+                              color: 'var(--notion-blue)', transition: 'background 0.15s',
                             }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.2)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                           >
                             <IconEdit />
                           </button>
                           <button
                             onClick={() => handleRemoverCusto(c.id)} title="Remover custo"
                             style={{
-                              width: 22, height: 22, borderRadius: 5,
+                              width: 28, height: 28, borderRadius: 6,
                               background: 'transparent', border: 'none', cursor: 'pointer',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: 'var(--color-text-secondary)', opacity: 0.2,
-                              transition: 'opacity 0.15s, color 0.15s',
+                              color: 'var(--notion-text-secondary)', transition: 'background 0.15s, color 0.15s',
                             }}
-                            onMouseEnter={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.color = 'var(--color-danger)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.opacity = '0.2'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                           >
                             <IconTrash />
                           </button>
@@ -981,18 +917,27 @@ export default function FinancePainel({
             })
           )}
 
-          {/* Total custos footer */}
+          {/* Footer */}
           {charges.length > 0 && (
             <div style={{
-              display: 'flex', alignItems: 'center', padding: '8px 12px',
-              borderTop: '1px solid var(--border-color)', background: 'var(--bg-body)',
+              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px',
+              borderTop: '1px solid var(--notion-border)',
             }}>
-              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flex: 1 }}>
-                Total Custos
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Total
               </span>
-              <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-primary)' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--notion-text)' }}>
                 {fmt(totalCustos)}
               </span>
+              <div style={{ flex: 1 }} />
+              {!ocultarHonorarios && (
+                <span style={{
+                  fontSize: 13, fontWeight: 700,
+                  color: honorario >= 0 ? 'var(--notion-green)' : 'var(--notion-orange)',
+                }}>
+                  Honorario: {fmt(honorario)}
+                </span>
+              )}
             </div>
           )}
         </div>

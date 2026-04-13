@@ -31,6 +31,8 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
+    BarChart,
+    Bar,
 } from 'recharts';
 import { getClientes, getVeiculos, getOrdens } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
@@ -54,11 +56,11 @@ function loadAlertsConfig(): AlertsConfig {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
-    aguardando_documentacao: { color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
-    vistoria: { color: 'var(--color-info)', bg: 'var(--color-info-bg)' },
-    delegacia: { color: 'var(--color-purple)', bg: 'var(--color-purple-bg)' },
-    doc_pronto: { color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
-    entregue: { color: 'var(--color-neutral)', bg: 'var(--color-neutral-bg)' },
+    aguardando_documentacao: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
+    vistoria: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
+    delegacia: { color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)' },
+    doc_pronto: { color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)' },
+    entregue: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.1)' },
 };
 
 export default function Dashboard() {
@@ -135,9 +137,9 @@ export default function Dashboard() {
         const d = new Date(dataAgendamento + 'T12:00:00');
         d.setHours(0, 0, 0, 0);
         const diffDays = Math.round((d.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays === 0) return { label: 'Hoje', color: 'var(--color-danger)', bg: 'var(--color-danger-bg)' };
-        if (diffDays === 1) return { label: 'Amanhã', color: 'var(--color-orange)', bg: 'var(--color-orange-bg)' };
-        return { label: `em ${diffDays}d`, color: 'var(--color-info)', bg: 'var(--color-info-bg)' };
+        if (diffDays === 0) return { label: 'Hoje', color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' };
+        if (diffDays === 1) return { label: 'Amanhã', color: 'var(--notion-orange)', bg: 'rgba(235,87,87,0.1)' };
+        return { label: `em ${diffDays}d`, color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' };
     }
 
     // Agenda do dia: todas as vistorias para hoje, qualquer status
@@ -191,7 +193,7 @@ export default function Dashboard() {
 
     // ── Pie Chart: OS por Status ─────────────────────────────────
     const PIE_COLORS: Record<string, string> = {
-        aguardando_documentacao: '#f59e0b',
+        aguardando_documentacao: 'var(--notion-blue)',
         vistoria: '#06b6d4',
         delegacia: '#6366f1',
         doc_pronto: '#22c55e',
@@ -223,6 +225,21 @@ export default function Dashboard() {
             if (month) month.value += o.valorServico || 0;
         }
         return months.map(({ label, value }) => ({ mes: label, receita: value }));
+    })();
+
+    // ── Bar Chart: OS por tipo de serviço (top 7) ────────────────
+    const barData = (() => {
+        const counts: Record<string, number> = {};
+        for (const o of ordens) {
+            if (o.status === 'entregue') continue; // só ativas
+            const label = serviceLabels[o.tipoServico]
+                ?? o.tipoServico.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+            counts[label] = (counts[label] || 0) + 1;
+        }
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 7)
+            .map(([name, value]) => ({ name, value }));
     })();
 
     // ── Alertas ──────────────────────────────────────────────────
@@ -269,35 +286,35 @@ export default function Dashboard() {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <Activity size={32} style={{ color: 'var(--color-primary)', marginBottom: 12, animation: 'pulse 1.5s infinite' }} />
-                    <p style={{ color: 'var(--color-text-secondary)' }}>Carregando dashboard...</p>
+                    <Activity size={32} style={{ color: 'var(--notion-blue)', marginBottom: 12, animation: 'pulse 1.5s infinite' }} />
+                    <p style={{ color: 'var(--notion-text-secondary)' }}>Carregando dashboard...</p>
                 </div>
             </div>
         );
     }
 
     const statCards = [
-        { key: 'clientes', icon: Users, value: clientes.length, label: 'Clientes', color: 'var(--color-info)', bg: 'var(--color-info-bg)', link: '/clientes' },
-        { key: 'veiculos', icon: Car, value: veiculos.length, label: 'Veículos', color: 'var(--color-purple)', bg: 'var(--color-purple-bg)', link: '/veiculos' },
-        { key: 'vistoria', icon: Calendar, value: emVistoria, label: 'Em Vistoria', color: 'var(--color-cyan)', bg: 'var(--color-cyan-bg)', link: '/calendario-vistorias' },
-        { key: 'delegacia', icon: MapPin, value: emDelegacia, label: 'Delegacia', color: 'var(--color-purple)', bg: 'var(--color-purple-bg)', link: '/ordens' },
-        { key: 'concluidos', icon: CheckCircle, value: concluidos, label: 'Concluídos', color: 'var(--color-success)', bg: 'var(--color-success-bg)', link: '/ordens' },
-        { key: 'docs', icon: AlertCircle, value: aguardandoDocs, label: 'Aguardando Docs', color: 'var(--color-danger)', bg: 'var(--color-danger-bg)', link: '/ordens' },
+        { key: 'clientes', icon: Users, value: clientes.length, label: 'Clientes', color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)', link: '/clientes' },
+        { key: 'veiculos', icon: Car, value: veiculos.length, label: 'Veículos', color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)', link: '/veiculos' },
+        { key: 'vistoria', icon: Calendar, value: emVistoria, label: 'Em Vistoria', color: 'var(--notion-green)', bg: 'rgba(6,182,212,0.1)', link: '/calendario-vistorias' },
+        { key: 'delegacia', icon: MapPin, value: emDelegacia, label: 'Delegacia', color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)', link: '/ordens' },
+        { key: 'concluidos', icon: CheckCircle, value: concluidos, label: 'Concluídos', color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)', link: '/ordens' },
+        { key: 'docs', icon: AlertCircle, value: aguardandoDocs, label: 'Aguardando Docs', color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)', link: '/ordens' },
     ];
 
     // Botões compactos do topo (ações rápidas visíveis sem scroll)
     const topQuickActions = [
-        { key: 'nova-os', label: 'Nova OS', icon: FileText, path: '/ordens', color: 'var(--color-warning)', bg: 'var(--color-warning-bg)' },
-        { key: 'novo-cliente', label: 'Novo Cliente', icon: Users, path: '/clientes/novo', color: 'var(--color-info)', bg: 'var(--color-info-bg)' },
-        { key: 'novo-veiculo', label: 'Novo Veículo', icon: Car, path: '/veiculos/novo', color: 'var(--color-purple)', bg: 'var(--color-purple-bg)' },
-        { key: 'ver-agenda', label: 'Ver Agenda', icon: Calendar, path: '/calendario-vistorias', color: 'var(--color-success)', bg: 'var(--color-success-bg)' },
+        { key: 'nova-os', label: 'Nova OS', icon: FileText, path: '/ordens', color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
+        { key: 'novo-cliente', label: 'Novo Cliente', icon: Users, path: '/clientes/novo', color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
+        { key: 'novo-veiculo', label: 'Novo Veículo', icon: Car, path: '/veiculos/novo', color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)' },
+        { key: 'ver-agenda', label: 'Ver Agenda', icon: Calendar, path: '/calendario-vistorias', color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)' },
     ];
 
     return (
         <div style={{ paddingBottom: 'var(--space-8)' }}>
             {/* Header */}
             <div style={{ marginBottom: 'var(--space-8)' }}>
-                <p style={{ margin: 0, color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
+                <p style={{ margin: 0, color: 'var(--notion-text-secondary)', fontSize: '0.95rem' }}>
                     {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' })}
                 </p>
             </div>
@@ -340,7 +357,7 @@ export default function Dashboard() {
                             <span style={{
                                 fontSize: '11px',
                                 fontWeight: 600,
-                                color: 'var(--color-text-primary)',
+                                color: 'var(--notion-text)',
                                 whiteSpace: 'nowrap',
                                 lineHeight: 1,
                             }}>
@@ -363,8 +380,8 @@ export default function Dashboard() {
                     border: '1px solid rgba(239,68,68,0.2)',
                     borderRadius: 12,
                 }}>
-                    <AlertTriangle size={18} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
-                    <span style={{ flex: 1, fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-danger)' }}>
+                    <AlertTriangle size={18} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} />
+                    <span style={{ flex: 1, fontSize: '0.875rem', fontWeight: 600, color: 'var(--notion-orange)' }}>
                         {ordensCriticas.length} OS com prioridade crítica ou pendência registrada
                     </span>
                     <button
@@ -375,9 +392,9 @@ export default function Dashboard() {
                             padding: '5px 12px',
                             fontSize: '0.78rem',
                             fontWeight: 700,
-                            color: 'var(--color-danger)',
-                            background: 'var(--color-danger-bg)',
-                            border: '1px solid rgba(239,68,68,0.3)',
+                            color: 'var(--notion-orange)',
+                            background: 'rgba(221,91,0,0.08)',
+                            border: '1px solid rgba(221,91,0,0.2)',
                             borderRadius: 8,
                             cursor: 'pointer',
                             transition: 'background 0.15s',
@@ -396,7 +413,7 @@ export default function Dashboard() {
                             padding: 4,
                             display: 'flex',
                             alignItems: 'center',
-                            color: 'var(--color-danger)',
+                            color: 'var(--notion-orange)',
                             opacity: 0.7,
                             flexShrink: 0,
                         }}
@@ -426,7 +443,7 @@ export default function Dashboard() {
                             key: 'pendente',
                             label: 'Pendente a receber',
                             value: pendenteMes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                            color: '#f59e0b',
+                            color: 'var(--notion-blue)',
                             bg: 'rgba(245,158,11,0.1)',
                         },
                     ] : []),
@@ -446,8 +463,8 @@ export default function Dashboard() {
                     },
                 ].map((kpi) => (
                     <div key={kpi.key} style={{
-                        background: 'var(--bg-card)',
-                        border: `1px solid var(--border-color)`,
+                        background: 'var(--notion-surface)',
+                        border: `1px solid var(--notion-border)`,
                         borderLeft: `4px solid ${kpi.color}`,
                         borderRadius: 12,
                         padding: '18px 16px',
@@ -456,7 +473,7 @@ export default function Dashboard() {
                         gap: 6,
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--notion-text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 {kpi.label}
                             </span>
                             <TrendingUp size={14} style={{ color: kpi.color, opacity: 0.7 }} />
@@ -535,7 +552,7 @@ export default function Dashboard() {
                             }}>
                                 <s.icon size={24} style={{ color: s.color, fontWeight: 700 }} />
                             </div>
-                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                 {s.label}
                             </span>
                         </div>
@@ -549,35 +566,36 @@ export default function Dashboard() {
             {/* ── Gráficos ── */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: 24,
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 20,
                 marginBottom: 'var(--space-8)',
             }}>
                 {/* Pie Chart: OS por Status */}
-                <div className="card" style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
+                <div style={{
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
                     borderRadius: 16,
                     padding: '20px 16px',
+                    boxShadow: 'var(--shadow-card)',
                 }}>
-                    <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                         OS por Status
                     </h3>
                     {pieData.length === 0 ? (
-                        <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-tertiary)', fontSize: '0.85rem' }}>
+                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-text-secondary)', fontSize: '0.85rem' }}>
                             Nenhuma OS cadastrada
                         </div>
                     ) : (
-                        <ResponsiveContainer width="100%" height={220}>
+                        <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={50}
-                                    outerRadius={80}
+                                    innerRadius={46}
+                                    outerRadius={74}
                                     dataKey="value"
-                                    paddingAngle={2}
+                                    paddingAngle={3}
                                 >
                                     {pieData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -585,18 +603,18 @@ export default function Dashboard() {
                                 </Pie>
                                 <RechartsTooltip
                                     contentStyle={{
-                                        background: 'var(--bg-card)',
-                                        border: '1px solid var(--border-color)',
+                                        background: 'var(--notion-surface)',
+                                        border: '1px solid var(--notion-border)',
                                         borderRadius: 8,
-                                        color: 'var(--color-text-primary)',
+                                        color: 'var(--notion-text)',
                                         fontSize: '0.8rem',
                                     }}
                                 />
                                 <Legend
-                                    iconSize={10}
+                                    iconSize={9}
                                     iconType="circle"
                                     formatter={(value) => (
-                                        <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.75rem' }}>{value}</span>
+                                        <span style={{ color: 'var(--notion-text-secondary)', fontSize: '0.72rem' }}>{value}</span>
                                     )}
                                 />
                             </PieChart>
@@ -604,63 +622,119 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Area Chart: Receita por Período — visível só para admin/gerente */}
-                {isAdmin && <div className="card" style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
+                {/* Bar Chart: OS Ativas por Serviço */}
+                <div style={{
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
                     borderRadius: 16,
                     padding: '20px 16px',
+                    boxShadow: 'var(--shadow-card)',
                 }}>
-                    <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                        Receita por Período
+                    <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
+                        OS Ativas por Serviço
                     </h3>
-                    <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={areaData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="receitaGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-700)" />
-                            <XAxis
-                                dataKey="mes"
-                                tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }}
-                                axisLine={false}
-                                tickLine={false}
-                            />
-                            <YAxis
-                                tick={{ fill: 'var(--color-text-secondary)', fontSize: 11 }}
-                                axisLine={false}
-                                tickLine={false}
-                                tickFormatter={(v) => v === 0 ? '0' : `R$${(v / 1000).toFixed(0)}k`}
-                            />
-                            <RechartsTooltip
-                                contentStyle={{
-                                    background: 'var(--bg-card)',
-                                    border: '1px solid var(--border-color)',
-                                    borderRadius: 8,
-                                    color: 'var(--color-text-primary)',
-                                    fontSize: '0.8rem',
-                                }}
-                                formatter={(value) => [typeof value === 'number' ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : value, 'Receita']}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="receita"
-                                stroke="#22c55e"
-                                strokeWidth={2}
-                                fill="url(#receitaGradient)"
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>}
+                    {barData.length === 0 ? (
+                        <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--notion-text-secondary)', fontSize: '0.85rem' }}>
+                            Nenhuma OS ativa
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <BarChart data={barData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }} barSize={18}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--notion-border)" vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    tick={{ fill: 'var(--notion-text-secondary)', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    interval={0}
+                                    tickFormatter={(v: string) => v.length > 10 ? v.slice(0, 10) + '…' : v}
+                                />
+                                <YAxis
+                                    allowDecimals={false}
+                                    tick={{ fill: 'var(--notion-text-secondary)', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <RechartsTooltip
+                                    contentStyle={{
+                                        background: 'var(--notion-surface)',
+                                        border: '1px solid var(--notion-border)',
+                                        borderRadius: 8,
+                                        color: 'var(--notion-text)',
+                                        fontSize: '0.8rem',
+                                    }}
+                                    formatter={(value) => [value, 'OS ativas']}
+                                />
+                                <Bar
+                                    dataKey="value"
+                                    fill="var(--notion-blue)"
+                                    radius={[4, 4, 0, 0]}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
+
+                {/* Area Chart: Receita por Período — visível só para admin/gerente */}
+                {isAdmin && (
+                    <div style={{
+                        background: 'var(--notion-surface)',
+                        border: '1px solid var(--notion-border)',
+                        borderRadius: 16,
+                        padding: '20px 16px',
+                        boxShadow: 'var(--shadow-card)',
+                    }}>
+                        <h3 style={{ margin: '0 0 16px', fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
+                            Receita por Período
+                        </h3>
+                        <ResponsiveContainer width="100%" height={200}>
+                            <AreaChart data={areaData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="receitaGradient" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="var(--notion-border)" />
+                                <XAxis
+                                    dataKey="mes"
+                                    tick={{ fill: 'var(--notion-text-secondary)', fontSize: 11 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <YAxis
+                                    tick={{ fill: 'var(--notion-text-secondary)', fontSize: 11 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tickFormatter={(v) => v === 0 ? '0' : `R$${(v / 1000).toFixed(0)}k`}
+                                />
+                                <RechartsTooltip
+                                    contentStyle={{
+                                        background: 'var(--notion-surface)',
+                                        border: '1px solid var(--notion-border)',
+                                        borderRadius: 8,
+                                        color: 'var(--notion-text)',
+                                        fontSize: '0.8rem',
+                                    }}
+                                    formatter={(value) => [typeof value === 'number' ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : value, 'Receita']}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="receita"
+                                    stroke="#22c55e"
+                                    strokeWidth={2}
+                                    fill="url(#receitaGradient)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
             </div>
 
             {/* Main Content Grid */}
             <div className="dashboard-grid" style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 340px',
+                gridTemplateColumns: 'minmax(0, 1fr) 320px',
                 gap: '24px',
                 alignItems: 'start',
             }}>
@@ -682,13 +756,13 @@ export default function Dashboard() {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                             }}>
-                                <TrendingUp size={20} style={{ color: 'var(--color-primary)' }} />
+                                <TrendingUp size={20} style={{ color: 'var(--notion-blue)' }} />
                             </div>
                             <div>
-                                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                                <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                                     Processos Recentes
                                 </h3>
-                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
                                     {criticalFilterActive
                                         ? `${displayedOrdens.length} OS crítica${displayedOrdens.length !== 1 ? 's' : ''}`
                                         : `${displayedOrdens.length} ordem${displayedOrdens.length !== 1 ? 's' : ''} de serviço`
@@ -699,7 +773,7 @@ export default function Dashboard() {
                         <Link
                             to="/ordens"
                             style={{
-                                color: 'var(--color-primary)',
+                                color: 'var(--notion-blue)',
                                 fontSize: '0.85rem',
                                 fontWeight: 700,
                                 textDecoration: 'none',
@@ -723,20 +797,20 @@ export default function Dashboard() {
 
                     {displayedOrdens.length === 0 ? (
                         <div style={{
-                            background: 'var(--bg-card)',
-                            border: '2px dashed var(--border-color)',
+                            background: 'var(--notion-surface)',
+                            border: '2px dashed var(--notion-border)',
                             borderRadius: 16,
                             padding: '60px 20px',
                             textAlign: 'center',
                         }}>
                             <FileText
                                 size={56}
-                                style={{ color: 'var(--color-text-secondary)', opacity: 0.4, marginBottom: 16, display: 'block', margin: '0 auto 16px' }}
+                                style={{ color: 'var(--notion-text-secondary)', opacity: 0.4, marginBottom: 16, display: 'block', margin: '0 auto 16px' }}
                             />
-                            <h3 style={{ margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: '1.1rem', fontWeight: 700 }}>
+                            <h3 style={{ margin: '0 0 8px', color: 'var(--notion-text)', fontSize: '1.1rem', fontWeight: 700 }}>
                                 Nenhuma OS cadastrada ainda
                             </h3>
-                            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: '0 0 20px' }}>
+                            <p style={{ color: 'var(--notion-text-secondary)', fontSize: '0.9rem', margin: '0 0 20px' }}>
                                 Crie a primeira OS para começar
                             </p>
                             <Link
@@ -746,8 +820,8 @@ export default function Dashboard() {
                                     alignItems: 'center',
                                     gap: 8,
                                     padding: '10px 20px',
-                                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
-                                    color: 'var(--color-text-inverse)',
+                                    background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
+                                    color: 'var(--notion-bg)',
                                     borderRadius: 10,
                                     textDecoration: 'none',
                                     fontWeight: 700,
@@ -762,7 +836,7 @@ export default function Dashboard() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                             {displayedOrdens.map((os) => {
                                 const cliente = clientes.find((c) => c.id === os.clienteId);
-                                const sc = STATUS_CONFIG[os.status] || { color: 'var(--color-neutral)', bg: 'var(--color-neutral-bg)' };
+                                const sc = STATUS_CONFIG[os.status] || { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.1)' };
                                 const isHovered = hoveredOS === os.id;
 
                                 return (
@@ -772,8 +846,8 @@ export default function Dashboard() {
                                         onMouseEnter={() => setHoveredOS(os.id)}
                                         onMouseLeave={() => setHoveredOS(null)}
                                         style={{
-                                            background: 'var(--bg-card)',
-                                            border: `2px solid ${isHovered ? sc.color : 'var(--border-color)'}`,
+                                            background: 'var(--notion-surface)',
+                                            border: `2px solid ${isHovered ? sc.color : 'var(--notion-border)'}`,
                                             borderLeft: `5px solid ${sc.color}`,
                                             borderRadius: 14,
                                             padding: '18px 16px',
@@ -822,7 +896,7 @@ export default function Dashboard() {
                                             <div style={{
                                                 fontSize: '1rem',
                                                 fontWeight: 700,
-                                                color: 'var(--color-text-primary)',
+                                                color: 'var(--notion-text)',
                                                 marginBottom: 6,
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
@@ -832,7 +906,7 @@ export default function Dashboard() {
                                             </div>
                                             <div style={{
                                                 fontSize: '0.8rem',
-                                                color: 'var(--color-text-secondary)',
+                                                color: 'var(--notion-text-secondary)',
                                                 marginBottom: 12,
                                             }}>
                                                 {getServicoLabel(serviceLabels, os.tipoServico)}
@@ -863,7 +937,7 @@ export default function Dashboard() {
                                             {/* Date */}
                                             <div style={{
                                                 fontSize: '0.75rem',
-                                                color: 'var(--color-text-tertiary)',
+                                                color: 'var(--notion-text-secondary)',
                                                 fontWeight: 500,
                                             }}>
                                                 {new Date(os.dataAbertura).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
@@ -881,14 +955,14 @@ export default function Dashboard() {
                     {/* Proximas Vistorias — exibe apenas se houver agendamentos nos próximos 7 dias */}
                     {proximasVistorias.length > 0 && (
                         <div style={{
-                            background: 'var(--bg-card)',
+                            background: 'var(--notion-surface)',
                             borderRadius: 16,
-                            border: '1px solid var(--border-color)',
+                            border: '1px solid var(--notion-border)',
                             overflow: 'hidden',
                         }}>
                             <div style={{
                                 padding: '18px 20px',
-                                borderBottom: '1px solid var(--border-color)',
+                                borderBottom: '1px solid var(--notion-border)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 10,
@@ -897,17 +971,17 @@ export default function Dashboard() {
                                     width: 36,
                                     height: 36,
                                     borderRadius: 10,
-                                    background: 'var(--color-cyan-bg)',
+                                    background: 'rgba(6,182,212,0.1)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                 }}>
-                                    <Calendar size={18} style={{ color: 'var(--color-cyan)' }} />
+                                    <Calendar size={18} style={{ color: 'var(--notion-green)' }} />
                                 </div>
-                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', flex: 1 }}>
+                                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)', flex: 1 }}>
                                     Próximas Vistorias
                                 </h3>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--notion-text-secondary)', fontWeight: 600 }}>
                                     {proximasVistorias.length}
                                 </span>
                             </div>
@@ -930,8 +1004,8 @@ export default function Dashboard() {
                                                 gap: 10,
                                                 padding: '10px 12px',
                                                 borderRadius: 10,
-                                                background: 'var(--bg-secondary)',
-                                                border: '1px solid var(--border-color)',
+                                                background: 'var(--notion-bg-alt)',
+                                                border: '1px solid var(--notion-border)',
                                                 cursor: 'pointer',
                                                 transition: 'border-color 0.15s',
                                             }}
@@ -939,14 +1013,14 @@ export default function Dashboard() {
                                                 e.currentTarget.style.borderColor = urg.color;
                                             }}
                                             onMouseLeave={e => {
-                                                e.currentTarget.style.borderColor = 'var(--border-color)';
+                                                e.currentTarget.style.borderColor = 'var(--notion-border)';
                                             }}
                                         >
                                             <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{
                                                     fontSize: '0.82rem',
                                                     fontWeight: 700,
-                                                    color: 'var(--color-text-primary)',
+                                                    color: 'var(--notion-text)',
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis',
@@ -955,7 +1029,7 @@ export default function Dashboard() {
                                                 </div>
                                                 <div style={{
                                                     fontSize: '0.72rem',
-                                                    color: 'var(--color-text-secondary)',
+                                                    color: 'var(--notion-text-secondary)',
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     gap: 4,
@@ -994,9 +1068,9 @@ export default function Dashboard() {
                                         borderRadius: 10,
                                         fontSize: '0.8rem',
                                         fontWeight: 700,
-                                        color: 'var(--color-cyan)',
+                                        color: 'var(--notion-green)',
                                         textDecoration: 'none',
-                                        background: 'var(--color-cyan-bg)',
+                                        background: 'rgba(6,182,212,0.1)',
                                         border: '1px solid rgba(6,182,212,0.2)',
                                         transition: 'background 0.15s',
                                     }}
@@ -1015,14 +1089,14 @@ export default function Dashboard() {
 
                     {/* Agenda do Dia */}
                     <div style={{
-                        background: 'var(--bg-card)',
+                        background: 'var(--notion-surface)',
                         borderRadius: 16,
-                        border: '1px solid var(--border-color)',
+                        border: '1px solid var(--notion-border)',
                         overflow: 'hidden',
                     }}>
                         <div style={{
                             padding: '18px 20px',
-                            borderBottom: '1px solid var(--border-color)',
+                            borderBottom: '1px solid var(--notion-border)',
                             display: 'flex',
                             alignItems: 'center',
                             gap: 10,
@@ -1036,9 +1110,9 @@ export default function Dashboard() {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                             }}>
-                                <Calendar size={18} style={{ color: 'var(--color-primary)' }} />
+                                <Calendar size={18} style={{ color: 'var(--notion-blue)' }} />
                             </div>
-                            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)', flex: 1 }}>
+                            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)', flex: 1 }}>
                                 Agenda do Dia
                             </h3>
                             {agendaHoje.length > 0 && (
@@ -1046,7 +1120,7 @@ export default function Dashboard() {
                                     fontSize: '0.72rem', fontWeight: 700,
                                     padding: '2px 9px', borderRadius: 20,
                                     background: 'rgba(245,158,11,0.12)',
-                                    color: 'var(--color-primary)',
+                                    color: 'var(--notion-blue)',
                                     border: '1px solid rgba(245,158,11,0.25)',
                                 }}>
                                     {agendaHoje.length}
@@ -1059,8 +1133,8 @@ export default function Dashboard() {
                                 padding: '32px 20px',
                                 textAlign: 'center',
                             }}>
-                                <Calendar size={28} style={{ color: 'var(--color-text-tertiary)', opacity: 0.4, display: 'block', margin: '0 auto 10px' }} />
-                                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-text-tertiary)', fontWeight: 500 }}>
+                                <Calendar size={28} style={{ color: 'var(--notion-text-secondary)', opacity: 0.4, display: 'block', margin: '0 auto 10px' }} />
+                                <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--notion-text-secondary)', fontWeight: 500 }}>
                                     Nenhuma vistoria hoje
                                 </p>
                             </div>
@@ -1071,13 +1145,13 @@ export default function Dashboard() {
                                     const veiculo = veiculos.find((v) => v.id === os.veiculoId);
                                     const vInfo = os.vistoria!;
                                     const statusVistoria: Record<string, { color: string; label: string }> = {
-                                        agendar: { color: 'var(--color-neutral)', label: 'A Agendar' },
-                                        agendada: { color: 'var(--color-info)', label: 'Agendada' },
-                                        reprovada: { color: 'var(--color-danger)', label: 'Reprovada' },
-                                        aprovada_apontamento: { color: 'var(--color-warning)', label: 'Aprovada c/ Apt.' },
-                                        aprovada: { color: 'var(--color-success)', label: 'Aprovada' },
+                                        agendar: { color: 'var(--notion-text-secondary)', label: 'A Agendar' },
+                                        agendada: { color: 'var(--notion-blue)', label: 'Agendada' },
+                                        reprovada: { color: 'var(--notion-orange)', label: 'Reprovada' },
+                                        aprovada_apontamento: { color: 'var(--notion-orange)', label: 'Aprovada c/ Apt.' },
+                                        aprovada: { color: 'var(--notion-green)', label: 'Aprovada' },
                                     };
-                                    const sv = statusVistoria[vInfo.status] || { color: 'var(--color-neutral)', label: vInfo.status };
+                                    const sv = statusVistoria[vInfo.status] || { color: 'var(--notion-text-secondary)', label: vInfo.status };
                                     return (
                                         <div
                                             key={os.id}
@@ -1087,13 +1161,13 @@ export default function Dashboard() {
                                                 gap: 10,
                                                 padding: '10px 12px',
                                                 borderRadius: 10,
-                                                background: 'var(--bg-body)',
-                                                border: '1px solid var(--border-color)',
+                                                background: 'var(--notion-bg)',
+                                                border: '1px solid var(--notion-border)',
                                                 cursor: 'pointer',
                                                 transition: 'border-color 0.15s',
                                             }}
-                                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; }}
+                                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--notion-blue)'; }}
+                                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--notion-border)'; }}
                                         >
                                             {/* Hora */}
                                             <div style={{
@@ -1103,11 +1177,11 @@ export default function Dashboard() {
                                                 flexDirection: 'column',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                borderRight: '1px solid var(--border-color)',
+                                                borderRight: '1px solid var(--notion-border)',
                                                 paddingRight: 10,
                                                 gap: 2,
                                             }}>
-                                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-primary)', lineHeight: 1 }}>
+                                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--notion-blue)', lineHeight: 1 }}>
                                                     {vInfo.horaAgendamento || '--:--'}
                                                 </span>
                                             </div>
@@ -1115,14 +1189,14 @@ export default function Dashboard() {
                                             <div style={{ flex: 1, minWidth: 0 }}>
                                                 <div style={{
                                                     fontSize: '0.82rem', fontWeight: 700,
-                                                    color: 'var(--color-text-primary)',
+                                                    color: 'var(--notion-text)',
                                                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                                 }}>
                                                     {veiculo?.placa ?? '—'} · {cliente?.nome ?? '—'}
                                                 </div>
                                                 {vInfo.local && (
                                                     <div style={{
-                                                        fontSize: '0.72rem', color: 'var(--color-text-secondary)',
+                                                        fontSize: '0.72rem', color: 'var(--notion-text-secondary)',
                                                         display: 'flex', alignItems: 'center', gap: 3, marginTop: 2,
                                                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                                     }}>
@@ -1157,7 +1231,7 @@ export default function Dashboard() {
                                         borderRadius: 10,
                                         fontSize: '0.8rem',
                                         fontWeight: 700,
-                                        color: 'var(--color-primary)',
+                                        color: 'var(--notion-blue)',
                                         textDecoration: 'none',
                                         background: 'rgba(245,158,11,0.06)',
                                         border: '1px solid rgba(245,158,11,0.2)',
@@ -1177,15 +1251,15 @@ export default function Dashboard() {
             {/* ── Painel de Alertas ── */}
             <div style={{
                 marginTop: 'var(--space-8)',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)',
+                border: '1px solid var(--notion-border)',
                 borderRadius: 16,
                 overflow: 'visible',
             }}>
                 {/* Header */}
                 <div style={{
                     padding: '16px 20px',
-                    borderBottom: '1px solid var(--border-color)',
+                    borderBottom: '1px solid var(--notion-border)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
@@ -1197,7 +1271,7 @@ export default function Dashboard() {
                     }}>
                         <Bell size={18} style={{ color: '#ef4444' }} />
                     </div>
-                    <h3 style={{ margin: 0, flex: 1, fontSize: '1rem', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    <h3 style={{ margin: 0, flex: 1, fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                         Alertas
                     </h3>
                     {/* Gear menu */}
@@ -1206,13 +1280,13 @@ export default function Dashboard() {
                             onClick={() => setAlertsMenuOpen((p) => !p)}
                             style={{
                                 background: 'transparent',
-                                border: '1px solid var(--border-color)',
+                                border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 padding: '6px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                color: 'var(--color-text-secondary)',
+                                color: 'var(--notion-text-secondary)',
                             }}
                             title="Configurar alertas"
                         >
@@ -1223,8 +1297,8 @@ export default function Dashboard() {
                                 position: 'absolute',
                                 right: 0,
                                 top: '110%',
-                                background: 'var(--bg-card)',
-                                border: '1px solid var(--border-color)',
+                                background: 'var(--notion-surface)',
+                                border: '1px solid var(--notion-border)',
                                 borderRadius: 10,
                                 padding: '8px 0',
                                 zIndex: 50,
@@ -1249,17 +1323,17 @@ export default function Dashboard() {
                                             border: 'none',
                                             cursor: 'pointer',
                                             textAlign: 'left',
-                                            color: alertsConfig[item.key] ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                                            color: alertsConfig[item.key] ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
                                             fontSize: '0.82rem',
                                             fontWeight: alertsConfig[item.key] ? 600 : 400,
                                             transition: 'background 0.1s',
                                         }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-secondary)'; }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-bg-alt)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                                     >
                                         <div style={{
                                             width: 16, height: 16, borderRadius: 4,
-                                            border: `2px solid ${alertsConfig[item.key] ? '#22c55e' : 'var(--color-gray-600)'}`,
+                                            border: `2px solid ${alertsConfig[item.key] ? '#22c55e' : 'var(--notion-text-secondary)'}`,
                                             background: alertsConfig[item.key] ? '#22c55e' : 'transparent',
                                             flexShrink: 0,
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1291,10 +1365,10 @@ export default function Dashboard() {
                             borderLeftWidth: 3,
                         }}>
                             <Clock size={16} style={{ color: '#ef4444', flexShrink: 0 }} />
-                            <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                            <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--notion-text)', fontWeight: 500 }}>
                                 OS #{os.numero} — prazo de reagendamento de vistoria vencido
                                 {os.vistoria?.prazoReagendamento && (
-                                    <span style={{ color: 'var(--color-text-secondary)', marginLeft: 6, fontSize: '0.78rem' }}>
+                                    <span style={{ color: 'var(--notion-text-secondary)', marginLeft: 6, fontSize: '0.78rem' }}>
                                         (venceu em {new Date(os.vistoria.prazoReagendamento).toLocaleDateString('pt-BR')})
                                     </span>
                                 )}
@@ -1327,7 +1401,7 @@ export default function Dashboard() {
                             borderLeftStyle: 'solid',
                         }}>
                             <AlertTriangle size={16} style={{ color: '#ef4444', flexShrink: 0 }} />
-                            <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                            <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--notion-text)', fontWeight: 500 }}>
                                 OS #{os.numero} — crítica com pendência: <span style={{ color: '#ef4444' }}>{os.pendencia}</span>
                             </div>
                             <Link
@@ -1358,13 +1432,13 @@ export default function Dashboard() {
                             borderLeftStyle: 'solid',
                         }}>
                             <Calendar size={16} style={{ color: '#06b6d4', flexShrink: 0 }} />
-                            <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                            <div style={{ flex: 1, fontSize: '0.85rem', color: 'var(--notion-text)', fontWeight: 500 }}>
                                 OS #{os.numero} — vistoria agendada para{' '}
                                 {os.vistoria?.dataAgendamento
                                     ? new Date(os.vistoria.dataAgendamento + 'T12:00:00').toLocaleDateString('pt-BR')
                                     : '—'}
                                 {os.vistoria?.local && (
-                                    <span style={{ color: 'var(--color-text-secondary)', marginLeft: 6, fontSize: '0.78rem' }}>
+                                    <span style={{ color: 'var(--notion-text-secondary)', marginLeft: 6, fontSize: '0.78rem' }}>
                                         em {os.vistoria.local}
                                     </span>
                                 )}
@@ -1394,7 +1468,7 @@ export default function Dashboard() {
                         <div style={{
                             padding: '28px 20px',
                             textAlign: 'center',
-                            color: 'var(--color-text-tertiary)',
+                            color: 'var(--notion-text-secondary)',
                             fontSize: '0.9rem',
                         }}>
                             Nenhum alerta no momento 🎉

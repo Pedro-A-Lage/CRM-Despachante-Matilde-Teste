@@ -401,6 +401,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
     }
 
+    // Ações que devem ser retransmitidas ao CRM via transmitirParaCRM()
+    const RETRANSMITIR_ACTIONS = [
+        'CAPTURED_CONFIRMAR_DADOS', 'CAPTURED_DETRAN_PDF', 'CAPTURED_LAUDO_PDF',
+        'UPDATE_PLACA', 'CRLV_CONSULTA_RESULTADO', 'CAPTURED_VISTORIA_ECV'
+    ];
+    if (RETRANSMITIR_ACTIONS.includes(message.action)) {
+        (async () => {
+            await garantirCRMTab();
+            if (crmTabId) {
+                transmitirParaCRM(message, sendResponse);
+            } else {
+                console.error('[Matilde][Background] CRM não aberto para ação:', message.action);
+                sendResponse({ success: false, error: 'CRM não aberto' });
+            }
+        })();
+        return true; // Mantém canal aberto para sendResponse assíncrono
+    }
+
     // Ação não reconhecida — logar para debug
     console.warn('[Matilde][Background] Ação não tratada:', message.action);
     return false;

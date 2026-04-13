@@ -21,6 +21,8 @@ import {
     Settings,
     Building2,
     CreditCard,
+    LayoutDashboard,
+    Search,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { temPermissao } from '../lib/permissions';
@@ -46,6 +48,7 @@ const navGroups: NavGroup[] = [
         title: 'Operações',
         defaultOpen: true,
         items: [
+            { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
             { to: '/ordens', icon: FileText, label: 'Ordens de Serviço' },
             { to: '/servicos', icon: ExternalLink, label: 'Serviços Detran', permissao: 'servicos_detran' },
             { to: '/protocolos', icon: ClipboardList, label: 'Protocolo Diário', permissao: 'protocolo_diario' },
@@ -156,7 +159,7 @@ function CollapsibleGroup({ group, onLinkClick }: CollapsibleGroupProps) {
                     <NavLink
                         key={item.to}
                         to={item.to}
-                        end={item.to === '/'}
+                        end
                         title={item.label}
                         className={({ isActive }) =>
                             `sidebar-link sidebar-link--indented ${isActive ? 'active' : ''}`
@@ -250,6 +253,7 @@ export default function Layout({ children }: LayoutProps) {
     // Page title
     const getPageTitle = () => {
         const path = location.pathname;
+        if (path === '/') return 'Dashboard';
         if (path.startsWith('/clientes')) return 'Clientes';
         if (path.startsWith('/veiculos')) return 'Veículos';
         if (path.startsWith('/ordens')) return 'Ordens de Serviço';
@@ -257,9 +261,13 @@ export default function Layout({ children }: LayoutProps) {
         if (path.startsWith('/protocolos')) return 'Protocolo Diário';
         if (path.startsWith('/emails')) return 'Caixa de E-mails';
         if (path.startsWith('/financeiro')) return 'Financeiro';
+        if (path.startsWith('/controle-pagamentos')) return 'Controle de Pagamentos';
+        if (path.startsWith('/painel-empresas')) return 'Empresas Parceiras';
+        if (path.startsWith('/controle-placas')) return 'Controle de Placas';
         if (path.startsWith('/configuracoes')) return 'Configurações de Serviços';
         if (path.startsWith('/usuarios')) return 'Usuários';
         if (path.startsWith('/backup')) return 'Backup / Restaurar';
+        if (path.startsWith('/servicos')) return 'Serviços Detran';
         return 'Despachante Matilde';
     };
 
@@ -280,9 +288,44 @@ export default function Layout({ children }: LayoutProps) {
             <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-logo">
                     <img src="/logo.png" alt="Despachante Matilde" />
+                    <span className="sidebar-logo-name">Despachante Matilde</span>
                 </div>
 
                 <nav className="sidebar-nav">
+                    {/* Sidebar search */}
+                    <div style={{ padding: '0 8px 8px', position: 'relative' }}>
+                        <Search size={13} style={{
+                            position: 'absolute',
+                            left: 20,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--notion-text-muted)',
+                            pointerEvents: 'none',
+                        }} />
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            placeholder="Buscar... (/)"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '6px 10px 6px 32px',
+                                background: 'rgba(0,0,0,0.04)',
+                                border: '1px solid var(--notion-border)',
+                                borderRadius: 6,
+                                fontSize: '0.78rem',
+                                color: 'var(--notion-text)',
+                                fontFamily: 'inherit',
+                                outline: 'none',
+                                boxSizing: 'border-box',
+                                transition: 'border-color 150ms',
+                            }}
+                            onFocus={e => { e.target.style.borderColor = 'var(--notion-blue-focus)'; }}
+                            onBlur={e => { e.target.style.borderColor = 'var(--notion-border)'; }}
+                        />
+                    </div>
+
                     {/* Collapsible groups */}
                     {filteredGroups.map((group) => (
                         <CollapsibleGroup

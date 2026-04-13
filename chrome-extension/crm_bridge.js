@@ -5,6 +5,9 @@
 
 console.log('[Matilde][Bridge] Ponte entre Extensão e CRM carregada.');
 
+// BUG-NEW-04 FIX: Seta flag global para evitar que crm-content.js duplique o listener
+window.__matildeBridgeLoaded = true;
+
 // BUG-13 FIX: If the extension is invalidated (reloaded/updated while this page is open),
 // chrome.runtime.id becomes undefined and any chrome.* call will throw. Guard against
 // adding a dead listener and dispatch a page event so the React app can warn the user.
@@ -139,7 +142,7 @@ window.addEventListener('MATILDE_SEND_CONTEXT', (event) => {
     const osIdValido = typeof osId === 'string' && osId.trim().length > 0 && osId.trim().length <= 100;
     // placa: Brazilian plate — old format ABC1234 or Mercosul ABC1D23
     const placaValida = typeof placa === 'string' &&
-        /^[A-Za-z]{3}[\dA-Za-z][\dA-Za-z]{2}\d$|^[A-Za-z]{3}\d{4}$/.test(placa.trim());
+        /^[A-Za-z]{3}\d[A-Za-z]\d{2}$|^[A-Za-z]{3}\d{4}$/.test(placa.trim());
 
     if (!osIdValido) {
         console.warn('[Matilde][Bridge] Contexto rejeitado — osId inválido:', { osId, placa });

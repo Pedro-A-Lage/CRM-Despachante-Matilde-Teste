@@ -1068,8 +1068,14 @@ function modCrlvDigital() {
         const cCpf = ctx.matilde_crlv_cpfCnpj || cpfCnpj || '';
         const cPlaca = ctx.matilde_crlv_placa || placa || '';
         const cRenavam = ctx.matilde_crlv_renavam || renavam || '';
-        const cCrv = ctx.matilde_crlv_crv || crv || '';
+        let cCrv = ctx.matilde_crlv_crv || crv || '';
         const cOsId = ctx.matilde_crlv_osId || osId || '';
+
+        // AUTO: CRV = '0' + RENAVAM (regra fixa do Detran MG)
+        if (!cCrv && cRenavam) {
+            cCrv = '0' + cRenavam;
+            log('CrlvDigital', 'Passo3', 'CRV calculado automaticamente: 0 + RENAVAM =', cCrv);
+        }
 
         if (!cCpf && !cPlaca && !cRenavam && !cCrv) {
             log('CrlvDigital', 'Passo3', 'Nenhum dado para preencher, ignorando.');
