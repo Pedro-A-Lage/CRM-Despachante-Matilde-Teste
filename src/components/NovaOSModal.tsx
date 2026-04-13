@@ -211,6 +211,7 @@ export default function NovaOSModal({ isOpen, onClose, onCreated, dadosIniciais 
               onClienteEncontrado={setClienteExistente}
               onVoltar={() => setEtapa('upload')}
               onConfirmar={salvarOS}
+              erro={erro}
             />
           )}
           {etapa === 'salvando' && (
@@ -424,9 +425,10 @@ interface EtapaRevisaoProps {
   onClienteEncontrado: (cliente: Cliente | undefined) => void;
   onVoltar: () => void;
   onConfirmar: () => void;
+  erro?: string;
 }
 
-function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, onVoltar, onConfirmar }: EtapaRevisaoProps) {
+function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, onVoltar, onConfirmar, erro }: EtapaRevisaoProps) {
   const serviceLabels = useServiceLabels();
   const [buscandoCep, setBuscandoCep] = useState(false);
   const set = (key: keyof DadosIniciaisOS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -625,15 +627,39 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
       </div>
 
       {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, paddingTop: 8 }}>
-        <button style={btnSecondary} onClick={onVoltar}>Voltar</button>
-        <button
-          style={{ ...btnPrimary, opacity: (!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente) ? 0.5 : 1 }}
-          disabled={!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente}
-          onClick={onConfirmar}
-        >
-          Confirmar e Criar OS
-        </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}>
+        {erro && (
+          <div style={{
+            padding: '8px 12px', borderRadius: 8,
+            background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+            color: '#EF4444', fontSize: 12, fontWeight: 600,
+          }}>
+            {erro}
+          </div>
+        )}
+        {(!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente) && (
+          <div style={{
+            padding: '6px 12px', borderRadius: 8,
+            background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+            color: 'var(--notion-orange)', fontSize: 11, fontWeight: 600,
+          }}>
+            Preencha: {[
+              !dados.tipoServico && 'Tipo de Serviço',
+              !dados.nomeCliente && 'Nome do Cliente',
+              !dados.cpfCnpj && 'CPF/CNPJ',
+            ].filter(Boolean).join(', ')}
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <button style={btnSecondary} onClick={onVoltar}>Voltar</button>
+          <button
+            style={{ ...btnPrimary, opacity: (!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente) ? 0.5 : 1 }}
+            disabled={!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente}
+            onClick={onConfirmar}
+          >
+            Confirmar e Criar OS
+          </button>
+        </div>
       </div>
     </div>
   );
