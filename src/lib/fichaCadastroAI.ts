@@ -220,10 +220,25 @@ export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaC
     return extrairViaPdfParser(file);
 }
 
+const PROMPT_FOTO_PREFIXO = `ATENÇÃO: Esta é uma FOTO (não um PDF digital). A imagem pode estar:
+- Rotacionada, inclinada ou com perspectiva
+- Com sombras, reflexos ou iluminação irregular
+- Parcialmente cortada ou com baixa resolução
+- Com texto manuscrito misturado ao impresso
+
+INSTRUÇÕES PARA FOTOS:
+1. Primeiro identifique a orientação correta do documento (pode estar de lado ou de cabeça para baixo)
+2. Leia cada campo com cuidado — prefira deixar vazio ("") a chutar um valor ilegível
+3. Números e letras similares: 0/O, 1/I/L, 5/S, 8/B — use o contexto (placa, CPF, chassi) para decidir
+4. Se a foto corta parte do documento, extraia apenas o que é visível
+
+`;
+
 async function extrairViaGemini(file: File, mimeType: string): Promise<DadosFichaCadastro> {
     const buf = await file.arrayBuffer();
     const b64 = arrayBufferToBase64(buf);
-    const raw = await chamarGeminiComRetry(b64, mimeType, PROMPT_FICHA_CADASTRO);
+    const promptCompleto = PROMPT_FOTO_PREFIXO + PROMPT_FICHA_CADASTRO;
+    const raw = await chamarGeminiComRetry(b64, mimeType, promptCompleto);
 
     let parsed: any;
     try {
