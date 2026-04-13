@@ -715,27 +715,21 @@ export async function confirmarTodosDaOS(osId: string, usuario: string): Promise
   if (!data || data.length === 0) return;
 
   const now = new Date().toISOString();
-  const chargeIds = data.map((c: any) => c.id);
 
-  // Batch update para evitar estado parcial
-  const { error } = await supabase
-    .from('finance_charges')
-    .update({
-      status: 'pago',
-      confirmado_por: usuario,
-      confirmado_em: now,
-      atualizado_em: now,
-    })
-    .in('id', chargeIds)
-    .eq('status', 'a_pagar');
-  if (error) throw error;
-
-  // Atualizar valor_pago individualmente (cada charge pode ter valor diferente)
+  // Confirmar cada charge atomicamente (status + valor_pago juntos)
   for (const charge of data) {
-    await supabase
+    const { error } = await supabase
       .from('finance_charges')
-      .update({ valor_pago: Number(charge.valor_previsto) })
-      .eq('id', charge.id);
+      .update({
+        status: 'pago',
+        valor_pago: Number(charge.valor_previsto),
+        confirmado_por: usuario,
+        confirmado_em: now,
+        atualizado_em: now,
+      })
+      .eq('id', charge.id)
+      .eq('status', 'a_pagar');
+    if (error) throw error;
   }
 }
 

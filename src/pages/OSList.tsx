@@ -184,23 +184,21 @@ export default function OSList() {
             result = result.filter((o) => o.tipoServico === tipoFilter);
         }
         if (search.trim()) {
-            const term = search.toLowerCase();
+            const term = search.trim().toLowerCase();
+            const termDigits = term.replace(/\D/g, '');
             result = result.filter((o) => {
                 const cliente = clientes.find((c) => c.id === o.clienteId);
                 const veiculo = veiculos.find((v) => v.id === o.veiculoId);
                 const nomeCliente = (cliente?.nome ?? '').toLowerCase();
                 const placaVeiculo = (veiculo?.placa ?? '').toLowerCase();
                 const chassiVeiculo = (veiculo?.chassi ?? '').toLowerCase();
-                const cpfCliente = (cliente?.cpfCnpj ?? '').replace(/\D/g, '');
                 const numOS = String(o.numero ?? '');
-                const tipoServ = (o.tipoServico ?? '').toLowerCase();
                 return (
                     numOS.includes(term) ||
                     nomeCliente.includes(term) ||
                     placaVeiculo.includes(term) ||
                     chassiVeiculo.includes(term) ||
-                    tipoServ.includes(term) ||
-                    cpfCliente.includes(term.replace(/\D/g, ''))
+                    (termDigits.length > 0 && (cliente?.cpfCnpj ?? '').replace(/\D/g, '').includes(termDigits))
                 );
             });
         }
@@ -519,10 +517,11 @@ export default function OSList() {
                     {/* Search bar */}
                     <div style={{
                         flex: 1,
-                        minWidth: 220,
+                        minWidth: 0,
                         position: 'relative',
                         display: 'flex',
                         alignItems: 'center',
+                        width: '100%',
                     }}>
                         <Search size={15} style={{
                             position: 'absolute',
@@ -532,8 +531,10 @@ export default function OSList() {
                             transition: 'color 0.2s',
                         }} />
                         <input
-                            type="text"
-                            placeholder="Buscar por número, cliente, placa ou chassi..."
+                            type="search"
+                            inputMode="search"
+                            autoComplete="off"
+                            placeholder="Buscar por nome, placa, chassi, nº OS..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             style={{
@@ -543,18 +544,10 @@ export default function OSList() {
                                 border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 color: 'var(--notion-text)',
-                                fontSize: '0.82rem',
+                                fontSize: 16,
                                 outline: 'none',
                                 transition: 'all 0.25s cubic-bezier(.4,0,.2,1)',
                                 fontFamily: 'inherit',
-                            }}
-                            onFocus={e => {
-                                e.target.style.borderColor = 'var(--notion-blue)';
-                                e.target.style.boxShadow = '0 0 0 3px rgba(0,117,222,0.12)';
-                            }}
-                            onBlur={e => {
-                                e.target.style.borderColor = 'var(--notion-border)';
-                                e.target.style.boxShadow = 'none';
                             }}
                         />
                         {search && (
@@ -618,14 +611,15 @@ export default function OSList() {
                     </div>
 
                     {/* Filters */}
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', flex: '0 0 auto' }}>
                         <select
                             className="form-select"
                             style={{
-                                width: 160,
+                                minWidth: 130,
+                                maxWidth: 180,
+                                flex: 1,
                                 height: 36,
                                 borderRadius: 8,
-                                background: 'transparent',
                                 border: '1px solid var(--notion-border)',
                                 padding: '0 10px',
                                 fontSize: '0.82rem',
@@ -636,11 +630,10 @@ export default function OSList() {
                                 fontFamily: 'inherit',
                                 outline: 'none',
                                 appearance: 'auto' as any,
+                                WebkitAppearance: 'menulist' as any,
                             }}
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as StatusOS | '')}
-                            onFocus={e => e.currentTarget.style.borderColor = 'var(--notion-blue)'}
-                            onBlur={e => e.currentTarget.style.borderColor = 'var(--notion-border)'}
                         >
                             <option value="">Status: Todos</option>
                             {Object.entries(STATUS_OS_LABELS).map(([k, v]) => (
@@ -650,10 +643,11 @@ export default function OSList() {
                         <select
                             className="form-select"
                             style={{
-                                width: 160,
+                                minWidth: 130,
+                                maxWidth: 180,
+                                flex: 1,
                                 height: 36,
                                 borderRadius: 8,
-                                background: 'transparent',
                                 border: '1px solid var(--notion-border)',
                                 padding: '0 10px',
                                 fontSize: '0.82rem',
@@ -664,11 +658,10 @@ export default function OSList() {
                                 fontFamily: 'inherit',
                                 outline: 'none',
                                 appearance: 'auto' as any,
+                                WebkitAppearance: 'menulist' as any,
                             }}
                             value={tipoFilter}
                             onChange={(e) => setTipoFilter(e.target.value as TipoServico | '')}
-                            onFocus={e => e.currentTarget.style.borderColor = 'var(--notion-blue)'}
-                            onBlur={e => e.currentTarget.style.borderColor = 'var(--notion-border)'}
                         >
                             <option value="">Serviço: Todos</option>
                             {Object.entries(serviceLabels).map(([k, v]) => (

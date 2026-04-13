@@ -572,11 +572,11 @@ export default function ControlePagamentos() {
       // Date filter (on confirmado_em for paid, criado_em for pending)
       charges = charges.filter(c => {
         if (c.status === 'pago' && c.confirmado_em) {
-          const d = c.confirmado_em.split('T')[0] ?? '';
+          const d = (c.confirmado_em ?? '').split('T')[0] ?? '';
           return d >= dataInicio && d <= dataFim;
         }
         if (c.status === 'a_pagar') {
-          const d = c.criado_em.split('T')[0] ?? '';
+          const d = (c.criado_em ?? '').split('T')[0] ?? '';
           return d >= dataInicio && d <= dataFim;
         }
         return true;
