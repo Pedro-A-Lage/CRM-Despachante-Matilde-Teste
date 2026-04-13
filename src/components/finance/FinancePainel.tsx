@@ -545,10 +545,19 @@ export default function FinancePainel({
                 {!readOnly && (
                   <button
                     onClick={() => setShowRecebimento(true)}
-                    className="btn btn-primary btn-sm"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap' }}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      fontWeight: 800, fontSize: 13, whiteSpace: 'nowrap',
+                      padding: '10px 20px', borderRadius: 8,
+                      background: 'var(--notion-green)', color: '#fff',
+                      border: 'none', cursor: 'pointer',
+                      boxShadow: '0 2px 8px rgba(16,185,129,0.3)',
+                      transition: 'all 0.15s ease',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(16,185,129,0.4)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(16,185,129,0.3)'; }}
                   >
-                    <IconPlus /> Registrar
+                    <IconPlus /> Registrar Pagamento
                   </button>
                 )}
               </div>
