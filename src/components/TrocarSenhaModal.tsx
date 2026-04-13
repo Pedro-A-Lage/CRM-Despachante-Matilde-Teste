@@ -57,9 +57,9 @@ export default function TrocarSenhaModal() {
         width: '100%',
         padding: '12px 44px 12px 16px',
         borderRadius: 12,
-        border: `2px solid ${hasValue ? 'var(--color-primary)' : 'var(--border-color)'}`,
-        background: 'var(--bg-body)',
-        color: 'var(--color-text-primary)',
+        border: `2px solid ${hasValue ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
+        background: 'var(--notion-surface)',
+        color: 'var(--notion-text)',
         fontSize: '0.95rem',
         outline: 'none',
         boxSizing: 'border-box' as const,
@@ -70,7 +70,7 @@ export default function TrocarSenhaModal() {
         display: 'block',
         fontSize: '0.75rem',
         fontWeight: 700,
-        color: 'var(--color-text-secondary)',
+        color: 'var(--notion-text-secondary)',
         marginBottom: 8,
         letterSpacing: '0.5px',
         textTransform: 'uppercase',
@@ -84,7 +84,7 @@ export default function TrocarSenhaModal() {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        color: 'var(--color-text-tertiary)',
+        color: 'var(--notion-text-secondary)',
         padding: 4,
         display: 'flex',
     };
@@ -103,16 +103,16 @@ export default function TrocarSenhaModal() {
             <div style={{
                 width: '100%',
                 maxWidth: 440,
-                background: 'var(--bg-card)',
+                background: 'var(--notion-surface)',
                 borderRadius: 24,
-                border: '1px solid var(--border-color)',
+                border: '1px solid var(--notion-border)',
                 overflow: 'hidden',
                 boxShadow: '0 24px 64px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05)',
                 margin: 20,
             }}>
                 {/* Header com gradiente */}
                 <div style={{
-                    background: 'linear-gradient(135deg, var(--color-yellow-light, #F59E0B) 0%, var(--color-yellow-alt, #D97706) 100%)',
+                    background: 'linear-gradient(135deg, var(--notion-blue) 0%, var(--notion-blue-hover) 100%)',
                     padding: '32px 32px 28px',
                     textAlign: 'center',
                 }}>
@@ -123,13 +123,13 @@ export default function TrocarSenhaModal() {
                         display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                         marginBottom: 14,
                     }}>
-                        <Shield size={28} style={{ color: 'var(--color-white)' }} />
+                        <Shield size={28} style={{ color: 'var(--notion-text)' }} />
                     </div>
                     <h2 style={{
                         margin: '0 0 6px',
                         fontSize: '1.35rem',
                         fontWeight: 800,
-                        color: 'var(--color-white)',
+                        color: 'var(--notion-text)',
                     }}>
                         Crie sua nova senha
                     </h2>
@@ -169,9 +169,9 @@ export default function TrocarSenhaModal() {
                         display: 'flex', alignItems: 'center', gap: 12,
                         margin: '20px 0',
                     }}>
-                        <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }} />
-                        <KeyRound size={14} style={{ color: 'var(--color-text-tertiary)' }} />
-                        <div style={{ flex: 1, height: 1, background: 'var(--border-color)' }} />
+                        <div style={{ flex: 1, height: 1, background: 'var(--notion-border)' }} />
+                        <KeyRound size={14} style={{ color: 'var(--notion-text-secondary)' }} />
+                        <div style={{ flex: 1, height: 1, background: 'var(--notion-border)' }} />
                     </div>
 
                     {/* Nova Senha */}
@@ -179,7 +179,7 @@ export default function TrocarSenhaModal() {
                         <label style={labelStyle}>
                             Nova Senha
                             {senhaValida && (
-                                <CheckCircle2 size={12} style={{ color: 'var(--color-success-bright)', marginLeft: 6, verticalAlign: 'middle' }} />
+                                <CheckCircle2 size={12} style={{ color: 'var(--notion-green)', marginLeft: 6, verticalAlign: 'middle' }} />
                             )}
                         </label>
                         <div style={{ position: 'relative' }}>
@@ -196,7 +196,7 @@ export default function TrocarSenhaModal() {
                             </button>
                         </div>
                         {senhaNova.length > 0 && !senhaValida && (
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-danger)', marginTop: 4, fontWeight: 500 }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--notion-orange)', marginTop: 4, fontWeight: 500 }}>
                                 Faltam {6 - senhaNova.length} caractere{6 - senhaNova.length > 1 ? 's' : ''}
                             </div>
                         )}
@@ -207,7 +207,7 @@ export default function TrocarSenhaModal() {
                         <label style={labelStyle}>
                             Confirmar Nova Senha
                             {senhasIguais && (
-                                <CheckCircle2 size={12} style={{ color: 'var(--color-success-bright)', marginLeft: 6, verticalAlign: 'middle' }} />
+                                <CheckCircle2 size={12} style={{ color: 'var(--notion-green)', marginLeft: 6, verticalAlign: 'middle' }} />
                             )}
                         </label>
                         <div style={{ position: 'relative' }}>
@@ -224,7 +224,7 @@ export default function TrocarSenhaModal() {
                             </button>
                         </div>
                         {confirmar.length > 0 && !senhasIguais && (
-                            <div style={{ fontSize: '0.75rem', color: 'var(--color-danger)', marginTop: 4, fontWeight: 500 }}>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--notion-orange)', marginTop: 4, fontWeight: 500 }}>
                                 As senhas não coincidem
                             </div>
                         )}
@@ -237,7 +237,7 @@ export default function TrocarSenhaModal() {
                             borderRadius: 12,
                             background: 'rgba(239,68,68,0.08)',
                             border: '1px solid rgba(239,68,68,0.2)',
-                            color: 'var(--color-danger)',
+                            color: 'var(--notion-orange)',
                             fontSize: '0.85rem',
                             fontWeight: 600,
                             marginBottom: 18,
@@ -257,9 +257,9 @@ export default function TrocarSenhaModal() {
                             borderRadius: 14,
                             border: 'none',
                             background: (senhaValida && senhasIguais && senhaAtual)
-                                ? 'linear-gradient(135deg, var(--color-yellow-light, #F59E0B) 0%, var(--color-yellow-alt, #D97706) 100%)'
-                                : 'var(--bg-secondary)',
-                            color: (senhaValida && senhasIguais && senhaAtual) ? 'var(--color-white)' : 'var(--color-text-tertiary)',
+                                ? 'linear-gradient(135deg, var(--notion-blue) 0%, var(--notion-blue-hover) 100%)'
+                                : 'var(--notion-bg-alt)',
+                            color: (senhaValida && senhasIguais && senhaAtual) ? 'white' : 'var(--notion-text-secondary)',
                             fontSize: '1rem',
                             fontWeight: 700,
                             cursor: (enviando || !senhaValida || !senhasIguais || !senhaAtual) ? 'not-allowed' : 'pointer',

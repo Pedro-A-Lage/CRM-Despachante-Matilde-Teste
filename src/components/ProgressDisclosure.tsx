@@ -33,7 +33,7 @@ export default function ProgressDisclosure({
         <div
             style={{
                 background: 'var(--bg-surface)',
-                border: '1px solid var(--border-color)',
+                border: '1px solid var(--notion-border)',
                 borderRadius: 8,
                 overflow: 'hidden',
             }}
@@ -51,7 +51,7 @@ export default function ProgressDisclosure({
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    color: 'var(--color-text-secondary)',
+                    color: 'var(--notion-text-secondary)',
                     fontSize: 13,
                     fontWeight: 600,
                     fontFamily: 'var(--font-body)',
@@ -82,7 +82,7 @@ export default function ProgressDisclosure({
                     ref={contentRef}
                     style={{
                         padding: '0 14px 14px',
-                        borderTop: '1px solid var(--border-color)',
+                        borderTop: '1px solid var(--notion-border)',
                     }}
                 >
                     <div style={{ paddingTop: 12 }}>

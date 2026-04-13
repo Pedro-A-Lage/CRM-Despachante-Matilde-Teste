@@ -248,13 +248,13 @@ export default function VeiculoForm() {
                     <div style={{
                         marginBottom: 'var(--space-6)',
                         padding: 'var(--space-5)',
-                        background: 'var(--color-primary-50)',
+                        background: 'var(--notion-blue)',
                         borderRadius: 'var(--radius-md)',
-                        border: `2px dashed ${pdfFile ? 'var(--color-success)' : 'var(--color-primary-light)'}`,
+                        border: `2px dashed ${pdfFile ? 'var(--notion-green)' : 'var(--notion-blue)'}`,
                         textAlign: 'center',
                     }}>
-                        <FileText size={32} style={{ color: pdfFile ? 'var(--color-success)' : 'var(--color-primary)', margin: '0 auto var(--space-3)' }} />
-                        <h4 style={{ marginBottom: 'var(--space-2)', color: pdfFile ? 'var(--color-success)' : 'var(--color-primary-dark)' }}>
+                        <FileText size={32} style={{ color: pdfFile ? 'var(--notion-green)' : 'var(--notion-blue)', margin: '0 auto var(--space-3)' }} />
+                        <h4 style={{ marginBottom: 'var(--space-2)', color: pdfFile ? 'var(--notion-green)' : 'var(--notion-blue)' }}>
                             {pdfFile ? `📄 ${pdfFile.name}` : 'Importar dados de PDF'}
                         </h4>
                         <p className="text-sm text-gray" style={{ marginBottom: 'var(--space-4)' }}>
@@ -294,11 +294,11 @@ export default function VeiculoForm() {
                             <div style={{
                                 marginTop: 'var(--space-4)',
                                 padding: 'var(--space-3) var(--space-4)',
-                                background: 'var(--color-success-light)',
+                                background: 'var(--notion-green)',
                                 borderRadius: 'var(--radius-sm)',
                                 textAlign: 'left',
                             }}>
-                                <p className="text-sm font-semibold" style={{ color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <p className="text-sm font-semibold" style={{ color: 'var(--notion-green)', display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <CheckCircle size={16} /> Campos preenchidos: {fieldsFilledFromPdf.join(', ')}
                                 </p>
                             </div>
@@ -308,12 +308,13 @@ export default function VeiculoForm() {
                             <div style={{
                                 marginTop: 'var(--space-4)',
                                 padding: 'var(--space-3) var(--space-4)',
-                                background: 'var(--color-warning-light)',
+                                background: 'rgba(221,91,0,0.08)',
+                                border: '1px solid rgba(221,91,0,0.2)',
                                 borderRadius: 'var(--radius-sm)',
                                 textAlign: 'left',
                             }}>
-                                <p className="text-sm" style={{ color: 'var(--color-error-hover)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <AlertCircle size={16} /> {extractionError}
+                                <p className="text-sm" style={{ color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <AlertCircle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} /> {extractionError}
                                 </p>
                             </div>
                         )}
@@ -324,7 +325,7 @@ export default function VeiculoForm() {
                                 <summary className="text-xs text-gray" style={{ cursor: 'pointer' }}>
                                     Ver todos os dados extraídos
                                 </summary>
-                                <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-xs)', color: 'var(--color-gray-600)' }}>
+                                <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-xs)', color: 'var(--notion-text-secondary)' }}>
                                     {extractionResult.placa && <p>Placa: {extractionResult.placa}</p>}
                                     {extractionResult.renavam && <p>Renavam: {extractionResult.renavam}</p>}
                                     {extractionResult.chassi && <p>Chassi: {extractionResult.chassi}</p>}
@@ -345,7 +346,7 @@ export default function VeiculoForm() {
                     <label className="form-label">
                         Cliente *
                         {fieldsFilledFromPdf.includes('Cliente') && (
-                            <span style={{ color: 'var(--color-success)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>
+                            <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>
                         )}
                     </label>
                     <select
@@ -364,7 +365,7 @@ export default function VeiculoForm() {
                     {clientes.length === 0 && (
                         <p className="form-hint">
                             Nenhum cliente cadastrado.{' '}
-                            <a href="/clientes/novo" style={{ color: 'var(--color-primary)' }}>Cadastrar cliente primeiro</a>
+                            <a href="/clientes/novo" style={{ color: 'var(--notion-blue)' }}>Cadastrar cliente primeiro</a>
                         </p>
                     )}
                 </div>
@@ -373,7 +374,7 @@ export default function VeiculoForm() {
                     <div className="form-group">
                         <label className="form-label">
                             Placa
-                            {fieldsFilledFromPdf.includes('Placa') && <span style={{ color: 'var(--color-success)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
+                            {fieldsFilledFromPdf.includes('Placa') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
                         </label>
                         <input type="text" className="form-input" value={placa} onChange={(e) => setPlaca(e.target.value)} placeholder="ABC1D23" style={{ textTransform: 'uppercase' }} />
                         <p className="form-hint">Pode ficar vazio para primeiro emplacamento</p>
@@ -381,7 +382,7 @@ export default function VeiculoForm() {
                     <div className="form-group">
                         <label className="form-label">
                             Renavam
-                            {fieldsFilledFromPdf.includes('Renavam') && <span style={{ color: 'var(--color-success)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
+                            {fieldsFilledFromPdf.includes('Renavam') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
                         </label>
                         <input type="text" className="form-input" value={renavam} onChange={(e) => setRenavam(e.target.value)} placeholder="00000000000" />
                     </div>
@@ -390,7 +391,7 @@ export default function VeiculoForm() {
                 <div className="form-group">
                     <label className="form-label">
                         Chassi *
-                        {fieldsFilledFromPdf.includes('Chassi') && <span style={{ color: 'var(--color-success)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
+                        {fieldsFilledFromPdf.includes('Chassi') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
                     </label>
                     <input type="text" className="form-input" value={chassi} onChange={(e) => setChassi(e.target.value)} placeholder="9BWHE21JX24060960" required style={{ textTransform: 'uppercase' }} />
                 </div>
@@ -398,7 +399,7 @@ export default function VeiculoForm() {
                 <div className="form-group">
                     <label className="form-label">
                         Marca / Modelo
-                        {fieldsFilledFromPdf.includes('Marca/Modelo') && <span style={{ color: 'var(--color-success)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
+                        {fieldsFilledFromPdf.includes('Marca/Modelo') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
                     </label>
                     <input type="text" className="form-input" value={marcaModelo} onChange={(e) => setMarcaModelo(e.target.value)} placeholder="Ex: VW Gol 1.0" />
                 </div>
@@ -413,13 +414,13 @@ export default function VeiculoForm() {
                     <div style={{
                         marginTop: 'var(--space-4)',
                         padding: 'var(--space-5)',
-                        background: 'var(--color-info-light)',
+                        background: 'rgba(55,114,255,0.08)',
                         borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--color-info)',
+                        border: '1px solid var(--notion-blue)',
                     }}>
                         <div className="flex items-center gap-2 mb-4">
-                            <FolderPlus size={20} style={{ color: 'var(--color-info)' }} />
-                            <h4 style={{ color: 'var(--color-info)' }}>Criar Ordem de Serviço automaticamente</h4>
+                            <FolderPlus size={20} style={{ color: 'var(--notion-blue)' }} />
+                            <h4 style={{ color: 'var(--notion-blue)' }}>Criar Ordem de Serviço automaticamente</h4>
                         </div>
 
                         <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
@@ -466,7 +467,7 @@ export default function VeiculoForm() {
 
                                 {selectedCliente && checklistPreview.length > 0 && (
                                     <div style={{
-                                        background: 'rgba(255,255,255,0.7)',
+                                        background: 'var(--notion-bg-alt)',
                                         padding: 'var(--space-3)',
                                         borderRadius: 'var(--radius-sm)',
                                     }}>

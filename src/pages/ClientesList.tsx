@@ -80,8 +80,8 @@ export default function ClientesList() {
         <th 
             style={{ 
                 padding: '14px 16px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, 
-                color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', 
-                borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width,
+                color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', 
+                borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width,
                 cursor: 'pointer', userSelect: 'none'
             }}
             onClick={() => handleSort(sortKey)}
@@ -120,10 +120,10 @@ export default function ClientesList() {
                 marginBottom: 'var(--space-8)',
             }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--notion-text)', letterSpacing: '-0.5px' }}>
                         Clientes
                     </h1>
-                    <p style={{ margin: '8px 0 0', color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
+                    <p style={{ margin: '8px 0 0', color: 'var(--notion-text-secondary)', fontSize: '0.95rem' }}>
                         {clientes.length} cliente{clientes.length !== 1 ? 's' : ''} cadastrado{clientes.length !== 1 ? 's' : ''}
                     </p>
                 </div>
@@ -132,8 +132,8 @@ export default function ClientesList() {
                     alignItems: 'center',
                     gap: '8px',
                     padding: '11px 20px',
-                    background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
-                    color: 'var(--color-text-inverse)',
+                    background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
+                    color: 'var(--notion-bg)',
                     borderRadius: 10,
                     textDecoration: 'none',
                     fontWeight: 700,
@@ -164,9 +164,9 @@ export default function ClientesList() {
                     onClick={() => setViewMode('cards')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'cards' ? 'var(--color-purple)' : 'var(--bg-body)',
-                        color: viewMode === 'cards' ? '#fff' : 'var(--color-text-primary)',
-                        border: viewMode === 'cards' ? 'none' : '1px solid var(--border-color)',
+                        background: viewMode === 'cards' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
+                        color: viewMode === 'cards' ? '#fff' : 'var(--notion-text)',
+                        border: viewMode === 'cards' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
                         cursor: 'pointer',
                         fontWeight: 600,
@@ -178,14 +178,14 @@ export default function ClientesList() {
                     }}
                     onMouseEnter={e => {
                         if (viewMode !== 'cards') {
-                            e.currentTarget.style.borderColor = 'var(--color-purple)';
+                            e.currentTarget.style.borderColor = 'var(--notion-purple, #9065B0)';
                             e.currentTarget.style.background = 'rgba(139,92,246,0.08)';
                         }
                     }}
                     onMouseLeave={e => {
                         if (viewMode !== 'cards') {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.borderColor = 'var(--notion-border)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -195,9 +195,9 @@ export default function ClientesList() {
                     onClick={() => setViewMode('list')}
                     style={{
                         padding: '8px 12px',
-                        background: viewMode === 'list' ? 'var(--color-purple)' : 'var(--bg-body)',
-                        color: viewMode === 'list' ? '#fff' : 'var(--color-text-primary)',
-                        border: viewMode === 'list' ? 'none' : '1px solid var(--border-color)',
+                        background: viewMode === 'list' ? 'var(--notion-purple, #9065B0)' : 'var(--notion-bg)',
+                        color: viewMode === 'list' ? '#fff' : 'var(--notion-text)',
+                        border: viewMode === 'list' ? 'none' : '1px solid var(--notion-border)',
                         borderRadius: 8,
                         cursor: 'pointer',
                         fontWeight: 600,
@@ -209,14 +209,14 @@ export default function ClientesList() {
                     }}
                     onMouseEnter={e => {
                         if (viewMode !== 'list') {
-                            e.currentTarget.style.borderColor = 'var(--color-purple)';
+                            e.currentTarget.style.borderColor = 'var(--notion-purple, #9065B0)';
                             e.currentTarget.style.background = 'rgba(139,92,246,0.08)';
                         }
                     }}
                     onMouseLeave={e => {
                         if (viewMode !== 'list') {
-                            e.currentTarget.style.borderColor = 'var(--border-color)';
-                            e.currentTarget.style.background = 'var(--bg-body)';
+                            e.currentTarget.style.borderColor = 'var(--notion-border)';
+                            e.currentTarget.style.background = 'var(--notion-bg)';
                         }
                     }}
                 >
@@ -230,12 +230,12 @@ export default function ClientesList() {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '12px 16px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border-color)',
+                background: 'var(--notion-surface)',
+                border: '1px solid var(--notion-border)',
                 borderRadius: 12,
                 marginBottom: 'var(--space-8)',
             }}>
-                <Search size={18} style={{ color: 'var(--color-text-secondary)' }} />
+                <Search size={18} style={{ color: 'var(--notion-text-secondary)' }} />
                 <input
                     type="text"
                     placeholder="Buscar por nome, CPF/CNPJ ou telefone..."
@@ -245,7 +245,7 @@ export default function ClientesList() {
                         flex: 1,
                         border: 'none',
                         background: 'transparent',
-                        color: 'var(--color-text-primary)',
+                        color: 'var(--notion-text)',
                         fontSize: '0.95rem',
                         outline: 'none',
                     }}
@@ -255,17 +255,17 @@ export default function ClientesList() {
             {/* Client Cards Grid / List */}
             {viewMode === 'cards' ? (filtered.length === 0 ? (
                 <div style={{
-                    background: 'var(--bg-card)',
-                    border: '2px dashed var(--border-color)',
+                    background: 'var(--notion-surface)',
+                    border: '2px dashed var(--notion-border)',
                     borderRadius: 16,
                     padding: '60px 20px',
                     textAlign: 'center',
                 }}>
-                    <User size={48} style={{ color: 'var(--color-text-secondary)', opacity: 0.3, margin: '0 auto 16px' }} />
-                    <h3 style={{ margin: '0 0 8px', color: 'var(--color-text-primary)', fontSize: '1.1rem', fontWeight: 700 }}>
+                    <User size={48} style={{ color: 'var(--notion-text-secondary)', opacity: 0.3, margin: '0 auto 16px' }} />
+                    <h3 style={{ margin: '0 0 8px', color: 'var(--notion-text)', fontSize: '1.1rem', fontWeight: 700 }}>
                         {search ? 'Nenhum cliente encontrado' : 'Nenhum cliente cadastrado'}
                     </h3>
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: '0 0 20px' }}>
+                    <p style={{ color: 'var(--notion-text-secondary)', fontSize: '0.9rem', margin: '0 0 20px' }}>
                         {search ? 'Tente uma busca diferente.' : 'Cadastre seu primeiro cliente para começar.'}
                     </p>
                     {!search && (
@@ -274,8 +274,8 @@ export default function ClientesList() {
                             alignItems: 'center',
                             gap: '8px',
                             padding: '10px 20px',
-                            background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
-                            color: 'var(--color-text-inverse)',
+                            background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
+                            color: 'var(--notion-bg)',
                             borderRadius: 10,
                             textDecoration: 'none',
                             fontWeight: 700,
@@ -298,8 +298,8 @@ export default function ClientesList() {
                             onMouseEnter={() => setHoveredCard(c.id)}
                             onMouseLeave={() => setHoveredCard(null)}
                             style={{
-                                background: 'var(--bg-card)',
-                                border: `2px solid ${hoveredCard === c.id ? 'var(--color-primary)' : 'var(--border-color)'}`,
+                                background: 'var(--notion-surface)',
+                                border: `2px solid ${hoveredCard === c.id ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
                                 borderRadius: 14,
                                 padding: '20px',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -317,7 +317,7 @@ export default function ClientesList() {
                                 width: 100,
                                 height: 100,
                                 borderRadius: '50%',
-                                background: 'var(--color-primary)',
+                                background: 'var(--notion-blue)',
                                 opacity: 0.04,
                             }} />
 
@@ -333,8 +333,8 @@ export default function ClientesList() {
                                 <span style={{
                                     padding: '4px 10px',
                                     borderRadius: 7,
-                                    background: c.tipo === 'PF' ? 'var(--color-info-bg)' : 'var(--color-purple-bg)',
-                                    color: c.tipo === 'PF' ? 'var(--color-info)' : 'var(--color-purple)',
+                                    background: c.tipo === 'PF' ? 'rgba(55,114,255,0.1)' : 'rgba(139,92,246,0.1)',
+                                    color: c.tipo === 'PF' ? 'var(--notion-blue)' : '#7c3aed',
                                     fontSize: '0.75rem',
                                     fontWeight: 700,
                                     textTransform: 'uppercase',
@@ -344,7 +344,7 @@ export default function ClientesList() {
                                 </span>
                                 <span style={{
                                     fontSize: '0.75rem',
-                                    color: 'var(--color-text-tertiary)',
+                                    color: 'var(--notion-text-secondary)',
                                     fontWeight: 500,
                                 }}>
                                     {new Date(c.criadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
@@ -356,7 +356,7 @@ export default function ClientesList() {
                                 margin: '0 0 12px',
                                 fontSize: '1rem',
                                 fontWeight: 700,
-                                color: 'var(--color-text-primary)',
+                                color: 'var(--notion-text)',
                                 position: 'relative',
                                 zIndex: 1,
                             }}>
@@ -366,12 +366,12 @@ export default function ClientesList() {
                             {/* CPF/CNPJ */}
                             <div style={{
                                 padding: '10px 12px',
-                                background: 'var(--bg-body)',
-                                border: '1px solid var(--border-color)',
+                                background: 'var(--notion-bg)',
+                                border: '1px solid var(--notion-border)',
                                 borderRadius: 8,
                                 marginBottom: '12px',
                                 fontSize: '0.85rem',
-                                color: 'var(--color-text-secondary)',
+                                color: 'var(--notion-text-secondary)',
                                 fontFamily: 'monospace',
                                 position: 'relative',
                                 zIndex: 1,
@@ -389,19 +389,19 @@ export default function ClientesList() {
                                 zIndex: 1,
                             }}>
                                 {c.telefones[0] && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
                                         <Phone size={14} style={{ opacity: 0.6 }} />
                                         <span>{c.telefones[0]}</span>
                                     </div>
                                 )}
                                 {(c as any).endereco && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
                                         <MapPin size={14} style={{ opacity: 0.6 }} />
                                         <span>{(c as any).endereco}</span>
                                     </div>
                                 )}
                                 {!c.telefones[0] && !(c as any).endereco && (
-                                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--notion-text-secondary)', fontStyle: 'italic' }}>
                                         Sem informações adicionais
                                     </p>
                                 )}
@@ -421,8 +421,8 @@ export default function ClientesList() {
                                     justifyContent: 'center',
                                     gap: '6px',
                                     padding: '8px 12px',
-                                    background: 'var(--color-info-bg)',
-                                    color: 'var(--color-info)',
+                                    background: 'rgba(55,114,255,0.1)',
+                                    color: 'var(--notion-blue)',
                                     border: 'none',
                                     borderRadius: 8,
                                     textDecoration: 'none',
@@ -432,12 +432,12 @@ export default function ClientesList() {
                                     transition: 'all 0.2s',
                                 }}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--color-info)';
-                                        e.currentTarget.style.color = 'var(--color-white)';
+                                        e.currentTarget.style.background = 'var(--notion-blue)';
+                                        e.currentTarget.style.color = 'var(--notion-text)';
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'var(--color-info-bg)';
-                                        e.currentTarget.style.color = 'var(--color-info)';
+                                        e.currentTarget.style.background = 'rgba(55,114,255,0.1)';
+                                        e.currentTarget.style.color = 'var(--notion-blue)';
                                     }}
                                 >
                                     <Eye size={14} /> Ver
@@ -449,23 +449,21 @@ export default function ClientesList() {
                                     justifyContent: 'center',
                                     gap: '6px',
                                     padding: '8px 12px',
-                                    background: 'rgba(245,158,11,0.12)',
-                                    color: 'var(--color-primary)',
-                                    border: 'none',
+                                    background: 'rgba(0,117,222,0.1)',
+                                    color: 'var(--notion-blue)',
+                                    border: '1px solid rgba(0,117,222,0.2)',
                                     borderRadius: 8,
                                     textDecoration: 'none',
                                     fontWeight: 600,
                                     fontSize: '0.8rem',
                                     cursor: 'pointer',
-                                    transition: 'all 0.2s',
+                                    transition: 'all 0.15s',
                                 }}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--color-primary)';
-                                        e.currentTarget.style.color = 'var(--color-text-inverse)';
+                                        e.currentTarget.style.background = 'rgba(0,117,222,0.2)';
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'rgba(245,158,11,0.12)';
-                                        e.currentTarget.style.color = 'var(--color-primary)';
+                                        e.currentTarget.style.background = 'rgba(0,117,222,0.1)';
                                     }}
                                 >
                                     <Pencil size={14} /> Editar
@@ -473,9 +471,9 @@ export default function ClientesList() {
                                 <button
                                     style={{
                                         padding: '8px 12px',
-                                        background: 'var(--color-danger-bg)',
-                                        color: 'var(--color-danger)',
-                                        border: 'none',
+                                        background: 'rgba(221,91,0,0.1)',
+                                        color: 'var(--notion-orange)',
+                                        border: '1px solid rgba(221,91,0,0.2)',
                                         borderRadius: 8,
                                         fontWeight: 600,
                                         fontSize: '0.8rem',
@@ -487,12 +485,12 @@ export default function ClientesList() {
                                     }}
                                     onClick={() => handleDelete(c)}
                                     onMouseEnter={e => {
-                                        e.currentTarget.style.background = 'var(--color-danger)';
-                                        e.currentTarget.style.color = 'var(--color-white)';
+                                        e.currentTarget.style.background = 'rgba(221,91,0,0.18)';
+                                        e.currentTarget.style.color = 'var(--notion-orange)';
                                     }}
                                     onMouseLeave={e => {
-                                        e.currentTarget.style.background = 'var(--color-danger-bg)';
-                                        e.currentTarget.style.color = 'var(--color-danger)';
+                                        e.currentTarget.style.background = 'rgba(221,91,0,0.1)';
+                                        e.currentTarget.style.color = 'var(--notion-orange)';
                                     }}
                                 >
                                     <Trash2 size={14} />
@@ -504,8 +502,8 @@ export default function ClientesList() {
             )) : (
                 // LIST VIEW
                 <div className="clientes-list-grid" style={{
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border-color)',
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
                     borderRadius: 12,
                     overflow: 'hidden',
                 }}>
@@ -517,13 +515,13 @@ export default function ClientesList() {
                                     <SortableHeader label="Cliente" sortKey="nome" />
                                     <SortableHeader label="CPF/CNPJ" sortKey="documento" />
                                     <SortableHeader label="Telefone" sortKey="telefone" />
-                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-body)', whiteSpace: 'nowrap', width: 120 }}>Ações</th>
+                                    <th style={{ padding: '14px 16px', textAlign: 'right', fontSize: '0.8rem', fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--notion-border)', background: 'var(--notion-bg)', whiteSpace: 'nowrap', width: 120 }}>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filtered.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--color-text-tertiary)', fontSize: 13 }}>
+                                        <td colSpan={5} style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--notion-text-secondary)', fontSize: 13 }}>
                                             <User size={32} style={{ opacity: 0.2, display: 'block', margin: '0 auto 10px' }} />
                                             {search ? 'Nenhum cliente encontrado para essa busca.' : 'Nenhum cliente cadastrado.'}
                                         </td>
@@ -536,56 +534,56 @@ export default function ClientesList() {
                                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.05)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                                     >
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <span style={{
                                                 padding: '4px 10px', borderRadius: 7,
-                                                background: c.tipo === 'PF' ? 'var(--color-info-bg)' : 'var(--color-purple-bg)',
-                                                color: c.tipo === 'PF' ? 'var(--color-info)' : 'var(--color-purple)',
+                                                background: c.tipo === 'PF' ? 'rgba(55,114,255,0.1)' : 'rgba(139,92,246,0.1)',
+                                                color: c.tipo === 'PF' ? 'var(--notion-blue)' : '#7c3aed',
                                                 fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.03em',
                                             }}>
                                                 {c.tipo === 'PF' ? 'PF' : 'PJ'}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--color-text-primary)', fontSize: '0.9rem' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontWeight: 600, color: 'var(--notion-text)', fontSize: '0.9rem' }}>
                                             {c.nome}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', fontFamily: 'monospace', color: 'var(--color-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'monospace', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                                             {formatCpfCnpj(c.cpfCnpj)}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', color: 'var(--color-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                                             {c.telefones[0] || '—'}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                                                 <Link to={`/clientes/${c.id}`} style={{
-                                                    padding: '6px 10px', background: 'var(--color-info-bg)', color: 'var(--color-info)',
+                                                    padding: '6px 10px', background: 'rgba(55,114,255,0.1)', color: 'var(--notion-blue)',
                                                     borderRadius: 6, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600,
                                                     cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
                                                 }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-info)'; e.currentTarget.style.color = 'var(--color-white)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-info-bg)'; e.currentTarget.style.color = 'var(--color-info)'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-blue)'; e.currentTarget.style.color = 'var(--notion-text)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(55,114,255,0.1)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
                                                 >
                                                     <Eye size={14} />
                                                 </Link>
                                                 <Link to={`/clientes/${c.id}/editar`} style={{
-                                                    padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--color-primary)',
+                                                    padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)',
                                                     borderRadius: 6, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600,
                                                     cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
                                                 }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-text-inverse)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-blue)'; e.currentTarget.style.color = 'var(--notion-bg)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
                                                 >
                                                     <Pencil size={14} />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(c)}
                                                     style={{
-                                                        padding: '6px 10px', background: 'var(--color-danger-bg)', color: 'var(--color-danger)',
-                                                        border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600,
+                                                        padding: '6px 10px', background: 'rgba(221,91,0,0.1)', color: 'var(--notion-orange)',
+                                                        border: '1px solid rgba(221,91,0,0.2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600,
                                                         fontSize: '0.75rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     }}
-                                                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-danger)'; e.currentTarget.style.color = 'var(--color-white)'; }}
-                                                    onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-danger-bg)'; e.currentTarget.style.color = 'var(--color-danger)'; }}
+                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(221,91,0,0.18)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
+                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(221,91,0,0.1)'; e.currentTarget.style.color = 'var(--notion-orange)'; }}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
