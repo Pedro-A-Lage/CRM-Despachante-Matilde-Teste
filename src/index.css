@@ -902,7 +902,7 @@ textarea:focus {
     left: 0;
     height: 100%;
     transform: translateX(-100%);
-    z-index: 40;
+    z-index: 100;
   }
 
   .sidebar.open {
@@ -925,6 +925,14 @@ textarea:focus {
   /* Dashboard responsive: stack sidebar below main content */
   .dashboard-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  /* Selects nativos devem ser clicáveis no mobile */
+  .form-select,
+  select {
+    -webkit-appearance: menulist !important;
+    appearance: menulist !important;
+    font-size: 16px !important; /* previne zoom automático no iOS */
   }
 }
 

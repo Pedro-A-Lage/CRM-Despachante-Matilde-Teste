@@ -53,7 +53,7 @@ function shortName(name: string | undefined): string {
     if (!name) return '—';
     const parts = name.trim().split(/\s+/).filter(p => !['de', 'da', 'do', 'dos', 'das', 'e'].includes(p.toLowerCase()));
     if (parts.length <= 1) return parts[0] || '—';
-    return `${parts[0]} ${parts[1]![0]}.`;
+    return `${parts[0]} ${parts[1]?.[0] ? parts[1][0] + '.' : ''}`;
 }
 
 // ============================================
