@@ -190,10 +190,10 @@ export default function OSList() {
                 const veiculo = veiculos.find((v) => v.id === o.veiculoId);
                 return (
                     o.numero.toString().includes(term) ||
-                    cliente?.nome.toLowerCase().includes(term) ||
-                    veiculo?.placa.toLowerCase().includes(term) ||
-                    veiculo?.chassi.toLowerCase().includes(term) ||
-                    cliente?.cpfCnpj.replace(/\D/g, '').includes(term.replace(/\D/g, ''))
+                    cliente?.nome?.toLowerCase().includes(term) ||
+                    veiculo?.placa?.toLowerCase().includes(term) ||
+                    veiculo?.chassi?.toLowerCase().includes(term) ||
+                    cliente?.cpfCnpj?.replace(/\D/g, '').includes(term.replace(/\D/g, ''))
                 );
             });
         }
