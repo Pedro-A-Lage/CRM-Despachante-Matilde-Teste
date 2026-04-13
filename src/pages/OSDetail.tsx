@@ -2274,19 +2274,6 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                         ))}
                     </div>
                 </div>
-                <button onClick={handleSave} disabled={!dirty}
-                    style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                        padding: '5px 12px', borderRadius: 7,
-                        fontSize: 11, fontWeight: 700, cursor: dirty ? 'pointer' : 'not-allowed',
-                        background: dirty ? 'var(--notion-blue)' : 'var(--notion-surface)',
-                        color: dirty ? '#fff' : 'var(--notion-text-secondary)',
-                        border: dirty ? 'none' : '1px solid var(--notion-border)',
-                        boxShadow: dirty ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
-                        transition: 'all 0.2s', opacity: dirty ? 1 : 0.6,
-                    } as React.CSSProperties}>
-                    <Save size={12} /> {dirty ? 'Salvar' : 'Salvo'}
-                </button>
             </div>
 
             {/* ===== LAYOUT 2 COLUNAS ===== */}
