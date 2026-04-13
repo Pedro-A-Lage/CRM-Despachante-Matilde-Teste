@@ -34,6 +34,38 @@ function detectarMimeType(file: File): string {
     return 'application/pdf';
 }
 
+/**
+ * Comprime imagem para no máximo MAX_DIM pixels no maior lado,
+ * converte para JPEG com qualidade 0.85. Retorna { base64, mimeType }.
+ * Reduz payload ~80% em fotos de celular (4000px → 1600px).
+ */
+const MAX_DIM = 1600;
+async function comprimirImagem(file: File): Promise<{ base64: string; mimeType: string }> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let { width, height } = img;
+            if (width > MAX_DIM || height > MAX_DIM) {
+                const scale = MAX_DIM / Math.max(width, height);
+                width = Math.round(width * scale);
+                height = Math.round(height * scale);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d')!;
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            const b64 = dataUrl.split(',')[1]!;
+            resolve({ base64: b64, mimeType: 'image/jpeg' });
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Erro ao carregar imagem')); };
+        img.src = url;
+    });
+}
+
 export interface DadosFichaCadastro {
     tipoServico: string;
     placa: string;
@@ -234,11 +266,11 @@ INSTRUÇÕES PARA FOTOS:
 
 `;
 
-async function extrairViaGemini(file: File, mimeType: string): Promise<DadosFichaCadastro> {
-    const buf = await file.arrayBuffer();
-    const b64 = arrayBufferToBase64(buf);
+async function extrairViaGemini(file: File, _mimeType: string): Promise<DadosFichaCadastro> {
+    // Comprimir foto antes de enviar (reduz ~80% do payload, evita erros 413/timeout)
+    const { base64: b64, mimeType: compressedMime } = await comprimirImagem(file);
     const promptCompleto = PROMPT_FOTO_PREFIXO + PROMPT_FICHA_CADASTRO;
-    const raw = await chamarGeminiComRetry(b64, mimeType, promptCompleto);
+    const raw = await chamarGeminiComRetry(b64, compressedMime, promptCompleto, 4);
 
     let parsed: any;
     try {
