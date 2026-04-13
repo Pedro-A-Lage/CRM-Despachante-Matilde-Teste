@@ -130,7 +130,9 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         const key = `${etapaIdx}-${tipoDoc}`;
         setUploading(key);
         try {
-            const path = `empresas/${empresa.nome}/${osId}/${tipoDoc}_${file.name}`;
+            // Sanitizar path: remover acentos para compatibilidade com Supabase Storage
+            const sanitize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const path = `empresas/${sanitize(empresa.nome)}/${osId}/${sanitize(tipoDoc)}_${sanitize(file.name)}`;
             const url = await uploadFileToSupabase(file, path);
             // Update the doc with file info and mark as pronto
             const updated = enviosStatus.map((etapa, i) => {
@@ -144,8 +146,10 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                 };
             });
             onUpdate(updated);
-        } catch (err) {
+            showToast('Arquivo anexado com sucesso!', 'success');
+        } catch (err: any) {
             console.error('Erro no upload:', err);
+            showToast(`Erro ao anexar arquivo: ${err.message || err}`, 'error');
         } finally {
             setUploading(null);
         }
