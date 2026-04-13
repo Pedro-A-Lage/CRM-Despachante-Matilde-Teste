@@ -292,6 +292,11 @@ async function extrairViaGemini(file: File, _mimeType: string): Promise<DadosFic
         return m ? `${m[3]}-${m[2]}-${m[1]}` : br;
     };
 
+    // Normalizar tipoVeiculo para 'carro' ou 'moto' (DB constraint)
+    const tipoVeicRaw = s(parsed.tipoVeiculo).toLowerCase();
+    const tipoVeiculo: string =
+        (tipoVeicRaw.includes('moto') || tipoVeicRaw.includes('ciclomot')) ? 'moto' : 'carro';
+
     return {
         tipoServico: s(parsed.tipoServico),
         placa: s(parsed.placa).toUpperCase().replace(/[^A-Z0-9]/g, ''),
@@ -303,7 +308,7 @@ async function extrairViaGemini(file: File, _mimeType: string): Promise<DadosFic
         cor: s(parsed.cor) === '-' ? '' : s(parsed.cor),
         categoria: s(parsed.categoria),
         combustivel: s(parsed.combustivel),
-        tipoVeiculo: s(parsed.tipoVeiculo),
+        tipoVeiculo,
         municipioEmplacamento: s(parsed.municipioEmplacamento),
         valorRecibo: s(parsed.valorRecibo),
         dataAquisicao: toIso(s(parsed.dataAquisicao)),
