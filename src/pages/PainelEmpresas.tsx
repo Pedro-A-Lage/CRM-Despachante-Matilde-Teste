@@ -1,6 +1,6 @@
 // src/pages/PainelEmpresas.tsx
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { Building2, Mail, CheckCircle2, Circle, Clock, ExternalLink, ChevronDown, ChevronRight, DollarSign, Check, X } from 'lucide-react';
+import { Building2, Mail, CheckCircle2, Circle, Clock, ExternalLink, ChevronDown, ChevronRight, DollarSign, Check, X, Calendar, Filter } from 'lucide-react';
 import { getEmpresas } from '../lib/empresaService';
 import { getOrdens, updateOrdem } from '../lib/database';
 import { getChargesByOS } from '../lib/financeService';
@@ -40,6 +40,14 @@ export default function PainelEmpresas() {
     const [osCharges, setOsCharges] = useState<Record<string, any[]>>({});
     const navigate = useNavigate();
 
+    // Filtros
+    const [filtroPeriodo, setFiltroPeriodo] = useState<string>('todos');
+    const [filtroPeriodoInicio, setFiltroPeriodoInicio] = useState('');
+    const [filtroPeriodoFim, setFiltroPeriodoFim] = useState('');
+    const [filtroPagamento, setFiltroPagamento] = useState<string>('todos');
+    const [filtroStatus, setFiltroStatus] = useState<string>('todos');
+    const [filtroServico, setFiltroServico] = useState<string>('todos');
+
     const loadData = useCallback(async () => {
         setLoading(true);
         const [emps, ords] = await Promise.all([getEmpresas(), getOrdens()]);
@@ -65,10 +73,41 @@ export default function PainelEmpresas() {
     const empresa = empresas.find((e) => e.id === selectedEmpresa);
 
     const osEmpresa = useMemo(() => {
+        const now = new Date();
         return ordens
             .filter((os) => os.empresaParceiraId === selectedEmpresa)
+            .filter((os) => {
+                // Filtro período
+                if (filtroPeriodo !== 'todos' && os.criado_em) {
+                    const criado = new Date(os.criado_em);
+                    if (filtroPeriodo === 'este_mes') {
+                        if (criado.getMonth() !== now.getMonth() || criado.getFullYear() !== now.getFullYear()) return false;
+                    } else if (filtroPeriodo === 'mes_passado') {
+                        const mp = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        if (criado.getMonth() !== mp.getMonth() || criado.getFullYear() !== mp.getFullYear()) return false;
+                    } else if (filtroPeriodo === '3_meses') {
+                        const tresMeses = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+                        if (criado < tresMeses) return false;
+                    } else if (filtroPeriodo === 'personalizado') {
+                        if (filtroPeriodoInicio && criado < new Date(filtroPeriodoInicio + 'T00:00:00')) return false;
+                        if (filtroPeriodoFim && criado > new Date(filtroPeriodoFim + 'T23:59:59')) return false;
+                    }
+                }
+                // Filtro pagamento
+                if (filtroPagamento !== 'todos') {
+                    const fin = os.empresaFinanceiro;
+                    if (filtroPagamento === 'pendente' && fin?.recebido) return false;
+                    if (filtroPagamento === 'recebido' && !fin?.recebido) return false;
+                    if (filtroPagamento === 'adiantado' && !(fin?.valor_adiantado && fin.valor_adiantado > 0)) return false;
+                }
+                // Filtro status
+                if (filtroStatus !== 'todos' && os.status !== filtroStatus) return false;
+                // Filtro serviço
+                if (filtroServico !== 'todos' && os.tipoServico !== filtroServico) return false;
+                return true;
+            })
             .sort((a, b) => b.numero - a.numero);
-    }, [ordens, selectedEmpresa]);
+    }, [ordens, selectedEmpresa, filtroPeriodo, filtroPeriodoInicio, filtroPeriodoFim, filtroPagamento, filtroStatus, filtroServico]);
 
     // Calculate total for an OS based on charges + empresa values
     // custos = soma das cobranças (DAE + vistoria + placa)
@@ -203,6 +242,122 @@ export default function PainelEmpresas() {
 
             {empresa && (
                 <>
+                    {/* Filtros */}
+                    {(() => {
+                        const selectStyle: React.CSSProperties = {
+                            height: 36, borderRadius: 8, background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)', padding: '0 12px',
+                            fontSize: 13, fontWeight: 600, color: 'var(--notion-text-secondary)',
+                            cursor: 'pointer', fontFamily: 'inherit', outline: 'none',
+                            appearance: 'auto' as any, transition: 'border-color 0.15s',
+                            minWidth: 160, flex: '1 1 160px',
+                        };
+                        const tiposServico = Array.from(new Set(ordens.filter(o => o.empresaParceiraId === selectedEmpresa && o.tipoServico).map(o => o.tipoServico!)));
+                        const hasFilters = filtroPeriodo !== 'todos' || filtroPagamento !== 'todos' || filtroStatus !== 'todos' || filtroServico !== 'todos';
+                        const totalSemFiltro = ordens.filter(o => o.empresaParceiraId === selectedEmpresa).length;
+                        return (
+                            <div style={{
+                                display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center',
+                                border: '1px solid var(--notion-border)', borderRadius: 10,
+                                padding: '12px 14px', marginBottom: 16,
+                                background: 'var(--notion-bg-alt)',
+                            }}>
+                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {/* Período */}
+                                    <select
+                                        style={{ ...selectStyle, color: filtroPeriodo !== 'todos' ? 'var(--notion-text)' : undefined }}
+                                        value={filtroPeriodo}
+                                        onChange={e => setFiltroPeriodo(e.target.value)}
+                                    >
+                                        <option value="todos">Periodo: Todos</option>
+                                        <option value="este_mes">Este mes</option>
+                                        <option value="mes_passado">Mes passado</option>
+                                        <option value="3_meses">Ultimos 3 meses</option>
+                                        <option value="personalizado">Personalizado...</option>
+                                    </select>
+
+                                    {/* Date range para personalizado */}
+                                    {filtroPeriodo === 'personalizado' && (
+                                        <>
+                                            <input
+                                                type="date" value={filtroPeriodoInicio}
+                                                onChange={e => setFiltroPeriodoInicio(e.target.value)}
+                                                style={{ ...selectStyle, width: 140, padding: '0 8px' }}
+                                            />
+                                            <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)' }}>ate</span>
+                                            <input
+                                                type="date" value={filtroPeriodoFim}
+                                                onChange={e => setFiltroPeriodoFim(e.target.value)}
+                                                style={{ ...selectStyle, width: 140, padding: '0 8px' }}
+                                            />
+                                        </>
+                                    )}
+
+                                    {/* Pagamento */}
+                                    <select
+                                        style={{ ...selectStyle, color: filtroPagamento !== 'todos' ? 'var(--notion-text)' : undefined }}
+                                        value={filtroPagamento}
+                                        onChange={e => setFiltroPagamento(e.target.value)}
+                                    >
+                                        <option value="todos">Pagamento: Todos</option>
+                                        <option value="pendente">Pendentes</option>
+                                        <option value="recebido">Recebidos</option>
+                                        <option value="adiantado">Com adiantamento</option>
+                                    </select>
+
+                                    {/* Status */}
+                                    <select
+                                        style={{ ...selectStyle, color: filtroStatus !== 'todos' ? 'var(--notion-text)' : undefined }}
+                                        value={filtroStatus}
+                                        onChange={e => setFiltroStatus(e.target.value)}
+                                    >
+                                        <option value="todos">Status: Todos</option>
+                                        <option value="aguardando_documentacao">Aguardando Doc</option>
+                                        <option value="vistoria">Vistoria</option>
+                                        <option value="delegacia">Delegacia</option>
+                                        <option value="doc_pronto">Doc Pronto</option>
+                                        <option value="entregue">Entregue</option>
+                                    </select>
+
+                                    {/* Serviço */}
+                                    {tiposServico.length > 1 && (
+                                        <select
+                                            style={{ ...selectStyle, color: filtroServico !== 'todos' ? 'var(--notion-text)' : undefined }}
+                                            value={filtroServico}
+                                            onChange={e => setFiltroServico(e.target.value)}
+                                        >
+                                            <option value="todos">Servico: Todos</option>
+                                            {tiposServico.map(t => (
+                                                <option key={t} value={t}>
+                                                    {t.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+
+                                    {/* Limpar filtros */}
+                                    {hasFilters && (
+                                        <button
+                                            onClick={() => { setFiltroPeriodo('todos'); setFiltroPagamento('todos'); setFiltroStatus('todos'); setFiltroServico('todos'); setFiltroPeriodoInicio(''); setFiltroPeriodoFim(''); }}
+                                            style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                fontSize: 12, fontWeight: 600, color: 'var(--notion-orange)',
+                                                background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px',
+                                            }}
+                                        >
+                                            <X size={12} /> Limpar
+                                        </button>
+                                    )}
+                                </div>
+                                {hasFilters && (
+                                    <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)' }}>
+                                        Mostrando <strong>{osEmpresa.length}</strong> de {totalSemFiltro} OS
+                                    </span>
+                                )}
+                            </div>
+                        );
+                    })()}
+
                     {/* Stats */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 20 }}>
                         {[
