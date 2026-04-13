@@ -1,5 +1,5 @@
 node_modules
-dist/
+
 *.zip
 ts_errors.*
 *.tsbuildinfo
