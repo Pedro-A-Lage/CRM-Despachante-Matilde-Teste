@@ -343,8 +343,17 @@
 }
 
 .main-body {
-  padding: 24px;
+  padding: 28px 32px;
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Container interno para todas as paginas — centraliza e da respiro */
+.main-body > * {
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .modal-overlay {
@@ -975,7 +984,11 @@ textarea:focus {
   }
 
   .main-body {
-    padding: 12px;
+    padding: 12px 14px;
+  }
+
+  .main-body > * {
+    max-width: 100%;
   }
 
   .main-header {
