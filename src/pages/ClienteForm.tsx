@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, Plus, X, FolderOpen, Loader2 } from 'lucide-react';
-import { getCliente, saveCliente, updateCliente } from '../lib/database';
+import { Save, ArrowLeft, Plus, X, Loader2, User, Building2, Phone, Mail, FileText, IdCard } from 'lucide-react';
+import { getCliente, saveCliente } from '../lib/database';
 
 import type { TipoCliente } from '../types';
 
@@ -36,6 +36,57 @@ function detectTipo(cpfCnpj: string): TipoCliente {
     return digits.length > 11 ? 'PJ' : 'PF';
 }
 
+// ===== STYLE HELPERS =====
+const sectionCard: React.CSSProperties = {
+    background: 'var(--notion-surface)',
+    border: '1px solid var(--notion-border)',
+    borderRadius: 12,
+    padding: '20px 24px',
+    marginBottom: 16,
+    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+};
+
+const sectionHeader: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 18,
+    paddingBottom: 12,
+    borderBottom: '1px solid var(--notion-border)',
+};
+
+const sectionTitle: React.CSSProperties = {
+    margin: 0,
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: 'var(--notion-text)',
+    letterSpacing: '-0.01em',
+};
+
+const fieldLabel: React.CSSProperties = {
+    display: 'block',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    color: 'var(--notion-text-secondary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: 6,
+};
+
+const fieldInput: React.CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    background: 'var(--notion-bg)',
+    color: 'var(--notion-text)',
+    border: '1px solid var(--notion-border)',
+    borderRadius: 8,
+    fontSize: 16,
+    fontFamily: 'inherit',
+    outline: 'none',
+    transition: 'border-color 150ms, box-shadow 150ms',
+    boxSizing: 'border-box',
+};
+
 export default function ClienteForm() {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -48,8 +99,6 @@ export default function ClienteForm() {
     const [email, setEmail] = useState('');
     const [observacoes, setObservacoes] = useState('');
     const [saving, setSaving] = useState(false);
-    // Drive status removed
-    // const [driveStatus, setDriveStatus] = useState<'idle' | 'creating' | 'done' | 'error'>('idle');
 
     useEffect(() => {
         if (id) {
@@ -89,7 +138,6 @@ export default function ClienteForm() {
 
         setSaving(true);
         try {
-            // Save client first
             await saveCliente({
                 id: id || undefined,
                 tipo,
@@ -109,148 +157,322 @@ export default function ClienteForm() {
         }
     };
 
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        e.target.style.borderColor = 'var(--notion-blue)';
+        e.target.style.boxShadow = '0 0 0 3px rgba(0,117,222,0.12)';
+    };
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        e.target.style.borderColor = 'var(--notion-border)';
+        e.target.style.boxShadow = 'none';
+    };
+
     return (
-        <div>
-            <div className="page-header">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="btn btn-ghost">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h2>{isEditing ? 'Editar Cliente' : 'Novo Cliente'}</h2>
-                        <p className="page-header-subtitle">
-                            {isEditing ? 'Atualize os dados do cliente' : 'Cadastre um novo cliente no sistema'}
-                        </p>
-                    </div>
+        <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 4px' }}>
+            {/* Header */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                marginBottom: 24,
+                paddingBottom: 16,
+                borderBottom: '1px solid var(--notion-border)',
+            }}>
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        border: '1px solid var(--notion-border)',
+                        background: 'var(--notion-surface)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--notion-text)',
+                        flexShrink: 0,
+                    }}
+                    aria-label="Voltar"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+                <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background: 'rgba(0,117,222,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--notion-blue)',
+                    flexShrink: 0,
+                }}>
+                    {tipo === 'PJ' ? <Building2 size={22} /> : <User size={22} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: '1.4rem',
+                        fontWeight: 800,
+                        color: 'var(--notion-text)',
+                        letterSpacing: '-0.02em',
+                    }}>
+                        {isEditing ? 'Editar Cliente' : 'Novo Cliente'}
+                    </h1>
+                    <p style={{
+                        margin: '2px 0 0',
+                        fontSize: '0.85rem',
+                        color: 'var(--notion-text-secondary)',
+                    }}>
+                        {isEditing ? 'Atualize os dados cadastrais do cliente' : 'Preencha os dados para cadastrar um novo cliente'}
+                    </p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="card" style={{ maxWidth: 700 }}>
-                {/* Tipo */}
-                <div className="form-group">
-                    <label className="form-label">Tipo de Cliente *</label>
-                    <div className="toggle-group">
-                        <button
-                            type="button"
-                            className={`toggle-btn ${tipo === 'PF' ? 'active' : ''}`}
-                            onClick={() => setTipo('PF')}
-                        >
-                            Pessoa Física
-                        </button>
-                        <button
-                            type="button"
-                            className={`toggle-btn ${tipo === 'PJ' ? 'active' : ''}`}
-                            onClick={() => setTipo('PJ')}
-                        >
-                            Pessoa Jurídica
-                        </button>
+            <form onSubmit={handleSubmit}>
+                {/* ───── Tipo de Cliente ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <IdCard size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Tipo de Cliente</h2>
+                    </div>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 10,
+                    }}>
+                        {(['PF', 'PJ'] as TipoCliente[]).map((t) => (
+                            <button
+                                key={t}
+                                type="button"
+                                onClick={() => setTipo(t)}
+                                style={{
+                                    padding: '14px 16px',
+                                    borderRadius: 10,
+                                    border: tipo === t ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                    background: tipo === t ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                                    color: tipo === t ? 'var(--notion-blue)' : 'var(--notion-text)',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    fontSize: '0.9rem',
+                                    fontFamily: 'inherit',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 8,
+                                    transition: 'all 0.15s',
+                                }}
+                            >
+                                {t === 'PF' ? <User size={16} /> : <Building2 size={16} />}
+                                {t === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* Nome */}
-                <div className="form-group">
-                    <label className="form-label">
-                        {tipo === 'PF' ? 'Nome Completo' : 'Razão Social'} *
-                    </label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        value={nome}
-                        onChange={(e) => setNome(e.target.value)}
-                        placeholder={tipo === 'PF' ? 'Nome do cliente' : 'Razão social da empresa'}
-                        required
-                    />
-                </div>
-
-                {/* CPF / CNPJ */}
-                <div className="form-group">
-                    <label className="form-label">{tipo === 'PF' ? 'CPF' : 'CNPJ'} *</label>
-                    <input
-                        type="text"
-                        className="form-input"
-                        value={cpfCnpj}
-                        onChange={(e) => {
-                            const raw = e.target.value;
-                            const digits = raw.replace(/\D/g, '');
-                            // Auto-detecta tipo pelo tamanho
-                            const detectedTipo = detectTipo(raw);
-                            if (detectedTipo !== tipo) setTipo(detectedTipo);
-                            const formatted = detectedTipo === 'PF' ? formatCPF(raw) : formatCNPJ(raw);
-                            setCpfCnpj(formatted);
-                            void digits; // suppress unused warning
-                        }}
-                        placeholder={tipo === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'}
-                        maxLength={tipo === 'PF' ? 14 : 18}
-                        required
-                    />
-                </div>
-
-                {/* Telefones */}
-                <div className="form-group">
-                    <label className="form-label">Telefone(s)</label>
-                    {telefones.map((tel, idx) => (
-                        <div key={idx} className="flex gap-2 mb-2" style={{ marginBottom: '8px' }}>
+                {/* ───── Identificação ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <FileText size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Identificação</h2>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
+                        <div>
+                            <label style={fieldLabel}>
+                                {tipo === 'PF' ? 'Nome Completo' : 'Razão Social'} <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                            </label>
                             <input
                                 type="text"
-                                className="form-input"
-                                value={tel}
-                                onChange={(e) => updateTelefone(idx, formatPhone(e.target.value))}
-                                placeholder="(00) 00000-0000"
-                                maxLength={15}
+                                value={nome}
+                                onChange={(e) => setNome(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder={tipo === 'PF' ? 'Nome do cliente' : 'Razão social da empresa'}
+                                required
+                                style={fieldInput}
                             />
-                            {telefones.length > 1 && (
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost"
-                                    onClick={() => removeTelefone(idx)}
-                                >
-                                    <X size={16} />
-                                </button>
-                            )}
                         </div>
-                    ))}
-                    <button type="button" className="btn btn-secondary btn-sm" onClick={addTelefone}>
-                        <Plus size={14} /> Adicionar telefone
-                    </button>
+                        <div>
+                            <label style={fieldLabel}>
+                                {tipo === 'PF' ? 'CPF' : 'CNPJ'} <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={cpfCnpj}
+                                onChange={(e) => {
+                                    const raw = e.target.value;
+                                    const detectedTipo = detectTipo(raw);
+                                    if (detectedTipo !== tipo) setTipo(detectedTipo);
+                                    const formatted = detectedTipo === 'PF' ? formatCPF(raw) : formatCNPJ(raw);
+                                    setCpfCnpj(formatted);
+                                }}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder={tipo === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'}
+                                maxLength={tipo === 'PF' ? 14 : 18}
+                                required
+                                style={fieldInput}
+                            />
+                        </div>
+                    </div>
                 </div>
 
-                {/* Email */}
-                <div className="form-group">
-                    <label className="form-label">E-mail (opcional)</label>
-                    <input
-                        type="email"
-                        className="form-input"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="email@exemplo.com"
-                    />
+                {/* ───── Contato ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <Phone size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Contato</h2>
+                    </div>
+
+                    <div style={{ marginBottom: 16 }}>
+                        <label style={fieldLabel}>Telefone(s)</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {telefones.map((tel, idx) => (
+                                <div key={idx} style={{ display: 'flex', gap: 8 }}>
+                                    <input
+                                        type="text"
+                                        value={tel}
+                                        onChange={(e) => updateTelefone(idx, formatPhone(e.target.value))}
+                                        onFocus={handleFocus}
+                                        onBlur={handleBlur}
+                                        placeholder="(00) 00000-0000"
+                                        maxLength={15}
+                                        style={{ ...fieldInput, flex: 1 }}
+                                    />
+                                    {telefones.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeTelefone(idx)}
+                                            style={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: 8,
+                                                border: '1px solid var(--notion-border)',
+                                                background: 'var(--notion-bg)',
+                                                color: 'var(--notion-text-secondary)',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                flexShrink: 0,
+                                            }}
+                                            aria-label="Remover telefone"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={addTelefone}
+                            style={{
+                                marginTop: 8,
+                                padding: '7px 12px',
+                                background: 'transparent',
+                                border: '1px dashed var(--notion-border)',
+                                borderRadius: 8,
+                                color: 'var(--notion-text-secondary)',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                fontSize: '0.82rem',
+                                fontWeight: 600,
+                                fontFamily: 'inherit',
+                            }}
+                        >
+                            <Plus size={14} /> Adicionar telefone
+                        </button>
+                    </div>
+
+                    <div>
+                        <label style={fieldLabel}>
+                            <Mail size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                            E-mail (opcional)
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            placeholder="email@exemplo.com"
+                            style={fieldInput}
+                        />
+                    </div>
                 </div>
 
-                {/* Observações */}
-                <div className="form-group">
-                    <label className="form-label">Observações</label>
+                {/* ───── Observações ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <FileText size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Observações</h2>
+                    </div>
                     <textarea
-                        className="form-textarea"
                         value={observacoes}
                         onChange={(e) => setObservacoes(e.target.value)}
-                        placeholder="Observações gerais sobre o cliente..."
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        placeholder="Anotações gerais sobre o cliente (opcional)…"
+                        rows={4}
+                        style={{ ...fieldInput, minHeight: 96, resize: 'vertical' }}
                     />
                 </div>
 
-                {/* Info about Supabase */}
-                {!isEditing && (
-                    <p className="text-sm text-gray mb-4" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <FolderOpen size={14} />
-                        Documentos anexados no futuro serão salvos de forma organizada no sistema.
-                    </p>
-                )}
-
-                {/* Actions */}
-                <div className="form-actions">
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>
+                {/* ───── Ações ───── */}
+                <div style={{
+                    position: 'sticky',
+                    bottom: 0,
+                    background: 'var(--notion-bg)',
+                    paddingTop: 16,
+                    marginTop: 8,
+                    display: 'flex',
+                    gap: 10,
+                    justifyContent: 'flex-end',
+                    flexWrap: 'wrap',
+                }}>
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        disabled={saving}
+                        style={{
+                            padding: '10px 20px',
+                            background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)',
+                            borderRadius: 8,
+                            color: 'var(--notion-text)',
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.9rem',
+                            fontFamily: 'inherit',
+                            opacity: saving ? 0.6 : 1,
+                        }}
+                    >
                         Cancelar
                     </button>
-                    <button type="submit" className="btn btn-primary btn-lg" disabled={saving}>
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        style={{
+                            padding: '10px 24px',
+                            background: saving ? 'var(--notion-text-muted)' : 'var(--notion-blue)',
+                            border: 'none',
+                            borderRadius: 8,
+                            color: '#fff',
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            fontFamily: 'inherit',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            minWidth: 180,
+                            justifyContent: 'center',
+                        }}
+                    >
                         {saving ? (
                             <>
                                 <Loader2 size={16} className="spin" /> Salvando...

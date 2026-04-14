@@ -1,12 +1,78 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Save, ArrowLeft, Upload, FileText, CheckCircle, Loader2, AlertCircle, FolderPlus, FolderOpen } from 'lucide-react';
-import { getVeiculo, saveVeiculo, getClientes, getCliente, saveOrdem } from '../lib/database';
+import { Save, ArrowLeft, Upload, FileText, CheckCircle, Loader2, AlertCircle, FolderPlus, Car, User, Hash, Tag } from 'lucide-react';
+import { getVeiculo, saveVeiculo, getClientes, saveOrdem } from '../lib/database';
 import { gerarChecklistDinamico } from '../lib/configService';
 import { useServiceLabels } from '../hooks/useServiceLabels';
 import type { TipoServico, TipoCliente, Cliente, ChecklistItem } from '../types';
 import { extractVehicleData, type DadosExtraidos } from '../lib/pdfParser';
 import { uploadFileToSupabase } from '../lib/fileStorage';
+
+// ===== STYLE HELPERS =====
+const sectionCard: React.CSSProperties = {
+    background: 'var(--notion-surface)',
+    border: '1px solid var(--notion-border)',
+    borderRadius: 12,
+    padding: '20px 24px',
+    marginBottom: 16,
+    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+};
+
+const sectionHeader: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 18,
+    paddingBottom: 12,
+    borderBottom: '1px solid var(--notion-border)',
+};
+
+const sectionTitle: React.CSSProperties = {
+    margin: 0,
+    fontSize: '1rem',
+    fontWeight: 700,
+    color: 'var(--notion-text)',
+    letterSpacing: '-0.01em',
+};
+
+const fieldLabel: React.CSSProperties = {
+    display: 'block',
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    color: 'var(--notion-text-secondary)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: 6,
+};
+
+const fieldInput: React.CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    background: 'var(--notion-bg)',
+    color: 'var(--notion-text)',
+    border: '1px solid var(--notion-border)',
+    borderRadius: 8,
+    fontSize: 16,
+    fontFamily: 'inherit',
+    outline: 'none',
+    transition: 'border-color 150ms, box-shadow 150ms',
+    boxSizing: 'border-box',
+};
+
+const pdfBadge: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: '0.7rem',
+    fontWeight: 600,
+    color: '#059669',
+    background: 'rgba(5,150,105,0.1)',
+    padding: '2px 8px',
+    borderRadius: 6,
+    marginLeft: 6,
+    textTransform: 'none',
+    letterSpacing: 0,
+};
 
 export default function VeiculoForm() {
     const navigate = useNavigate();
@@ -39,7 +105,6 @@ export default function VeiculoForm() {
     const [saving, setSaving] = useState(false);
     const [saveStep, setSaveStep] = useState('');
     const [checklistPreview, setChecklistPreview] = useState<ChecklistItem[]>([]);
-    // veiculoDriveId was used for Drive folder link, we drop it or keep for legacy, but hide button
 
     useEffect(() => {
         (async () => {
@@ -54,7 +119,6 @@ export default function VeiculoForm() {
                     setMarcaModelo(veiculo.marcaModelo);
                     setClienteId(veiculo.clienteId);
                     setObservacoes(veiculo.observacoes || '');
-                    // veiculo.pastaDriveId left out as we don't show drive button anymore
                 }
             }
         })();
@@ -161,7 +225,6 @@ export default function VeiculoForm() {
         setSaving(true);
 
         try {
-            // 1. Save vehicle
             setSaveStep('Salvando veículo...');
             const veiculo = await saveVeiculo({
                 id: id || undefined,
@@ -173,29 +236,22 @@ export default function VeiculoForm() {
                 observacoes: observacoes.trim() || undefined,
             });
 
-            // 2a. NEW vehicle: Upload PDF to Supabase
             if (pdfFile && !isEditing) {
-                setSaveStep('Enviando PDF para o Supabase...');
+                setSaveStep('Enviando PDF...');
                 try {
                     const fileName = `Cadastro_${placa.trim() || chassi.trim()}.pdf`;
                     const path = `veiculos/${veiculo.id}/${fileName.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
-
                     const publicUrl = await uploadFileToSupabase(pdfFile, path);
-
-                    // Save Supabase URL to the vehicle record
                     await saveVeiculo({
                         ...veiculo,
                         pastaSupabasePath: publicUrl,
-                        cadastroDriveId: publicUrl, // keeping for legacy fallback or if it's used elsewhere
+                        cadastroDriveId: publicUrl,
                     });
                 } catch (err) {
-                    console.error('Erro ao enviar PDF para o Supabase:', err);
+                    console.error('Erro ao enviar PDF:', err);
                 }
-
-                // 2b. EDITING vehicle: (No need to rename folder in Supabase as we use IDs in path)
             }
 
-            // 3. Create OS automatically (if using PDF and option enabled)
             if (pdfFile && criarOS && !isEditing) {
                 setSaveStep('Criando Ordem de Serviço...');
                 const tipoCliente: TipoCliente = selectedCliente?.tipo || 'PF';
@@ -225,256 +281,479 @@ export default function VeiculoForm() {
         }
     };
 
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        e.target.style.borderColor = 'var(--notion-blue)';
+        e.target.style.boxShadow = '0 0 0 3px rgba(0,117,222,0.12)';
+    };
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        e.target.style.borderColor = 'var(--notion-border)';
+        e.target.style.boxShadow = 'none';
+    };
+
     return (
-        <div>
-            <div className="page-header">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="btn btn-ghost">
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h2>{isEditing ? 'Editar Veículo' : 'Novo Veículo'}</h2>
-                        <p className="page-header-subtitle">
-                            {isEditing ? 'Atualize os dados do veículo' : 'Cadastre um novo veículo'}
-                        </p>
-                    </div>
+        <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 4px' }}>
+            {/* Header */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                marginBottom: 24,
+                paddingBottom: 16,
+                borderBottom: '1px solid var(--notion-border)',
+            }}>
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        border: '1px solid var(--notion-border)',
+                        background: 'var(--notion-surface)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--notion-text)',
+                        flexShrink: 0,
+                    }}
+                    aria-label="Voltar"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+                <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background: 'rgba(5,150,105,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#059669',
+                    flexShrink: 0,
+                }}>
+                    <Car size={22} />
                 </div>
-                {/* Drive button removed */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: '1.4rem',
+                        fontWeight: 800,
+                        color: 'var(--notion-text)',
+                        letterSpacing: '-0.02em',
+                    }}>
+                        {isEditing ? 'Editar Veículo' : 'Novo Veículo'}
+                    </h1>
+                    <p style={{
+                        margin: '2px 0 0',
+                        fontSize: '0.85rem',
+                        color: 'var(--notion-text-secondary)',
+                    }}>
+                        {isEditing ? 'Atualize os dados cadastrais do veículo' : 'Preencha os dados para cadastrar um novo veículo'}
+                    </p>
+                </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="card" style={{ maxWidth: 700 }}>
-                {/* PDF Upload Area */}
+            <form onSubmit={handleSubmit}>
+                {/* ───── PDF Upload (só para novo) ───── */}
                 {!isEditing && (
                     <div style={{
-                        marginBottom: 'var(--space-6)',
-                        padding: 'var(--space-5)',
-                        background: 'var(--notion-blue)',
-                        borderRadius: 'var(--radius-md)',
-                        border: `2px dashed ${pdfFile ? 'var(--notion-green)' : 'var(--notion-blue)'}`,
-                        textAlign: 'center',
+                        ...sectionCard,
+                        background: pdfFile ? 'rgba(5,150,105,0.04)' : 'rgba(0,117,222,0.04)',
+                        border: pdfFile ? '2px dashed #059669' : '2px dashed var(--notion-blue)',
                     }}>
-                        <FileText size={32} style={{ color: pdfFile ? 'var(--notion-green)' : 'var(--notion-blue)', margin: '0 auto var(--space-3)' }} />
-                        <h4 style={{ marginBottom: 'var(--space-2)', color: pdfFile ? 'var(--notion-green)' : 'var(--notion-blue)' }}>
-                            {pdfFile ? `📄 ${pdfFile.name}` : 'Importar dados de PDF'}
-                        </h4>
-                        <p className="text-sm text-gray" style={{ marginBottom: 'var(--space-4)' }}>
-                            {pdfFile
-                                ? 'PDF carregado! Será enviado para o sistema e uma OS será criada automaticamente.'
-                                : 'Envie a folha de cadastro para preencher os campos e criar a OS automaticamente'
-                            }
-                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                            <div style={{
+                                width: 52,
+                                height: 52,
+                                borderRadius: 12,
+                                background: pdfFile ? 'rgba(5,150,105,0.15)' : 'rgba(0,117,222,0.15)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: pdfFile ? '#059669' : 'var(--notion-blue)',
+                                flexShrink: 0,
+                            }}>
+                                <FileText size={26} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 200 }}>
+                                <h3 style={{
+                                    margin: 0,
+                                    fontSize: '0.95rem',
+                                    fontWeight: 700,
+                                    color: pdfFile ? '#059669' : 'var(--notion-text)',
+                                }}>
+                                    {pdfFile ? pdfFile.name : 'Importar dados de PDF'}
+                                </h3>
+                                <p style={{
+                                    margin: '2px 0 0',
+                                    fontSize: '0.82rem',
+                                    color: 'var(--notion-text-secondary)',
+                                }}>
+                                    {pdfFile
+                                        ? 'PDF pronto — será enviado ao salvar e pode criar a OS automaticamente.'
+                                        : 'Envie a folha de cadastro para preencher os campos automaticamente.'
+                                    }
+                                </p>
+                            </div>
+                            <input
+                                ref={fileRef}
+                                type="file"
+                                accept="application/pdf"
+                                style={{ display: 'none' }}
+                                onChange={handlePdfUpload}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => fileRef.current?.click()}
+                                disabled={extracting}
+                                style={{
+                                    padding: '10px 16px',
+                                    background: pdfFile ? 'var(--notion-surface)' : 'var(--notion-blue)',
+                                    color: pdfFile ? 'var(--notion-text)' : '#fff',
+                                    border: pdfFile ? '1px solid var(--notion-border)' : 'none',
+                                    borderRadius: 8,
+                                    cursor: extracting ? 'not-allowed' : 'pointer',
+                                    fontWeight: 600,
+                                    fontSize: '0.85rem',
+                                    fontFamily: 'inherit',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                    flexShrink: 0,
+                                }}
+                            >
+                                {extracting ? (
+                                    <><Loader2 size={14} className="spin" /> Analisando...</>
+                                ) : (
+                                    <><Upload size={14} /> {pdfFile ? 'Trocar' : 'Selecionar'}</>
+                                )}
+                            </button>
+                        </div>
 
-                        <input
-                            ref={fileRef}
-                            type="file"
-                            accept="application/pdf"
-                            style={{ display: 'none' }}
-                            onChange={handlePdfUpload}
-                        />
-
-                        <button
-                            type="button"
-                            className={`btn ${pdfFile ? 'btn-secondary' : 'btn-primary'}`}
-                            onClick={() => fileRef.current?.click()}
-                            disabled={extracting}
-                        >
-                            {extracting ? (
-                                <>
-                                    <Loader2 size={16} className="spin" /> Analisando PDF...
-                                </>
-                            ) : (
-                                <>
-                                    <Upload size={16} /> {pdfFile ? 'Trocar PDF' : 'Selecionar PDF'}
-                                </>
-                            )}
-                        </button>
-
-                        {/* Extraction result */}
                         {fieldsFilledFromPdf.length > 0 && (
                             <div style={{
-                                marginTop: 'var(--space-4)',
-                                padding: 'var(--space-3) var(--space-4)',
-                                background: 'var(--notion-green)',
-                                borderRadius: 'var(--radius-sm)',
-                                textAlign: 'left',
+                                marginTop: 12,
+                                padding: '8px 12px',
+                                background: 'rgba(5,150,105,0.08)',
+                                border: '1px solid rgba(5,150,105,0.2)',
+                                borderRadius: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                fontSize: '0.82rem',
+                                color: '#059669',
+                                fontWeight: 600,
                             }}>
-                                <p className="text-sm font-semibold" style={{ color: 'var(--notion-green)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <CheckCircle size={16} /> Campos preenchidos: {fieldsFilledFromPdf.join(', ')}
-                                </p>
+                                <CheckCircle size={14} /> Campos preenchidos: {fieldsFilledFromPdf.join(', ')}
                             </div>
                         )}
 
                         {extractionError && (
                             <div style={{
-                                marginTop: 'var(--space-4)',
-                                padding: 'var(--space-3) var(--space-4)',
+                                marginTop: 12,
+                                padding: '8px 12px',
                                 background: 'rgba(221,91,0,0.08)',
                                 border: '1px solid rgba(221,91,0,0.2)',
-                                borderRadius: 'var(--radius-sm)',
-                                textAlign: 'left',
+                                borderRadius: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                fontSize: '0.82rem',
+                                color: 'var(--notion-orange)',
                             }}>
-                                <p className="text-sm" style={{ color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <AlertCircle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} /> {extractionError}
-                                </p>
+                                <AlertCircle size={14} /> {extractionError}
                             </div>
                         )}
 
-                        {/* All extracted data */}
                         {extractionResult && fieldsFilledFromPdf.length > 0 && (
-                            <details style={{ marginTop: 'var(--space-3)', textAlign: 'left' }}>
-                                <summary className="text-xs text-gray" style={{ cursor: 'pointer' }}>
+                            <details style={{ marginTop: 10 }}>
+                                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: 'var(--notion-text-secondary)' }}>
                                     Ver todos os dados extraídos
                                 </summary>
-                                <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-xs)', color: 'var(--notion-text-secondary)' }}>
-                                    {extractionResult.placa && <p>Placa: {extractionResult.placa}</p>}
-                                    {extractionResult.renavam && <p>Renavam: {extractionResult.renavam}</p>}
-                                    {extractionResult.chassi && <p>Chassi: {extractionResult.chassi}</p>}
-                                    {extractionResult.marcaModelo && <p>Marca/Modelo: {extractionResult.marcaModelo}</p>}
-                                    {extractionResult.anoFabricacao && <p>Ano Fab: {extractionResult.anoFabricacao}</p>}
-                                    {extractionResult.anoModelo && <p>Ano Mod: {extractionResult.anoModelo}</p>}
-                                    {extractionResult.cor && <p>Cor: {extractionResult.cor}</p>}
-                                    {extractionResult.cpfCnpj && <p>CPF/CNPJ: {extractionResult.cpfCnpj}</p>}
-                                    {extractionResult.nomeProprietario && <p>Proprietário: {extractionResult.nomeProprietario}</p>}
+                                <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--notion-text-secondary)', lineHeight: 1.6 }}>
+                                    {extractionResult.placa && <div>Placa: {extractionResult.placa}</div>}
+                                    {extractionResult.renavam && <div>Renavam: {extractionResult.renavam}</div>}
+                                    {extractionResult.chassi && <div>Chassi: {extractionResult.chassi}</div>}
+                                    {extractionResult.marcaModelo && <div>Marca/Modelo: {extractionResult.marcaModelo}</div>}
+                                    {extractionResult.anoFabricacao && <div>Ano Fab: {extractionResult.anoFabricacao}</div>}
+                                    {extractionResult.anoModelo && <div>Ano Mod: {extractionResult.anoModelo}</div>}
+                                    {extractionResult.cor && <div>Cor: {extractionResult.cor}</div>}
+                                    {extractionResult.cpfCnpj && <div>CPF/CNPJ: {extractionResult.cpfCnpj}</div>}
+                                    {extractionResult.nomeProprietario && <div>Proprietário: {extractionResult.nomeProprietario}</div>}
                                 </div>
                             </details>
                         )}
                     </div>
                 )}
 
-                {/* Cliente */}
-                <div className="form-group">
-                    <label className="form-label">
-                        Cliente *
-                        {fieldsFilledFromPdf.includes('Cliente') && (
-                            <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>
+                {/* ───── Cliente ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <User size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Proprietário</h2>
+                    </div>
+                    <div>
+                        <label style={fieldLabel}>
+                            Cliente <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                            {fieldsFilledFromPdf.includes('Cliente') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                        </label>
+                        <select
+                            value={clienteId}
+                            onChange={(e) => setClienteId(e.target.value)}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            required
+                            style={{ ...fieldInput, appearance: 'auto' as any, WebkitAppearance: 'menulist' as any }}
+                        >
+                            <option value="">Selecione o cliente...</option>
+                            {clientes.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.nome} ({c.cpfCnpj})
+                                </option>
+                            ))}
+                        </select>
+                        {clientes.length === 0 && (
+                            <p style={{ marginTop: 6, fontSize: '0.78rem', color: 'var(--notion-text-secondary)' }}>
+                                Nenhum cliente cadastrado.{' '}
+                                <a href="/clientes/novo" style={{ color: 'var(--notion-blue)' }}>Cadastrar cliente primeiro</a>
+                            </p>
                         )}
-                    </label>
-                    <select
-                        className="form-select"
-                        value={clienteId}
-                        onChange={(e) => setClienteId(e.target.value)}
-                        required
-                    >
-                        <option value="">Selecione o cliente...</option>
-                        {clientes.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.nome} ({c.cpfCnpj})
-                            </option>
-                        ))}
-                    </select>
-                    {clientes.length === 0 && (
-                        <p className="form-hint">
-                            Nenhum cliente cadastrado.{' '}
-                            <a href="/clientes/novo" style={{ color: 'var(--notion-blue)' }}>Cadastrar cliente primeiro</a>
-                        </p>
-                    )}
-                </div>
-
-                <div className="form-row">
-                    <div className="form-group">
-                        <label className="form-label">
-                            Placa
-                            {fieldsFilledFromPdf.includes('Placa') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
-                        </label>
-                        <input type="text" className="form-input" value={placa} onChange={(e) => setPlaca(e.target.value)} placeholder="ABC1D23" style={{ textTransform: 'uppercase' }} />
-                        <p className="form-hint">Pode ficar vazio para primeiro emplacamento</p>
-                    </div>
-                    <div className="form-group">
-                        <label className="form-label">
-                            Renavam
-                            {fieldsFilledFromPdf.includes('Renavam') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
-                        </label>
-                        <input type="text" className="form-input" value={renavam} onChange={(e) => setRenavam(e.target.value)} placeholder="00000000000" />
                     </div>
                 </div>
 
-                <div className="form-group">
-                    <label className="form-label">
-                        Chassi *
-                        {fieldsFilledFromPdf.includes('Chassi') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
-                    </label>
-                    <input type="text" className="form-input" value={chassi} onChange={(e) => setChassi(e.target.value)} placeholder="9BWHE21JX24060960" required style={{ textTransform: 'uppercase' }} />
+                {/* ───── Identificação do Veículo ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <Hash size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Identificação</h2>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                        <div>
+                            <label style={fieldLabel}>
+                                Placa
+                                {fieldsFilledFromPdf.includes('Placa') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                            </label>
+                            <input
+                                type="text"
+                                value={placa}
+                                onChange={(e) => setPlaca(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder="ABC1D23"
+                                style={{ ...fieldInput, textTransform: 'uppercase' }}
+                            />
+                            <p style={{ marginTop: 6, fontSize: '0.72rem', color: 'var(--notion-text-muted)' }}>
+                                Pode ficar vazio para primeiro emplacamento
+                            </p>
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>
+                                Renavam
+                                {fieldsFilledFromPdf.includes('Renavam') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                            </label>
+                            <input
+                                type="text"
+                                value={renavam}
+                                onChange={(e) => setRenavam(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder="00000000000"
+                                style={fieldInput}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: 14 }}>
+                        <label style={fieldLabel}>
+                            Chassi <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                            {fieldsFilledFromPdf.includes('Chassi') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                        </label>
+                        <input
+                            type="text"
+                            value={chassi}
+                            onChange={(e) => setChassi(e.target.value)}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            placeholder="9BWHE21JX24060960"
+                            required
+                            style={{ ...fieldInput, textTransform: 'uppercase', fontFamily: 'monospace' }}
+                        />
+                    </div>
+
+                    <div style={{ marginTop: 14 }}>
+                        <label style={fieldLabel}>
+                            <Tag size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                            Marca / Modelo
+                            {fieldsFilledFromPdf.includes('Marca/Modelo') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                        </label>
+                        <input
+                            type="text"
+                            value={marcaModelo}
+                            onChange={(e) => setMarcaModelo(e.target.value)}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            placeholder="Ex: VW Gol 1.0"
+                            style={fieldInput}
+                        />
+                    </div>
                 </div>
 
-                <div className="form-group">
-                    <label className="form-label">
-                        Marca / Modelo
-                        {fieldsFilledFromPdf.includes('Marca/Modelo') && <span style={{ color: 'var(--notion-green)', fontSize: 'var(--font-size-xs)', marginLeft: 8 }}>✓ do PDF</span>}
-                    </label>
-                    <input type="text" className="form-input" value={marcaModelo} onChange={(e) => setMarcaModelo(e.target.value)} placeholder="Ex: VW Gol 1.0" />
+                {/* ───── Observações ───── */}
+                <div style={sectionCard}>
+                    <div style={sectionHeader}>
+                        <FileText size={18} style={{ color: 'var(--notion-blue)' }} />
+                        <h2 style={sectionTitle}>Observações</h2>
+                    </div>
+                    <textarea
+                        value={observacoes}
+                        onChange={(e) => setObservacoes(e.target.value)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        placeholder="Anotações sobre o veículo (opcional)…"
+                        rows={4}
+                        style={{ ...fieldInput, minHeight: 96, resize: 'vertical' }}
+                    />
                 </div>
 
-                <div className="form-group">
-                    <label className="form-label">Observações</label>
-                    <textarea className="form-textarea" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} placeholder="Observações sobre o veículo..." />
-                </div>
-
-                {/* ====== OS CREATION SECTION (appears when PDF is loaded) ====== */}
+                {/* ───── Criação de OS (só com PDF carregado) ───── */}
                 {pdfFile && !isEditing && (
                     <div style={{
-                        marginTop: 'var(--space-4)',
-                        padding: 'var(--space-5)',
-                        background: 'rgba(55,114,255,0.08)',
-                        borderRadius: 'var(--radius-md)',
+                        ...sectionCard,
+                        background: 'rgba(0,117,222,0.04)',
                         border: '1px solid var(--notion-blue)',
                     }}>
-                        <div className="flex items-center gap-2 mb-4">
-                            <FolderPlus size={20} style={{ color: 'var(--notion-blue)' }} />
-                            <h4 style={{ color: 'var(--notion-blue)' }}>Criar Ordem de Serviço automaticamente</h4>
+                        <div style={{ ...sectionHeader, borderBottomColor: 'rgba(0,117,222,0.2)' }}>
+                            <FolderPlus size={18} style={{ color: 'var(--notion-blue)' }} />
+                            <h2 style={{ ...sectionTitle, color: 'var(--notion-blue)' }}>Criar Ordem de Serviço automaticamente</h2>
                         </div>
 
-                        <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
-                            <div className="toggle-group">
-                                <button type="button" className={`toggle-btn ${criarOS ? 'active' : ''}`} onClick={() => setCriarOS(true)}>
+                        <div style={{ marginBottom: 14 }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setCriarOS(true)}
+                                    style={{
+                                        padding: '12px',
+                                        borderRadius: 8,
+                                        border: criarOS ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                        background: criarOS ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                                        color: criarOS ? 'var(--notion-blue)' : 'var(--notion-text)',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        fontSize: '0.85rem',
+                                        fontFamily: 'inherit',
+                                    }}
+                                >
                                     Sim, criar OS
                                 </button>
-                                <button type="button" className={`toggle-btn ${!criarOS ? 'active' : ''}`} onClick={() => setCriarOS(false)}>
-                                    Não, só cadastrar veículo
+                                <button
+                                    type="button"
+                                    onClick={() => setCriarOS(false)}
+                                    style={{
+                                        padding: '12px',
+                                        borderRadius: 8,
+                                        border: !criarOS ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                        background: !criarOS ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                                        color: !criarOS ? 'var(--notion-blue)' : 'var(--notion-text)',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        fontSize: '0.85rem',
+                                        fontFamily: 'inherit',
+                                    }}
+                                >
+                                    Apenas cadastrar veículo
                                 </button>
                             </div>
                         </div>
 
                         {criarOS && (
                             <>
-                                <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
-                                    <label className="form-label">Tipo de Serviço *</label>
-                                    <div className="toggle-group" style={{ flexWrap: 'wrap' }}>
-                                        {(Object.entries(serviceLabels) as [TipoServico, string][]).map(
-                                            ([key, label]) => (
-                                                <button
-                                                    type="button"
-                                                    key={key}
-                                                    className={`toggle-btn ${tipoServico === key ? 'active' : ''}`}
-                                                    onClick={() => {
-                                                        setTipoServico(key);
-                                                        if (key === 'primeiro_emplacamento') setTrocaPlaca(true);
-                                                    }}
-                                                >
-                                                    {label}
-                                                </button>
-                                            )
-                                        )}
+                                <div style={{ marginBottom: 14 }}>
+                                    <label style={fieldLabel}>Tipo de Serviço</label>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                        {(Object.entries(serviceLabels) as [TipoServico, string][]).map(([key, label]) => (
+                                            <button
+                                                key={key}
+                                                type="button"
+                                                onClick={() => {
+                                                    setTipoServico(key);
+                                                    if (key === 'primeiro_emplacamento') setTrocaPlaca(true);
+                                                }}
+                                                style={{
+                                                    padding: '7px 12px',
+                                                    borderRadius: 20,
+                                                    border: tipoServico === key ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                                    background: tipoServico === key ? 'var(--notion-blue)' : 'var(--notion-bg)',
+                                                    color: tipoServico === key ? '#fff' : 'var(--notion-text)',
+                                                    cursor: 'pointer',
+                                                    fontWeight: 600,
+                                                    fontSize: '0.78rem',
+                                                    fontFamily: 'inherit',
+                                                }}
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
-                                <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
-                                    <label className="form-label">Há troca de placa?</label>
-                                    <div className="toggle-group">
-                                        <button type="button" className={`toggle-btn ${!trocaPlaca ? 'active' : ''}`} onClick={() => setTrocaPlaca(false)}>Não</button>
-                                        <button type="button" className={`toggle-btn ${trocaPlaca ? 'active' : ''}`} onClick={() => setTrocaPlaca(true)}>Sim</button>
+                                <div style={{ marginBottom: 14 }}>
+                                    <label style={fieldLabel}>Há troca de placa?</label>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTrocaPlaca(false)}
+                                            style={{
+                                                padding: '10px',
+                                                borderRadius: 8,
+                                                border: !trocaPlaca ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                                background: !trocaPlaca ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                                                color: !trocaPlaca ? 'var(--notion-blue)' : 'var(--notion-text)',
+                                                cursor: 'pointer',
+                                                fontWeight: 600,
+                                                fontSize: '0.85rem',
+                                                fontFamily: 'inherit',
+                                            }}
+                                        >
+                                            Não
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setTrocaPlaca(true)}
+                                            style={{
+                                                padding: '10px',
+                                                borderRadius: 8,
+                                                border: trocaPlaca ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                                background: trocaPlaca ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                                                color: trocaPlaca ? 'var(--notion-blue)' : 'var(--notion-text)',
+                                                cursor: 'pointer',
+                                                fontWeight: 600,
+                                                fontSize: '0.85rem',
+                                                fontFamily: 'inherit',
+                                            }}
+                                        >
+                                            Sim
+                                        </button>
                                     </div>
                                 </div>
 
                                 {selectedCliente && checklistPreview.length > 0 && (
                                     <div style={{
-                                        background: 'var(--notion-bg-alt)',
-                                        padding: 'var(--space-3)',
-                                        borderRadius: 'var(--radius-sm)',
+                                        background: 'var(--notion-bg)',
+                                        padding: '12px 14px',
+                                        borderRadius: 8,
+                                        border: '1px solid var(--notion-border)',
                                     }}>
-                                        <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>📋 Checklist gerado automaticamente</label>
-                                        <ul style={{ paddingLeft: 20 }}>
+                                        <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--notion-text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            Checklist que será gerado
+                                        </div>
+                                        <ul style={{ margin: 0, paddingLeft: 18 }}>
                                             {checklistPreview.map((item) => (
-                                                <li key={item.id} className="text-xs" style={{ marginBottom: 2 }}>{item.nome}</li>
+                                                <li key={item.id} style={{ fontSize: '0.82rem', color: 'var(--notion-text)', marginBottom: 2 }}>
+                                                    {item.nome}
+                                                </li>
                                             ))}
                                         </ul>
                                     </div>
@@ -484,19 +763,65 @@ export default function VeiculoForm() {
                     </div>
                 )}
 
-                <div className="form-actions">
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate(-1)}>
+                {/* ───── Ações ───── */}
+                <div style={{
+                    position: 'sticky',
+                    bottom: 0,
+                    background: 'var(--notion-bg)',
+                    paddingTop: 16,
+                    marginTop: 8,
+                    display: 'flex',
+                    gap: 10,
+                    justifyContent: 'flex-end',
+                    flexWrap: 'wrap',
+                }}>
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        disabled={saving}
+                        style={{
+                            padding: '10px 20px',
+                            background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)',
+                            borderRadius: 8,
+                            color: 'var(--notion-text)',
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.9rem',
+                            fontFamily: 'inherit',
+                            opacity: saving ? 0.6 : 1,
+                        }}
+                    >
                         Cancelar
                     </button>
-                    <button type="submit" className="btn btn-primary btn-lg" disabled={saving}>
+                    <button
+                        type="submit"
+                        disabled={saving}
+                        style={{
+                            padding: '10px 24px',
+                            background: saving ? 'var(--notion-text-muted)' : 'var(--notion-blue)',
+                            border: 'none',
+                            borderRadius: 8,
+                            color: '#fff',
+                            cursor: saving ? 'not-allowed' : 'pointer',
+                            fontWeight: 700,
+                            fontSize: '0.9rem',
+                            fontFamily: 'inherit',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            minWidth: 200,
+                            justifyContent: 'center',
+                        }}
+                    >
                         {saving ? (
                             <>
-                                <Loader2 size={16} className="spin" /> {saveStep}
+                                <Loader2 size={16} className="spin" /> {saveStep || 'Salvando...'}
                             </>
                         ) : (
                             <>
                                 <Save size={16} /> {pdfFile && criarOS && !isEditing
-                                    ? 'Cadastrar Veículo + Criar OS'
+                                    ? 'Cadastrar + Criar OS'
                                     : isEditing ? 'Salvar Alterações' : 'Cadastrar Veículo'
                                 }
                             </>
