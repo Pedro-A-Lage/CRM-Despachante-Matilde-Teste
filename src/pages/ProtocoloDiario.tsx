@@ -9,7 +9,7 @@ import {
     FileText, Printer, Plus, Calendar, Trash2, UserPlus,
     ChevronDown, ChevronUp, Edit2, Clock, Hash, Car, User,
     CheckCircle, RotateCcw, Shield, Loader2, ClipboardList,
-    Camera, Image as ImageIcon, ExternalLink, Check
+    Camera, Image as ImageIcon, ExternalLink, Check, X
 } from 'lucide-react';
 
 const TIPO_BADGE: Record<string, { color: string; bg: string; border: string; label: string; icon: any }> = {
@@ -372,6 +372,25 @@ export default function ProtocoloDiario() {
                             }}
                         />
                     </div>
+
+                    {/* Botão Hoje — só aparece se não estamos em hoje */}
+                    {data !== new Date().toISOString().split('T')[0] && (
+                        <button
+                            onClick={() => setData(new Date().toISOString().split('T')[0]!)}
+                            title="Ir para hoje"
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                padding: '0 14px', height: 38, borderRadius: 8,
+                                border: '1px solid rgba(0,117,222,0.35)',
+                                background: 'rgba(0,117,222,0.08)',
+                                color: 'var(--notion-blue)',
+                                fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <Clock size={13} /> Hoje
+                        </button>
+                    )}
 
                     <button onClick={gerarProtocolo}
                         style={{
@@ -928,62 +947,86 @@ export default function ProtocoloDiario() {
                     <div style={{
                         padding: '14px 20px',
                         borderBottom: '1px solid var(--notion-border)',
-                        display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+                        display: 'flex', flexDirection: 'column', gap: 12,
                     }}>
-                        <Clock size={14} style={{ color: 'var(--notion-text-secondary)' }} />
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
-                            Protocolos Anteriores
-                        </span>
-                        <span style={{
-                            fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                            background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
-                        }}>
-                            {protocolosAnterioresFiltrados.length}
-                        </span>
-
-                        {/* Filtro de datas */}
-                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', fontWeight: 600 }}>
-                                Filtrar:
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                            <Clock size={14} style={{ color: 'var(--notion-text-secondary)' }} />
+                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
+                                Protocolos Anteriores
                             </span>
-                            <input
-                                type="date"
-                                value={filtroDataInicio}
-                                onChange={(e) => setFiltroDataInicio(e.target.value)}
-                                placeholder="De"
-                                style={{
-                                    padding: '5px 8px', fontSize: 12,
-                                    background: 'var(--notion-bg)', color: 'var(--notion-text)',
-                                    border: '1px solid var(--notion-border)', borderRadius: 6,
-                                    outline: 'none', fontFamily: 'inherit',
-                                }}
-                            />
-                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>até</span>
-                            <input
-                                type="date"
-                                value={filtroDataFim}
-                                onChange={(e) => setFiltroDataFim(e.target.value)}
-                                placeholder="Até"
-                                style={{
-                                    padding: '5px 8px', fontSize: 12,
-                                    background: 'var(--notion-bg)', color: 'var(--notion-text)',
-                                    border: '1px solid var(--notion-border)', borderRadius: 6,
-                                    outline: 'none', fontFamily: 'inherit',
-                                }}
-                            />
+                            <span style={{
+                                fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                                background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
+                            }}>
+                                {protocolosAnterioresFiltrados.length}
+                            </span>
+
                             {(filtroDataInicio || filtroDataFim) && (
                                 <button
                                     onClick={() => { setFiltroDataInicio(''); setFiltroDataFim(''); }}
                                     style={{
-                                        padding: '5px 10px', fontSize: 11, fontWeight: 600,
+                                        marginLeft: 'auto',
+                                        padding: '5px 12px', fontSize: 11, fontWeight: 600,
                                         background: 'transparent', color: 'var(--notion-text-secondary)',
                                         border: '1px solid var(--notion-border)', borderRadius: 6,
                                         cursor: 'pointer', fontFamily: 'inherit',
+                                        display: 'inline-flex', alignItems: 'center', gap: 4,
                                     }}
                                 >
-                                    Limpar
+                                    <X size={12} /> Limpar filtro
                                 </button>
                             )}
+                        </div>
+
+                        {/* Filtro em linha própria */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: 10,
+                            alignItems: 'end',
+                        }}>
+                            <div>
+                                <label style={{
+                                    display: 'block', fontSize: 11, fontWeight: 700,
+                                    color: 'var(--notion-text-secondary)',
+                                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                                    marginBottom: 4,
+                                }}>
+                                    De
+                                </label>
+                                <input
+                                    type="date"
+                                    value={filtroDataInicio}
+                                    onChange={(e) => setFiltroDataInicio(e.target.value)}
+                                    style={{
+                                        width: '100%', padding: '8px 10px', fontSize: 13,
+                                        background: 'var(--notion-bg)', color: 'var(--notion-text)',
+                                        border: '1px solid var(--notion-border)', borderRadius: 8,
+                                        outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                                    }}
+                                />
+                            </div>
+                            <div>
+                                <label style={{
+                                    display: 'block', fontSize: 11, fontWeight: 700,
+                                    color: 'var(--notion-text-secondary)',
+                                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                                    marginBottom: 4,
+                                }}>
+                                    Até
+                                </label>
+                                <input
+                                    type="date"
+                                    value={filtroDataFim}
+                                    onChange={(e) => setFiltroDataFim(e.target.value)}
+                                    style={{
+                                        width: '100%', padding: '8px 10px', fontSize: 13,
+                                        background: 'var(--notion-bg)', color: 'var(--notion-text)',
+                                        border: '1px solid var(--notion-border)', borderRadius: 8,
+                                        outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -1044,19 +1087,20 @@ export default function ProtocoloDiario() {
                                         {ok}/{total} OK
                                     </span>
 
-                                    {/* Assinado */}
+                                    {/* Folha de entrada anexada */}
                                     {hasSigned && (
                                         <span
-                                            title="Protocolo assinado anexado"
+                                            title={`Folha de entrada anexada em ${p.fotoAnexadaEm ? new Date(p.fotoAnexadaEm).toLocaleDateString('pt-BR') : ''}`}
                                             style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                fontSize: 10, fontWeight: 700,
-                                                padding: '3px 10px', borderRadius: 20,
+                                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                                fontSize: 11, fontWeight: 700,
+                                                padding: '4px 12px', borderRadius: 20,
                                                 background: 'rgba(139,92,246,0.15)', color: '#8b5cf6',
-                                                border: '1px solid rgba(139,92,246,0.4)',
+                                                border: '1px solid rgba(139,92,246,0.45)',
+                                                letterSpacing: '0.02em',
                                             }}>
-                                            <ImageIcon size={10} />
-                                            ASSINADO
+                                            <ImageIcon size={12} />
+                                            FOLHA ANEXADA
                                         </span>
                                     )}
 
