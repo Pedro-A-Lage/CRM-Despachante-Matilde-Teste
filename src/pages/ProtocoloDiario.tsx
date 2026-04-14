@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getOrdens, getClientes, getVeiculos, saveProtocolo, getProtocolos } from '../lib/database';
+import { getOrdens, getClientes, getVeiculos, saveProtocolo, getProtocolos, mesclarProtocolosDuplicados } from '../lib/database';
 import { uploadFileToSupabase } from '../lib/fileStorage';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { ProtocoloProcesso, TipoServico, ProtocoloDiario as ProtocoloDiarioType } from '../types';
@@ -54,13 +54,40 @@ export default function ProtocoloDiario() {
         Promise.all([
             getProtocolos(), getOrdens(), getClientes(), getVeiculos()
         ]).then(([p, o, c, v]) => {
-            setProtocolos(p);
+            // Deduplica protocolos com a mesma data (mantém o com mais processos)
+            const porData = new Map<string, any>();
+            for (const proto of p) {
+                const existing = porData.get(proto.data);
+                if (!existing) {
+                    porData.set(proto.data, proto);
+                } else {
+                    const currLen = proto.processos?.length || 0;
+                    const existingLen = existing.processos?.length || 0;
+                    if (currLen > existingLen) porData.set(proto.data, proto);
+                }
+            }
+            const uniquos = Array.from(porData.values());
+            setProtocolos(uniquos);
             setOrdens(o);
             setClientes(c);
             setVeiculos(v);
             setLoading(false);
         });
     }, [refreshKey]);
+
+    const handleMesclarDuplicadas = async () => {
+        try {
+            const { mesclados, removidos } = await mesclarProtocolosDuplicados();
+            if (mesclados === 0) {
+                showToast('Nenhum protocolo duplicado encontrado', 'info');
+            } else {
+                showToast(`${mesclados} data(s) com duplicatas mesclada(s). ${removidos} registro(s) removido(s).`, 'success');
+                setRefreshKey(k => k + 1);
+            }
+        } catch (err: any) {
+            showToast('Erro ao mesclar duplicatas: ' + (err?.message || err), 'error');
+        }
+    };
 
     const protocoloHoje = useMemo(
         () => protocolos.find((p) => p.data === data),
@@ -998,11 +1025,24 @@ export default function ProtocoloDiario() {
                                 {!mostrarCompletos ? '(só pendentes)' : '(todos)'}
                             </span>
 
+                            <button
+                                onClick={handleMesclarDuplicadas}
+                                title="Mesclar protocolos duplicados (mesma data)"
+                                style={{
+                                    marginLeft: 'auto',
+                                    padding: '5px 12px', fontSize: 11, fontWeight: 600,
+                                    background: 'transparent', color: 'var(--notion-text-secondary)',
+                                    border: '1px solid var(--notion-border)', borderRadius: 6,
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                }}
+                            >
+                                Mesclar duplicados
+                            </button>
                             {temFiltroAtivo && (
                                 <button
                                     onClick={() => { setFiltroDataInicio(''); setFiltroDataFim(''); setFiltroBusca(''); }}
                                     style={{
-                                        marginLeft: 'auto',
                                         padding: '5px 12px', fontSize: 11, fontWeight: 600,
                                         background: 'transparent', color: 'var(--notion-text-secondary)',
                                         border: '1px solid var(--notion-border)', borderRadius: 6,

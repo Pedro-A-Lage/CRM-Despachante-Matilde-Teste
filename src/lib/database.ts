@@ -665,6 +665,28 @@ export async function saveProtocolo(protocolo: Omit<ProtocoloDiario, 'id' | 'cri
         return dbToProtocolo(data);
     }
 
+    // Antes de criar, verificar se já existe protocolo pra essa data (evita duplicatas)
+    if (protocolo.data) {
+        const { data: existente } = await supabase
+            .from('protocolos_diarios')
+            .select('*')
+            .eq('data', protocolo.data)
+            .maybeSingle();
+        if (existente) {
+            // Atualiza o existente em vez de criar novo
+            const dbData = protocoloToDb(protocolo);
+            delete dbData.id;
+            const { data, error } = await supabase
+                .from('protocolos_diarios')
+                .update(dbData)
+                .eq('id', existente.id)
+                .select()
+                .single();
+            if (error) { console.error('Erro saveProtocolo update (dedup):', error); throw error; }
+            return dbToProtocolo(data);
+        }
+    }
+
     const newId = generateId();
     const dbData = protocoloToDb({ ...protocolo, id: newId, criadoEm: timestamp });
     const { data, error } = await supabase
@@ -674,6 +696,82 @@ export async function saveProtocolo(protocolo: Omit<ProtocoloDiario, 'id' | 'cri
         .single();
     if (error) { console.error('Erro saveProtocolo insert:', error); throw error; }
     return dbToProtocolo(data);
+}
+
+/** Mescla protocolos duplicados (mesma data) em um único registro. Deleta os extras. */
+export async function mesclarProtocolosDuplicados(): Promise<{ mesclados: number; removidos: number }> {
+    const { data: todos, error } = await supabase
+        .from('protocolos_diarios')
+        .select('*')
+        .order('criado_em', { ascending: true });
+    if (error || !todos) return { mesclados: 0, removidos: 0 };
+
+    // Agrupa por data
+    const grupos = new Map<string, any[]>();
+    for (const p of todos) {
+        const lista = grupos.get(p.data) || [];
+        lista.push(p);
+        grupos.set(p.data, lista);
+    }
+
+    let mesclados = 0;
+    let removidos = 0;
+
+    for (const [, grupo] of grupos) {
+        if (grupo.length <= 1) continue;
+        mesclados++;
+
+        // Ordenar: priorizar o que tem mais processos, depois o mais recente
+        grupo.sort((a, b) => {
+            const ap = (a.processos || []).length;
+            const bp = (b.processos || []).length;
+            if (ap !== bp) return bp - ap;
+            return (b.atualizado_em || b.criado_em).localeCompare(a.atualizado_em || a.criado_em);
+        });
+
+        const principal = grupo[0];
+        const extras = grupo.slice(1);
+
+        // Mesclar processos (deduplica por osId + clienteNome + veiculoPlaca)
+        const seen = new Set<string>();
+        const processosMerged: any[] = [];
+        for (const item of grupo) {
+            for (const proc of (item.processos || [])) {
+                const chave = proc.osId || `${proc.clienteNome}|${proc.veiculoPlaca}|${proc.tipoEntrada}`;
+                if (seen.has(chave)) {
+                    // Se já existe, mantém o concluido=true se algum tiver
+                    if (proc.concluido) {
+                        const existing = processosMerged.find(p => (p.osId || `${p.clienteNome}|${p.veiculoPlaca}|${p.tipoEntrada}`) === chave);
+                        if (existing) existing.concluido = true;
+                    }
+                    continue;
+                }
+                seen.add(chave);
+                processosMerged.push(proc);
+            }
+        }
+
+        // Mesclar foto assinada (mantém a que tiver)
+        const fotoUrl = grupo.find(p => p.foto_assinada_url)?.foto_assinada_url ?? null;
+        const fotoNome = grupo.find(p => p.foto_assinada_nome)?.foto_assinada_nome ?? null;
+        const fotoEm = grupo.find(p => p.foto_anexada_em)?.foto_anexada_em ?? null;
+
+        // Atualiza o principal com dados mesclados
+        await supabase.from('protocolos_diarios').update({
+            processos: processosMerged,
+            foto_assinada_url: fotoUrl,
+            foto_assinada_nome: fotoNome,
+            foto_anexada_em: fotoEm,
+        }).eq('id', principal.id);
+
+        // Remove os extras
+        for (const extra of extras) {
+            await supabase.from('protocolos_diarios').delete().eq('id', extra.id);
+            removidos++;
+        }
+    }
+
+    return { mesclados, removidos };
 }
 
 // --- BACKUP / EXPORT ---
