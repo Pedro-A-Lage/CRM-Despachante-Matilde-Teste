@@ -819,8 +819,14 @@ textarea:focus {
 }
 
 .tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   padding: 8px 14px;
-  font-size: 0.875rem;
+  min-width: 72px;
+  font-size: 0.78rem;
   font-weight: 500;
   color: var(--notion-text-muted);
   cursor: pointer;
@@ -829,6 +835,12 @@ textarea:focus {
   border-bottom: 2px solid transparent;
   transition: color 150ms, border-color 150ms;
   font-family: inherit;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.tab > svg {
+  flex-shrink: 0;
 }
 
 .tab:hover {

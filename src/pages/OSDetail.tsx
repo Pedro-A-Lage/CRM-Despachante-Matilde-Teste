@@ -1828,21 +1828,21 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
     return (
         <div style={{ marginBottom: 10 }}>
             {/* Pendência / Impedimento */}
-            <div style={cardStyle('var(--notion-orange)', pendEditing || confirmingResolve)}>
-                <div style={iconBoxStyle(hasPend ? 'rgba(239,68,68,0.12)' : 'rgba(107,114,128,0.1)', hasPend ? 'var(--notion-orange)' : 'var(--notion-text-secondary)')}>
-                    <AlertTriangle size={13} color={hasPend ? 'var(--notion-orange)' : 'var(--notion-text-secondary)'} strokeWidth={2.5} />
+            <div style={cardStyle('#dc2626', pendEditing || confirmingResolve)}>
+                <div style={iconBoxStyle(hasPend ? 'rgba(220,38,38,0.12)' : 'rgba(107,114,128,0.1)', hasPend ? '#dc2626' : 'var(--notion-text-secondary)')}>
+                    <AlertTriangle size={13} color={hasPend ? '#dc2626' : 'var(--notion-text-secondary)'} strokeWidth={2.5} />
                 </div>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <label style={{
                         fontSize: 10, fontWeight: 800, textTransform: 'uppercase',
-                        letterSpacing: '0.05em', color: hasPend ? 'var(--notion-orange)' : 'var(--notion-text-secondary)'
+                        letterSpacing: '0.05em', color: hasPend ? '#dc2626' : 'var(--notion-text-secondary)'
                     }}>
                         Pendência / Impedimento
                     </label>
 
                     {/* Modo leitura: mostra texto + botões Editar / Resolvida */}
                     {hasPend && !pendEditing && !confirmingResolve && (
-                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-orange)' }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#dc2626' }}>
                             {os.pendencia}
                         </span>
                     )}
@@ -1862,7 +1862,7 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
                             style={{
                                 background: 'transparent', border: 'none', outline: 'none',
                                 fontSize: 12, fontWeight: 700,
-                                color: pend ? 'var(--notion-orange)' : 'var(--notion-text)',
+                                color: pend ? '#dc2626' : 'var(--notion-text)',
                                 padding: 0, width: '100%',
                             }}
                         />
@@ -1894,7 +1894,7 @@ function ObservacaoPendenciaBar({ os, onRefresh }: { os: OrdemDeServico; onRefre
                 {pendEditing && (
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                         <button onClick={savePend} disabled={pendSaving || !pendChanged}
-                            style={btnStyle(pendChanged ? 'var(--notion-orange)' : 'var(--notion-text-secondary)', '#fff')}>
+                            style={btnStyle(pendChanged ? '#dc2626' : 'var(--notion-text-secondary)', '#fff')}>
                             {pendSaving ? '...' : 'Salvar'}
                         </button>
                         <button onClick={cancelEditing}
