@@ -491,9 +491,9 @@ export default function ProtocoloDiario() {
                 </div>
             )}
 
-            {/* ===== STATS CARDS (quando tem protocolo) ===== */}
+            {/* ===== STATS CARDS (quando tem protocolo — escondido em mobile) ===== */}
             {protocoloHoje && (
-                <div style={{
+                <div className="hide-mobile" style={{
                     display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                     gap: 10, marginBottom: 20,
                 }}>
