@@ -510,7 +510,20 @@ export default function Layout({ children }: LayoutProps) {
 
             <style>{`
         @media (max-width: 1024px) {
-          #mobile-menu-btn { display: block !important; }
+          #mobile-menu-btn { display: flex !important; }
+        }
+        @media (max-width: 768px) {
+          #mobile-menu-btn {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--notion-border);
+            background: var(--notion-surface) !important;
+            border-radius: 8px;
+            color: var(--notion-text);
+          }
         }
 
         /* Collapsible group header */

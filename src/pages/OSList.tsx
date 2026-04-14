@@ -853,6 +853,7 @@ export default function OSList() {
                     overflow: 'hidden',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
                 }}>
+                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: 'var(--notion-bg-alt)' }}>
@@ -1196,6 +1197,7 @@ export default function OSList() {
                             })}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             )}
 

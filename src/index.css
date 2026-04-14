@@ -903,6 +903,7 @@ textarea:focus {
     height: 100%;
     transform: translateX(-100%);
     z-index: 100;
+    width: 260px;
   }
 
   .sidebar.open {
@@ -914,25 +915,115 @@ textarea:focus {
   }
 
   .main-body {
-    padding: 16px;
+    padding: 12px;
   }
 
-  .stat-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
+  .main-header {
+    padding: 10px 14px !important;
+    min-height: 56px;
   }
 
-  /* Dashboard responsive: stack sidebar below main content */
-  .dashboard-grid {
-    grid-template-columns: 1fr !important;
+  .main-header h1 {
+    font-size: 1.1rem !important;
   }
 
-  /* Selects nativos devem ser clicáveis no mobile */
+  /* Selects e inputs: previne zoom automático no iOS */
+  .form-select,
+  .form-input,
+  .form-textarea,
+  select,
+  input,
+  textarea {
+    font-size: 16px !important;
+  }
+
   .form-select,
   select {
     -webkit-appearance: menulist !important;
     appearance: menulist !important;
-    font-size: 16px !important; /* previne zoom automático no iOS */
+  }
+
+  /* Botões com área tocável mínima (iOS HIG recomenda 44x44) */
+  button:not([class*="sidebar-"]):not([class*="modal-close"]):not([aria-label]) {
+    min-height: 40px;
+  }
+
+  /* Stat grid em mobile: 2 colunas */
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  /* Dashboard responsive */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tabelas: scroll horizontal */
+  table {
+    min-width: 600px;
+  }
+
+  /* Modal-overlay/modal: full width em mobile */
+  .modal-overlay {
+    padding: 8px !important;
+    align-items: flex-end !important;
+  }
+  .modal {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 95vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  /* Profile dropdown */
+  .profile-text-block {
+    display: none !important;
+  }
+
+  /* Responsive utility */
+  .hide-mobile {
+    display: none !important;
+  }
+  .full-mobile {
+    width: 100% !important;
+  }
+
+  /* Cards com padding menor */
+  .card {
+    padding: 14px !important;
+  }
+
+  /* Page header padding menor */
+  .page-header {
+    padding: 10px 0 !important;
+  }
+
+  /* Links sidebar maiores em mobile */
+  .sidebar-link {
+    padding: 10px 12px !important;
+    font-size: 0.95rem !important;
+  }
+
+  .sidebar-link svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+/* --- Telas muito pequenas (iPhone SE, etc) ------------------- */
+@media (max-width: 380px) {
+  .main-body {
+    padding: 10px 8px;
+  }
+
+  .main-header h1 {
+    font-size: 1rem !important;
+  }
+
+  /* Stat grid single column */
+  .stat-grid {
+    grid-template-columns: 1fr;
   }
 }
 
