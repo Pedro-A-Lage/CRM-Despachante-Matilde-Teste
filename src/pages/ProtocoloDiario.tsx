@@ -561,26 +561,26 @@ export default function ProtocoloDiario() {
 
             {/* ===== FOTO DO PROTOCOLO ASSINADO ===== */}
             {protocoloHoje && (
-                <div style={{
+                <div className="proto-foto-card" style={{
                     background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
                     borderRadius: 12, padding: '14px 18px', marginBottom: 16,
                     display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
                 }}>
                     <div style={{
-                        width: 40, height: 40, borderRadius: 10,
+                        width: 36, height: 36, borderRadius: 10,
                         background: protocoloHoje.fotoAssinadaUrl ? 'rgba(34,197,94,0.15)' : 'rgba(139,92,246,0.12)',
                         color: protocoloHoje.fotoAssinadaUrl ? '#22c55e' : '#8b5cf6',
                         border: protocoloHoje.fotoAssinadaUrl ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(139,92,246,0.3)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         flexShrink: 0,
                     }}>
-                        {protocoloHoje.fotoAssinadaUrl ? <Check size={18} strokeWidth={3} /> : <ImageIcon size={18} />}
+                        {protocoloHoje.fotoAssinadaUrl ? <Check size={16} strokeWidth={3} /> : <ImageIcon size={16} />}
                     </div>
-                    <div style={{ flex: 1, minWidth: 180 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
+                    <div style={{ flex: 1, minWidth: 120 }}>
+                        <div className="proto-foto-title" style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             {protocoloHoje.fotoAssinadaUrl ? 'Protocolo assinado anexado' : 'Foto do protocolo assinado'}
                         </div>
-                        <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginTop: 2 }}>
+                        <div className="proto-foto-subtitle" style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginTop: 2 }}>
                             {protocoloHoje.fotoAssinadaUrl
                                 ? `${protocoloHoje.fotoAssinadaNome || 'foto.jpg'} · anexada em ${protocoloHoje.fotoAnexadaEm ? new Date(protocoloHoje.fotoAnexadaEm).toLocaleString('pt-BR') : ''}`
                                 : 'Tire uma foto do protocolo depois de receber da delegacia com a assinatura'}
@@ -705,6 +705,7 @@ export default function ProtocoloDiario() {
                                 const TipoIcon = tipoCfg!.icon;
                                 return (
                                     <div key={p.osId || `manual-${idx}`}
+                                        className="proto-processo-card"
                                         onClick={() => { if (p.osId) navigate(`/ordens/${p.osId}`); }}
                                         style={{
                                         display: 'flex', alignItems: 'center',
@@ -714,6 +715,7 @@ export default function ProtocoloDiario() {
                                         padding: '10px 14px', gap: 14,
                                         transition: 'border-color 0.15s, background 0.15s',
                                         cursor: p.osId ? 'pointer' : 'default',
+                                        flexWrap: 'wrap',
                                     }}
                                         onMouseEnter={e => { if (p.osId) (e.currentTarget as HTMLElement).style.borderColor = tipoCfg.color; }}
                                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--notion-border)'; }}
@@ -736,7 +738,7 @@ export default function ProtocoloDiario() {
                                         {/* Dados */}
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                                                <span style={{
+                                                <span className="proto-processo-nome" style={{
                                                     fontSize: 13, fontWeight: 700,
                                                     color: 'var(--notion-text)',
                                                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -751,7 +753,7 @@ export default function ProtocoloDiario() {
                                                     }}>AVULSO</span>
                                                 )}
                                             </div>
-                                            <div style={{
+                                            <div className="proto-processo-dados" style={{
                                                 display: 'flex', alignItems: 'center', gap: 12,
                                                 fontSize: 11, color: 'var(--notion-text-secondary)',
                                             }}>
@@ -760,7 +762,7 @@ export default function ProtocoloDiario() {
                                                         <Car size={10} /> {p.veiculoPlaca}
                                                     </span>
                                                 )}
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                                <span className="proto-processo-servico" style={{ display: 'flex', alignItems: 'center', gap: 3, minWidth: 0 }}>
                                                     <FileText size={10} /> {getServicoLabel(serviceLabels, p.tipoServico)}
                                                 </span>
                                             </div>
@@ -810,7 +812,7 @@ export default function ProtocoloDiario() {
                                         )}
 
                                         {/* Badge tipo */}
-                                        <span style={{
+                                        <span className="proto-badge-tipo" style={{
                                             display: 'inline-flex', alignItems: 'center', gap: 5,
                                             fontSize: 10, fontWeight: 700,
                                             padding: '4px 12px', borderRadius: 20,
