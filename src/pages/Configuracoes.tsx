@@ -78,6 +78,44 @@ const chipStyle: React.CSSProperties = {
   color: 'var(--notion-text-secondary)',
 };
 
+const statusDot = (color: string): React.CSSProperties => ({
+  display: 'inline-block',
+  width: 6,
+  height: 6,
+  borderRadius: '50%',
+  background: color,
+  boxShadow: `0 0 6px ${color}`,
+  flexShrink: 0,
+});
+
+const statusChipAtivo: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '4px 12px',
+  borderRadius: 20,
+  fontSize: '0.72rem',
+  fontWeight: 700,
+  background: 'rgba(34, 197, 94, 0.15)',
+  color: '#22c55e',
+  border: '1px solid rgba(34, 197, 94, 0.35)',
+  letterSpacing: '0.02em',
+};
+
+const statusChipInativo: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '4px 12px',
+  borderRadius: 20,
+  fontSize: '0.72rem',
+  fontWeight: 700,
+  background: 'rgba(148, 163, 184, 0.12)',
+  color: 'var(--notion-text-secondary)',
+  border: '1px solid var(--notion-border)',
+  letterSpacing: '0.02em',
+};
+
 const btnPrimary: React.CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -340,13 +378,17 @@ export default function Configuracoes() {
                           {opcaoLabel(cfg.gera_placa)}
                         </td>
                         <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
-                          <span style={{
-                            ...chipStyle,
-                            background: cfg.ativo ? 'rgba(5,150,105,0.1)' : 'var(--notion-bg-alt)',
-                            color: cfg.ativo ? '#059669' : 'var(--notion-text-secondary)',
-                          }}>
-                            {cfg.ativo ? '● Ativo' : 'Inativo'}
-                          </span>
+                          {cfg.ativo ? (
+                            <span style={statusChipAtivo}>
+                              <span style={statusDot('#22c55e')} />
+                              Ativo
+                            </span>
+                          ) : (
+                            <span style={statusChipInativo}>
+                              <span style={statusDot('#94a3b8')} />
+                              Inativo
+                            </span>
+                          )}
                         </td>
                         <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
                           <button
@@ -447,13 +489,17 @@ export default function Configuracoes() {
                           <span style={chipStyle}>{emp.etapasEnvio.length}</span>
                         </td>
                         <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
-                          <span style={{
-                            ...chipStyle,
-                            background: emp.ativo ? 'rgba(5,150,105,0.1)' : 'var(--notion-bg-alt)',
-                            color: emp.ativo ? '#059669' : 'var(--notion-text-secondary)',
-                          }}>
-                            {emp.ativo ? '● Ativa' : 'Inativa'}
-                          </span>
+                          {emp.ativo ? (
+                            <span style={statusChipAtivo}>
+                              <span style={statusDot('#22c55e')} />
+                              Ativa
+                            </span>
+                          ) : (
+                            <span style={statusChipInativo}>
+                              <span style={statusDot('#94a3b8')} />
+                              Inativa
+                            </span>
+                          )}
                         </td>
                         <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
                           <button
