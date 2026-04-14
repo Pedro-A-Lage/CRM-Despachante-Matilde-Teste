@@ -762,7 +762,12 @@ export default function OSDetail() {
 ;
 
     return (
-        <div style={{ overflowX: 'hidden' }}>
+        <div className="os-detail-container" style={{
+            maxWidth: 1280,
+            margin: '0 auto',
+            padding: '8px 16px 32px',
+            overflowX: 'hidden',
+        }}>
             {/* Modal de Edição da OS */}
             {editModalOpen && (
                 <div className="modal-overlay" style={{ zIndex: 200 }}>
@@ -942,9 +947,10 @@ export default function OSDetail() {
             {/* ===== TOP BAR (compact) ===== */}
             <div style={{
                 background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
-                borderRadius: 10, padding: '8px 14px', marginBottom: 8,
+                borderRadius: 12, padding: '10px 16px', marginBottom: 12,
                 borderLeft: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button onClick={() => navigate(-1)} style={{
@@ -1077,10 +1083,10 @@ export default function OSDetail() {
             </div>
 
             {/* ===== TWO COLUMN LAYOUT ===== */}
-            <div className="os-main-row" style={{ display: 'flex', gap: 20, alignItems: 'flex-start', width: '100%' }}>
+            <div className="os-main-row" style={{ display: 'flex', gap: 24, alignItems: 'flex-start', width: '100%' }}>
 
                 {/* ===== LEFT COLUMN (main content) ===== */}
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
                     {/* ===== CONFERÊNCIA DE DADOS ===== */}
                     <ConferenciaDados os={os} cliente={cliente} veiculo={veiculo} />
@@ -1089,7 +1095,7 @@ export default function OSDetail() {
                     <ObservacaoPendenciaBar os={os} onRefresh={refresh} />
 
                     {/* Tabs */}
-                    <div className="tabs" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 4 }}>
+                    <div className="tabs os-tabs" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', rowGap: 4, marginTop: 4 }}>
                         <div style={{ display: 'flex', flex: '1 1 auto', gap: 0, flexWrap: 'wrap', rowGap: 4, minWidth: 0 }}>
                             {tabs.map((tab) => {
                                 const isFinanceiroComDebito = tab.id === 'financeiro' && temDebitosPendentes;
@@ -1133,7 +1139,12 @@ export default function OSDetail() {
                     </div>
 
                     {/* Tab Content */}
-                    <div className="card" style={{ minHeight: 520 }}>
+                    <div className="card os-tab-content" style={{
+                        minHeight: 520,
+                        padding: '20px 22px',
+                        borderRadius: 14,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                    }}>
                         {activeTab === 'checklist' && (
                             <ChecklistTab os={os} cliente={cliente} veiculo={veiculo} onRefresh={refresh} checklistComplete={checklistComplete} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
                         )}

@@ -893,9 +893,57 @@ textarea:focus {
   border-radius: 3px;
 }
 
+/* --- Detalhe da OS: respiro e polish ----------------------- */
+.os-detail-container {
+  scroll-behavior: smooth;
+}
+
+.os-detail-container > * {
+  animation: none;
+}
+
+/* Tabs da OS: mais espaço e separação */
+.os-tabs {
+  margin-bottom: 16px !important;
+}
+
+/* Seções dentro das abas: respiro padrão */
+.os-tab-panel {
+  padding: 8px 0;
+}
+
+/* Scrollbar custom nas telas da OS */
+.os-detail-container ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
 /* --- Mobile -------------------------------------------------- */
 
 @media (max-width: 768px) {
+  .os-detail-container {
+    padding: 6px 10px 32px !important;
+  }
+
+  .os-tab-content {
+    padding: 14px 12px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Layout 2 colunas vira 1 coluna em mobile */
+  .os-main-row {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* Tabs podem scroll horizontal em mobile */
+  .os-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    padding-bottom: 4px;
+  }
+
   .sidebar {
     position: fixed;
     top: 0;
