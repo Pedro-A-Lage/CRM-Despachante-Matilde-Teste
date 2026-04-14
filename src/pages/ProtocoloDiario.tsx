@@ -9,10 +9,10 @@ import {
     CheckCircle, RotateCcw, Shield, Loader2, ClipboardList
 } from 'lucide-react';
 
-const TIPO_BADGE: Record<string, { color: string; bg: string; label: string; icon: any }> = {
-    entrada: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)', label: 'Entrada', icon: ClipboardList },
-    reentrada: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)', label: 'Reentrada', icon: RotateCcw },
-    sifap: { color: '#059669', bg: 'rgba(5,150,105,0.1)', label: 'SIFAP', icon: Shield },
+const TIPO_BADGE: Record<string, { color: string; bg: string; border: string; label: string; icon: any }> = {
+    entrada: { color: 'var(--notion-blue)', bg: 'rgba(0,117,222,0.12)', border: 'rgba(0,117,222,0.35)', label: 'Entrada', icon: ClipboardList },
+    reentrada: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.12)', border: 'rgba(221,91,0,0.35)', label: 'Reentrada', icon: RotateCcw },
+    sifap: { color: '#22c55e', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.35)', label: 'SIFAP', icon: Shield },
 };
 
 export default function ProtocoloDiario() {
@@ -219,150 +219,174 @@ export default function ProtocoloDiario() {
     }
 
     return (
-        <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: 48 }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 4px 48px' }}>
 
             {/* ===== HEADER ===== */}
             <div style={{
-                background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
-                borderRadius: 14, padding: '20px 24px', marginBottom: 20,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                marginBottom: 20,
+                paddingBottom: 16,
+                borderBottom: '1px solid var(--notion-border)',
+                flexWrap: 'wrap',
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        <div style={{
-                            width: 42, height: 42, borderRadius: 12,
-                            background: 'rgba(245,158,11,0.12)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                            <FileText size={20} style={{ color: 'var(--notion-blue)' }} />
-                        </div>
-                        <div>
-                            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--notion-text)' }}>
-                                Protocolo Diário
-                            </h2>
-                            <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--notion-text-secondary)', textTransform: 'capitalize' }}>
-                                {dataFormatada}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {/* Date picker */}
-                        <div style={{
-                            display: 'flex', alignItems: 'center', gap: 6,
-                            background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
-                            borderRadius: 8, padding: '6px 12px',
-                        }}>
-                            <Calendar size={14} style={{ color: 'var(--notion-blue)' }} />
-                            <input
-                                type="date"
-                                value={data}
-                                onChange={(e) => setData(e.target.value)}
-                                style={{
-                                    background: 'transparent', border: 'none', outline: 'none',
-                                    fontSize: 13, fontWeight: 600, color: 'var(--notion-text)',
-                                    fontFamily: 'var(--font-family)', cursor: 'pointer',
-                                }}
-                            />
-                        </div>
-
-                        <button onClick={gerarProtocolo}
-                            style={{
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                padding: '8px 18px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                                background: 'linear-gradient(135deg, var(--notion-blue), var(--notion-blue))',
-                                color: 'var(--notion-bg)', fontWeight: 700, fontSize: 12,
-                                fontFamily: 'var(--font-family)',
-                                boxShadow: '0 2px 8px rgba(245,158,11,0.3)',
-                            }}>
-                            {protocoloHoje ? <CheckCircle size={14} /> : <Plus size={14} />}
-                            {protocoloHoje ? 'Atualizar' : 'Gerar'} Protocolo
-                        </button>
-
-                        {protocoloHoje && (
-                            <button onClick={imprimirProtocolo}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: 6,
-                                    padding: '8px 14px', borderRadius: 10,
-                                    border: '1px solid var(--notion-border)',
-                                    background: 'var(--notion-bg)', cursor: 'pointer',
-                                    color: 'var(--notion-text-secondary)', fontWeight: 600, fontSize: 12,
-                                    fontFamily: 'var(--font-family)',
-                                }}>
-                                <Printer size={14} /> Imprimir
-                            </button>
-                        )}
-                    </div>
+                <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background: 'rgba(0,117,222,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--notion-blue)',
+                    flexShrink: 0,
+                }}>
+                    <FileText size={22} />
+                </div>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: '1.4rem',
+                        fontWeight: 800,
+                        color: 'var(--notion-text)',
+                        letterSpacing: '-0.02em',
+                    }}>
+                        Protocolo Diário
+                    </h1>
+                    <p style={{
+                        margin: '2px 0 0',
+                        fontSize: '0.85rem',
+                        color: 'var(--notion-text-secondary)',
+                        textTransform: 'capitalize',
+                    }}>
+                        {dataFormatada}
+                    </p>
                 </div>
 
-                {/* Info: processos disponíveis */}
-                {osParaProtocolo.length > 0 && !protocoloHoje && (
+                {/* Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <div style={{
-                        marginTop: 14, padding: '10px 14px', borderRadius: 8,
-                        background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)',
-                        display: 'flex', alignItems: 'center', gap: 8,
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
+                        borderRadius: 8, padding: '7px 12px', height: 38, boxSizing: 'border-box',
                     }}>
-                        <ClipboardList size={14} style={{ color: 'var(--notion-blue)' }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--notion-blue)' }}>
-                            {osParaProtocolo.length} processo(s) com entrada na delegacia{osComSifap.length > 0 ? ' e/ou SIFAP' : ''} nesta data.
-                        </span>
+                        <Calendar size={14} style={{ color: 'var(--notion-blue)' }} />
+                        <input
+                            type="date"
+                            value={data}
+                            onChange={(e) => setData(e.target.value)}
+                            style={{
+                                background: 'transparent', border: 'none', outline: 'none',
+                                fontSize: 13, fontWeight: 600, color: 'var(--notion-text)',
+                                fontFamily: 'inherit', cursor: 'pointer',
+                            }}
+                        />
                     </div>
-                )}
+
+                    <button onClick={gerarProtocolo}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '0 18px', height: 38, borderRadius: 8, border: 'none', cursor: 'pointer',
+                            background: 'var(--notion-blue)', color: '#fff',
+                            fontWeight: 700, fontSize: 13, fontFamily: 'inherit',
+                        }}>
+                        {protocoloHoje ? <CheckCircle size={14} /> : <Plus size={14} />}
+                        {protocoloHoje ? 'Atualizar' : 'Gerar'} Protocolo
+                    </button>
+
+                    {protocoloHoje && (
+                        <button onClick={imprimirProtocolo}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                padding: '0 14px', height: 38, borderRadius: 8,
+                                border: '1px solid var(--notion-border)',
+                                background: 'var(--notion-surface)', cursor: 'pointer',
+                                color: 'var(--notion-text)', fontWeight: 600, fontSize: 13,
+                                fontFamily: 'inherit',
+                            }}>
+                            <Printer size={14} /> Imprimir
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {/* Info: processos disponíveis */}
+            {osParaProtocolo.length > 0 && !protocoloHoje && (
+                <div style={{
+                    marginBottom: 16, padding: '12px 16px', borderRadius: 10,
+                    background: 'rgba(0,117,222,0.06)', border: '1px solid rgba(0,117,222,0.2)',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                }}>
+                    <ClipboardList size={16} style={{ color: 'var(--notion-blue)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>
+                        <strong style={{ color: 'var(--notion-blue)' }}>{osParaProtocolo.length}</strong> processo(s) com entrada na delegacia{osComSifap.length > 0 ? ' e/ou SIFAP' : ''} nesta data
+                    </span>
+                </div>
+            )}
 
             {/* ===== STATS CARDS (quando tem protocolo) ===== */}
             {protocoloHoje && (
                 <div style={{
-                    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                    gap: 12, marginBottom: 20,
+                    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                    gap: 10, marginBottom: 20,
                 }}>
                     {[
                         {
                             label: 'Total',
                             value: protocoloHoje.processos.length,
-                            color: 'var(--notion-blue)',
-                            bg: 'rgba(245,158,11,0.1)',
+                            color: 'var(--notion-text)',
+                            bg: 'var(--notion-bg-alt)',
+                            border: 'var(--notion-border)',
                         },
                         {
                             label: 'Entradas',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'entrada').length,
                             color: 'var(--notion-blue)',
-                            bg: 'rgba(55,114,255,0.1)',
+                            bg: 'rgba(0,117,222,0.1)',
+                            border: 'rgba(0,117,222,0.3)',
                         },
                         {
                             label: 'Reentradas',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'reentrada').length,
                             color: 'var(--notion-orange)',
                             bg: 'rgba(221,91,0,0.1)',
+                            border: 'rgba(221,91,0,0.3)',
                         },
                         {
                             label: 'SIFAP',
                             value: protocoloHoje.processos.filter((p: any) => p.tipoEntrada === 'sifap' || p.sifap).length,
-                            color: '#059669',
-                            bg: 'rgba(5,150,105,0.1)',
+                            color: '#22c55e',
+                            bg: 'rgba(34,197,94,0.1)',
+                            border: 'rgba(34,197,94,0.3)',
                         },
                         {
                             label: 'Avulsos',
                             value: protocoloHoje.processos.filter((p: any) => p.manual).length,
-                            color: 'var(--notion-purple, #9065B0)',
+                            color: '#8b5cf6',
                             bg: 'rgba(139,92,246,0.1)',
+                            border: 'rgba(139,92,246,0.3)',
                         },
                     ].map(stat => (
                         <div key={stat.label} style={{
-                            background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
-                            borderRadius: 12, padding: '14px 18px',
+                            background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)',
+                            borderRadius: 12, padding: '14px 16px',
                             display: 'flex', alignItems: 'center', gap: 12,
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
                         }}>
                             <div style={{
-                                width: 36, height: 36, borderRadius: 9,
+                                minWidth: 40, height: 40, borderRadius: 10, padding: '0 10px',
                                 background: stat.bg,
+                                border: `1px solid ${stat.border}`,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 fontSize: 16, fontWeight: 800, color: stat.color,
                             }}>
                                 {stat.value}
                             </div>
                             <span style={{
-                                fontSize: 11, fontWeight: 600, color: 'var(--notion-text-secondary)',
-                                textTransform: 'uppercase', letterSpacing: '0.04em',
+                                fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)',
+                                textTransform: 'uppercase', letterSpacing: '0.05em',
                             }}>{stat.label}</span>
                         </div>
                     ))}
@@ -477,10 +501,13 @@ export default function ProtocoloDiario() {
 
                                         {/* Badge tipo */}
                                         <span style={{
-                                            display: 'inline-flex', alignItems: 'center', gap: 4,
+                                            display: 'inline-flex', alignItems: 'center', gap: 5,
                                             fontSize: 10, fontWeight: 700,
-                                            padding: '4px 10px', borderRadius: 6,
+                                            padding: '4px 12px', borderRadius: 20,
                                             background: tipoCfg.bg, color: tipoCfg.color,
+                                            border: `1px solid ${tipoCfg.border}`,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.04em',
                                             flexShrink: 0,
                                         }}>
                                             <TipoIcon size={10} />
