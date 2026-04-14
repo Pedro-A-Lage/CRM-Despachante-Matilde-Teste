@@ -325,88 +325,266 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
 
     const roleLabel = ROLES.find(r => r.value === usuario.role)?.label ?? usuario.role;
 
+    // Checkbox visual custom (funciona em dark mode)
+    const Checkbox = ({ checked, disabled, onChange }: { checked: boolean; disabled?: boolean; onChange?: () => void }) => (
+        <button
+            type="button"
+            onClick={onChange}
+            disabled={disabled}
+            style={{
+                width: 20,
+                height: 20,
+                borderRadius: 5,
+                border: checked
+                    ? '2px solid var(--notion-blue)'
+                    : disabled
+                        ? '2px solid var(--notion-border)'
+                        : '2px solid var(--notion-text-secondary)',
+                background: checked ? 'var(--notion-blue)' : 'transparent',
+                cursor: disabled ? 'default' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                padding: 0,
+                color: '#fff',
+                transition: 'all 0.15s',
+                opacity: disabled && !checked ? 0.5 : 1,
+            }}
+        >
+            {checked && <Check size={14} strokeWidth={3} />}
+        </button>
+    );
+
     return (
-        <div className="modal-overlay" style={{ zIndex: 1000 }}>
-            <div className="modal" style={{ maxWidth: 560 }}>
-                <div className="modal-header">
-                    <h3 className="modal-title">Permissões — {usuario.nome}</h3>
-                    <button className="btn btn-ghost" onClick={onClose}><X size={18} /></button>
+        <div
+            style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.5)',
+                backdropFilter: 'blur(2px)',
+                zIndex: 1000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+            }}
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+            <div
+                style={{
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
+                    borderRadius: 16,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+                    maxWidth: 620,
+                    width: '100%',
+                    maxHeight: '92vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                }}
+            >
+                {/* Header */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14,
+                    padding: '20px 24px',
+                    borderBottom: '1px solid var(--notion-border)',
+                    flexShrink: 0,
+                }}>
+                    <div style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 10,
+                        background: 'rgba(0,117,222,0.12)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--notion-blue)',
+                        flexShrink: 0,
+                    }}>
+                        <Lock size={20} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <h3 style={{
+                            margin: 0,
+                            fontSize: '1.1rem',
+                            fontWeight: 800,
+                            color: 'var(--notion-text)',
+                            letterSpacing: '-0.02em',
+                        }}>
+                            Permissões
+                        </h3>
+                        <p style={{
+                            margin: '2px 0 0',
+                            fontSize: '0.82rem',
+                            color: 'var(--notion-text-secondary)',
+                        }}>
+                            {usuario.nome} · Perfil: <strong style={{ color: 'var(--notion-text)' }}>{roleLabel}</strong>
+                        </p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        style={{
+                            width: 32,
+                            height: 32,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'var(--notion-bg)',
+                            border: '1px solid var(--notion-border)',
+                            borderRadius: '50%',
+                            color: 'var(--notion-text-secondary)',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                        }}
+                    >
+                        <X size={14} />
+                    </button>
                 </div>
-                <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', maxHeight: '70vh', overflowY: 'auto' }}>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--notion-text-secondary)', margin: 0 }}>
-                        Perfil: <strong>{roleLabel}</strong>. Permissões marcadas como "Padrão" seguem o perfil. Ative a personalização para sobrescrever.
-                    </p>
+
+                {/* Body */}
+                <div style={{
+                    flex: 1,
+                    minHeight: 0,
+                    overflowY: 'auto',
+                    padding: '20px 24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 20,
+                }}>
+                    <div style={{
+                        padding: '10px 14px',
+                        background: 'rgba(0,117,222,0.06)',
+                        border: '1px solid rgba(0,117,222,0.2)',
+                        borderRadius: 8,
+                        fontSize: '0.82rem',
+                        color: 'var(--notion-text-secondary)',
+                        lineHeight: 1.5,
+                    }}>
+                        Permissões em cinza seguem o <strong style={{ color: 'var(--notion-text)' }}>padrão do perfil</strong>. Clique no ícone ✎ para personalizar uma permissão individualmente.
+                    </div>
+
                     {erro && (
-                        <div style={{ background: 'var(--notion-orange)20', border: '1px solid var(--notion-orange)', borderRadius: 8, padding: '8px 12px', color: 'var(--notion-orange)', fontSize: '0.85rem' }}>
+                        <div style={{
+                            background: 'rgba(239,68,68,0.08)',
+                            border: '1px solid rgba(239,68,68,0.25)',
+                            borderRadius: 8,
+                            padding: '8px 12px',
+                            color: '#ef4444',
+                            fontSize: '0.82rem',
+                            fontWeight: 500,
+                        }}>
                             {erro}
                         </div>
                     )}
+
                     {SECOES.map(secao => (
                         <div key={secao.titulo}>
-                            <h4 style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 700, color: 'var(--notion-text)' }}>
+                            <h4 style={{
+                                margin: '0 0 10px',
+                                fontSize: '0.72rem',
+                                fontWeight: 700,
+                                color: 'var(--notion-text-secondary)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                            }}>
                                 {secao.titulo}
                             </h4>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                {secao.items.map(item => {
+                            <div style={{
+                                background: 'var(--notion-bg-alt)',
+                                border: '1px solid var(--notion-border)',
+                                borderRadius: 10,
+                                overflow: 'hidden',
+                            }}>
+                                {secao.items.map((item, idx) => {
                                     const overridden = isOverridden(item.categoria, item.chave);
                                     const effective = getEffective(item.categoria, item.chave);
                                     const defaultVal = getDefault(item.categoria, item.chave);
+                                    const isLast = idx === secao.items.length - 1;
                                     return (
                                         <div
                                             key={`${item.categoria}.${item.chave}`}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                gap: 10,
-                                                padding: '6px 10px',
-                                                borderRadius: 6,
-                                                background: overridden ? 'var(--bg-surface, #1e293b)' : 'transparent',
-                                                border: overridden ? '1px solid var(--notion-blue)' : '1px solid transparent',
+                                                gap: 12,
+                                                padding: '10px 14px',
+                                                borderBottom: isLast ? 'none' : '1px solid var(--notion-border)',
+                                                background: overridden ? 'rgba(0,117,222,0.06)' : 'transparent',
+                                                transition: 'background 0.15s',
                                             }}
                                         >
+                                            {/* Permission value (custom checkbox) */}
+                                            <Checkbox
+                                                checked={effective}
+                                                disabled={!overridden}
+                                                onChange={() => overridden && setOverrideValue(item.categoria, item.chave, !effective)}
+                                            />
+
+                                            {/* Label */}
+                                            <span style={{
+                                                flex: 1,
+                                                fontSize: '0.88rem',
+                                                color: 'var(--notion-text)',
+                                                fontWeight: overridden ? 600 : 500,
+                                            }}>
+                                                {item.label}
+                                            </span>
+
+                                            {/* Default indicator */}
+                                            {!overridden && (
+                                                <span style={{
+                                                    fontSize: '0.7rem',
+                                                    color: 'var(--notion-text-muted)',
+                                                    whiteSpace: 'nowrap',
+                                                    fontWeight: 500,
+                                                }}>
+                                                    Padrão: <span style={{ color: defaultVal ? '#22c55e' : 'var(--notion-text-secondary)', fontWeight: 700 }}>{defaultVal ? 'Sim' : 'Não'}</span>
+                                                </span>
+                                            )}
+                                            {overridden && (
+                                                <span style={{
+                                                    fontSize: '0.65rem',
+                                                    background: 'rgba(0,117,222,0.15)',
+                                                    color: 'var(--notion-blue)',
+                                                    padding: '2px 8px',
+                                                    borderRadius: 20,
+                                                    fontWeight: 700,
+                                                    letterSpacing: '0.04em',
+                                                    textTransform: 'uppercase',
+                                                }}>
+                                                    Custom
+                                                </span>
+                                            )}
+
                                             {/* Override toggle */}
                                             <button
                                                 type="button"
                                                 onClick={() => toggleOverride(item.categoria, item.chave)}
                                                 title={overridden ? 'Voltar ao padrão do perfil' : 'Personalizar esta permissão'}
                                                 style={{
-                                                    width: 18,
-                                                    height: 18,
-                                                    borderRadius: 4,
-                                                    border: overridden ? '2px solid var(--notion-blue)' : '2px solid var(--notion-text-secondary)',
-                                                    background: overridden ? 'var(--notion-blue)' : 'transparent',
-                                                    cursor: 'pointer',
+                                                    width: 26,
+                                                    height: 26,
                                                     display: 'flex',
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
+                                                    background: overridden ? 'var(--notion-blue)' : 'transparent',
+                                                    color: overridden ? '#fff' : 'var(--notion-text-secondary)',
+                                                    border: overridden ? '1px solid var(--notion-blue)' : '1px solid var(--notion-border)',
+                                                    borderRadius: 6,
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.7rem',
+                                                    fontWeight: 700,
                                                     flexShrink: 0,
                                                     padding: 0,
-                                                    color: '#fff',
-                                                    fontSize: '0.65rem',
-                                                    fontWeight: 700,
+                                                    lineHeight: 1,
                                                 }}
                                             >
-                                                {overridden ? '✎' : ''}
+                                                ✎
                                             </button>
-
-                                            {/* Permission value checkbox */}
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, cursor: overridden ? 'pointer' : 'default' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={effective}
-                                                    disabled={!overridden}
-                                                    onChange={e => overridden && setOverrideValue(item.categoria, item.chave, e.target.checked)}
-                                                    style={{ accentColor: 'var(--notion-blue)' }}
-                                                />
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--notion-text)' }}>
-                                                    {item.label}
-                                                </span>
-                                            </label>
-
-                                            {/* Default indicator */}
-                                            <span style={{ fontSize: '0.72rem', color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap' }}>
-                                                Padrão: {defaultVal ? 'Sim' : 'Não'}
-                                            </span>
                                         </div>
                                     );
                                 })}
@@ -414,9 +592,54 @@ function ModalPermissoes({ usuario, onClose, onSalvar }: ModalPermissoesProps) {
                         </div>
                     ))}
                 </div>
-                <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" onClick={onClose} disabled={salvando}>Cancelar</button>
-                    <button type="button" className="btn btn-primary" onClick={handleSalvar} disabled={salvando}>
+
+                {/* Footer */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    gap: 10,
+                    padding: '14px 24px',
+                    borderTop: '1px solid var(--notion-border)',
+                    background: 'var(--notion-bg-alt)',
+                    flexShrink: 0,
+                }}>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={salvando}
+                        style={{
+                            padding: '9px 18px',
+                            background: 'var(--notion-surface)',
+                            border: '1px solid var(--notion-border)',
+                            borderRadius: 8,
+                            color: 'var(--notion-text)',
+                            cursor: salvando ? 'not-allowed' : 'pointer',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            fontFamily: 'inherit',
+                            opacity: salvando ? 0.6 : 1,
+                        }}
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSalvar}
+                        disabled={salvando}
+                        style={{
+                            padding: '9px 22px',
+                            background: salvando ? 'var(--notion-bg)' : 'var(--notion-blue)',
+                            border: 'none',
+                            borderRadius: 8,
+                            color: salvando ? 'var(--notion-text-muted)' : '#fff',
+                            cursor: salvando ? 'not-allowed' : 'pointer',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            fontFamily: 'inherit',
+                            minWidth: 140,
+                        }}
+                    >
                         {salvando ? 'Salvando...' : 'Salvar Permissões'}
                     </button>
                 </div>
