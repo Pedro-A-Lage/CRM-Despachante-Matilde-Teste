@@ -9,7 +9,7 @@ import {
     FileText, Printer, Plus, Calendar, Trash2, UserPlus,
     ChevronDown, ChevronUp, Edit2, Clock, Hash, Car, User,
     CheckCircle, RotateCcw, Shield, Loader2, ClipboardList,
-    Camera, Image as ImageIcon, ExternalLink, Check, X
+    Camera, Image as ImageIcon, ExternalLink, Check, X, Search
 } from 'lucide-react';
 
 const TIPO_BADGE: Record<string, { color: string; bg: string; border: string; label: string; icon: any }> = {
@@ -43,6 +43,8 @@ export default function ProtocoloDiario() {
     // Filtro de datas para protocolos anteriores
     const [filtroDataInicio, setFiltroDataInicio] = useState('');
     const [filtroDataFim, setFiltroDataFim] = useState('');
+    const [filtroBusca, setFiltroBusca] = useState('');
+    const [mostrarCompletos, setMostrarCompletos] = useState(false);
 
     // Upload de foto assinada
     const [uploadingFoto, setUploadingFoto] = useState(false);
@@ -283,20 +285,49 @@ export default function ProtocoloDiario() {
         setRefreshKey(k => k + 1);
     };
 
-    // Filtrar protocolos anteriores por data
+    // Filtrar protocolos anteriores por data, busca e status
+    const buscaNorm = filtroBusca.trim().toLowerCase().replace(/[^\w]/g, '');
+    const temFiltroAtivo = !!(filtroDataInicio || filtroDataFim || filtroBusca.trim());
+
     const protocolosAnterioresFiltrados = useMemo(() => {
         let list = [...protocolos]
             .sort((a, b) => b.data.localeCompare(a.data))
             .filter((p: any) => p.data !== data);
 
+        // Filtro de datas
         if (filtroDataInicio) list = list.filter((p: any) => p.data >= filtroDataInicio);
         if (filtroDataFim) list = list.filter((p: any) => p.data <= filtroDataFim);
 
-        // Se não há filtro de datas, limita aos últimos 9
-        if (!filtroDataInicio && !filtroDataFim) list = list.slice(0, 9);
+        // Filtro de busca por nome/placa/chassi nos processos
+        if (buscaNorm) {
+            list = list.filter((p: any) =>
+                (p.processos || []).some((proc: any) => {
+                    const nome = (proc.clienteNome || '').toLowerCase();
+                    const placa = (proc.veiculoPlaca || '').toLowerCase().replace(/[^\w]/g, '');
+                    const chassi = (proc.veiculoChassi || '').toLowerCase().replace(/[^\w]/g, '');
+                    const renavam = (proc.veiculoRenavam || '').replace(/\D/g, '');
+                    return nome.includes(filtroBusca.trim().toLowerCase()) ||
+                        placa.includes(buscaNorm) ||
+                        chassi.includes(buscaNorm) ||
+                        renavam.includes(buscaNorm);
+                })
+            );
+        }
+
+        // Filtro: esconder completos (padrão) a menos que mostrarCompletos = true
+        if (!mostrarCompletos) {
+            list = list.filter((p: any) => {
+                const { ok, total } = contarOk(p);
+                return total === 0 || ok < total;
+            });
+        }
+
+        // Se não há nenhum filtro ativo, limita aos últimos 9
+        if (!temFiltroAtivo) list = list.slice(0, 9);
 
         return list;
-    }, [protocolos, data, filtroDataInicio, filtroDataFim]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [protocolos, data, filtroDataInicio, filtroDataFim, buscaNorm, mostrarCompletos, ordens]);
 
     if (loading) {
         return (
@@ -960,10 +991,16 @@ export default function ProtocoloDiario() {
                             }}>
                                 {protocolosAnterioresFiltrados.length}
                             </span>
+                            <span style={{
+                                fontSize: 10, fontWeight: 600, color: 'var(--notion-text-muted)',
+                                fontStyle: 'italic',
+                            }}>
+                                {!mostrarCompletos ? '(só pendentes)' : '(todos)'}
+                            </span>
 
-                            {(filtroDataInicio || filtroDataFim) && (
+                            {temFiltroAtivo && (
                                 <button
-                                    onClick={() => { setFiltroDataInicio(''); setFiltroDataFim(''); }}
+                                    onClick={() => { setFiltroDataInicio(''); setFiltroDataFim(''); setFiltroBusca(''); }}
                                     style={{
                                         marginLeft: 'auto',
                                         padding: '5px 12px', fontSize: 11, fontWeight: 600,
@@ -973,15 +1010,49 @@ export default function ProtocoloDiario() {
                                         display: 'inline-flex', alignItems: 'center', gap: 4,
                                     }}
                                 >
-                                    <X size={12} /> Limpar filtro
+                                    <X size={12} /> Limpar filtros
                                 </button>
                             )}
                         </div>
 
-                        {/* Filtro em linha própria */}
+                        {/* Busca por nome/placa */}
+                        <div style={{ position: 'relative' }}>
+                            <Search size={14} style={{
+                                position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                                color: 'var(--notion-text-secondary)', pointerEvents: 'none',
+                            }} />
+                            <input
+                                type="search"
+                                value={filtroBusca}
+                                onChange={(e) => setFiltroBusca(e.target.value)}
+                                placeholder="Buscar por nome do cliente, placa, chassi ou renavam…"
+                                style={{
+                                    width: '100%', padding: '9px 12px 9px 36px', fontSize: 13,
+                                    background: 'var(--notion-bg)', color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)', borderRadius: 8,
+                                    outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                                }}
+                            />
+                            {filtroBusca && (
+                                <button
+                                    onClick={() => setFiltroBusca('')}
+                                    style={{
+                                        position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                                        background: 'transparent', border: 'none', cursor: 'pointer',
+                                        color: 'var(--notion-text-secondary)', padding: 4,
+                                        display: 'flex', alignItems: 'center',
+                                    }}
+                                    title="Limpar busca"
+                                >
+                                    <X size={14} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Filtro de datas + toggle completos */}
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
+                            gridTemplateColumns: '1fr 1fr auto',
                             gap: 10,
                             alignItems: 'end',
                         }}>
@@ -1027,6 +1098,23 @@ export default function ProtocoloDiario() {
                                     }}
                                 />
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => setMostrarCompletos(v => !v)}
+                                title={mostrarCompletos ? 'Esconder os que já estão todos OK' : 'Mostrar também os que já estão todos OK'}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: 6,
+                                    padding: '8px 14px', height: 38, borderRadius: 8,
+                                    border: mostrarCompletos ? '1px solid rgba(0,117,222,0.4)' : '1px solid var(--notion-border)',
+                                    background: mostrarCompletos ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                                    color: mostrarCompletos ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
+                                    cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                                    fontFamily: 'inherit', whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {mostrarCompletos ? <Check size={13} /> : null}
+                                Ver concluídos
+                            </button>
                         </div>
                     </div>
 
@@ -1039,6 +1127,19 @@ export default function ProtocoloDiario() {
                             const { ok, total } = contarOk(p);
                             const allDone = total > 0 && ok === total;
                             const hasSigned = !!p.fotoAssinadaUrl;
+                            // Destaca processos que bateram na busca
+                            const processosBatendo = buscaNorm
+                                ? (p.processos || []).filter((proc: any) => {
+                                    const nome = (proc.clienteNome || '').toLowerCase();
+                                    const placa = (proc.veiculoPlaca || '').toLowerCase().replace(/[^\w]/g, '');
+                                    const chassi = (proc.veiculoChassi || '').toLowerCase().replace(/[^\w]/g, '');
+                                    const renavam = (proc.veiculoRenavam || '').replace(/\D/g, '');
+                                    return nome.includes(filtroBusca.trim().toLowerCase()) ||
+                                        placa.includes(buscaNorm) ||
+                                        chassi.includes(buscaNorm) ||
+                                        renavam.includes(buscaNorm);
+                                })
+                                : [];
                             return (
                                 <div
                                     key={p.id}
@@ -1110,6 +1211,54 @@ export default function ProtocoloDiario() {
                                     }}>
                                         {total} proc.
                                     </span>
+
+                                    {/* Preview dos processos que bateram na busca */}
+                                    {processosBatendo.length > 0 && (
+                                        <div style={{
+                                            flexBasis: '100%', marginTop: 8, paddingTop: 10,
+                                            borderTop: '1px dashed var(--notion-border)',
+                                            display: 'flex', flexDirection: 'column', gap: 6,
+                                        }}>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700,
+                                                color: 'var(--notion-blue)',
+                                                textTransform: 'uppercase', letterSpacing: '0.04em',
+                                            }}>
+                                                {processosBatendo.length} processo(s) encontrado(s):
+                                            </span>
+                                            {processosBatendo.slice(0, 3).map((proc: any, i: number) => (
+                                                <div key={i} style={{
+                                                    display: 'flex', alignItems: 'center', gap: 8,
+                                                    fontSize: 12, color: 'var(--notion-text)',
+                                                    background: 'rgba(0,117,222,0.06)',
+                                                    padding: '6px 10px', borderRadius: 6,
+                                                }}>
+                                                    {proc.osNumero && (
+                                                        <span style={{
+                                                            fontSize: 10, fontWeight: 800, color: 'var(--notion-blue)',
+                                                            background: 'rgba(0,117,222,0.15)', padding: '1px 6px', borderRadius: 4,
+                                                        }}>
+                                                            #{proc.osNumero}
+                                                        </span>
+                                                    )}
+                                                    <span style={{ fontWeight: 600 }}>{proc.clienteNome}</span>
+                                                    {proc.veiculoPlaca && proc.veiculoPlaca !== '—' && (
+                                                        <span style={{ color: 'var(--notion-text-secondary)' }}>
+                                                            · {proc.veiculoPlaca}
+                                                        </span>
+                                                    )}
+                                                    {isProcessoOk(proc) && (
+                                                        <Check size={11} strokeWidth={3} style={{ color: '#22c55e', marginLeft: 'auto' }} />
+                                                    )}
+                                                </div>
+                                            ))}
+                                            {processosBatendo.length > 3 && (
+                                                <span style={{ fontSize: 11, color: 'var(--notion-text-muted)', fontStyle: 'italic' }}>
+                                                    ... e mais {processosBatendo.length - 3}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
