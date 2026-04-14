@@ -1089,14 +1089,14 @@ export default function OSList() {
                                                             <span key={i} style={{
                                                                 fontSize: '0.75rem',
                                                                 fontWeight: 700,
-                                                                color: 'var(--notion-orange)',
+                                                                color: '#dc2626',
                                                                 display: 'inline-flex',
                                                                 alignItems: 'center',
                                                                 gap: 5,
-                                                                background: 'rgba(239,68,68,0.08)',
+                                                                background: 'rgba(220,38,38,0.1)',
                                                                 padding: '3px 8px',
                                                                 borderRadius: 6,
-                                                                border: '1px solid rgba(239,68,68,0.15)',
+                                                                border: '1px solid rgba(220,38,38,0.3)',
                                                                 width: 'fit-content',
                                                             }}>
                                                                 <AlertTriangle size={11} style={{ flexShrink: 0 }} />

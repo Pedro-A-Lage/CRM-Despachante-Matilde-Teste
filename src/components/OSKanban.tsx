@@ -596,7 +596,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         <span title={os.pendencia} style={{ display: 'inline-flex', alignItems: 'center' }}>
                                                             <AlertTriangle
                                                                 size={11}
-                                                                style={{ color: 'var(--notion-orange)' }}
+                                                                style={{ color: '#dc2626' }}
                                                             />
                                                         </span>
                                                     )}
