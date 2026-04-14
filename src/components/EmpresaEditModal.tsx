@@ -139,7 +139,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-7 [&>button]:h-7 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4"
+        className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-8 [&>button]:h-8 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button]:opacity-100 [&>button>svg]:h-3.5 [&>button>svg]:w-3.5"
         style={{
           background: 'var(--notion-surface)',
           border: '1px solid var(--notion-border)',
