@@ -18,7 +18,7 @@ const SERVICES: DetranService[] = [
     {
         id: 'transferencia',
         title: 'Transferência de Veículo',
-        description: 'Acesse o portal, execute a transferência e o CRM criará a OS automaticamente com o PDF capturado.',
+        description: 'Acesse o portal para executar a transferência de propriedade do veículo.',
         url: 'https://transito.mg.gov.br/veiculos/transferencias/taxa-para-transferir-propriedade-de-veiculo-comprador/index/2',
         icon: Upload,
         color: '#0075de',
@@ -36,7 +36,7 @@ const SERVICES: DetranService[] = [
     {
         id: 'segunda_via',
         title: '2ª Via de Recibo (CRV)',
-        description: 'Acesse o portal, solicite a 2ª via e o CRM criará a OS automaticamente com o PDF capturado.',
+        description: 'Acesse o portal para solicitar a 2ª via do CRV.',
         url: 'https://transito.mg.gov.br/veiculos/documentos-de-veiculos/emitir-a-2-via-do-crv',
         icon: FileText,
         color: '#059669',
@@ -76,13 +76,9 @@ export default function ServicosDetran() {
     const { open: openNovaOS } = useNovaOSModal();
 
     const openDetran = (service: DetranService) => {
-        // Notifica a extensão qual serviço está sendo iniciado, depois abre o Detran.
-        // A extensão captura o PDF ao final → IA analisa → CRM cria a OS automaticamente.
-        window.postMessage({
-            source: 'MATILDE_CRM_PAGE',
-            action: 'DEFINIR_SERVICO',
-            servico: service.id,
-        }, '*');
+        // Extensão desvinculada: apenas abrir o portal em nova aba.
+        // Nada é capturado automaticamente e nenhuma OS é criada pelo PDF.
+        // A OS deve ser criada manualmente pelo botão "Nova Ordem de Serviço".
         window.open(service.url, '_blank');
     };
 
