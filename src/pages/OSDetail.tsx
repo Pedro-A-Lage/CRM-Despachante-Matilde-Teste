@@ -2766,11 +2766,9 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                 prazo.setDate(prazo.getDate() + 30);
                 updatedVistoria.motivoReprovacao = motivo;
                 updatedVistoria.prazoReagendamento = prazo.toISOString();
+                updatedVistoria.status = 'reprovada';
                 history.push({ id: generateId(), local, data: dataAgendamento || new Date().toISOString(), status: 'reprovada', motivo, registradoEm: new Date().toISOString(), usuario: authUser?.nome });
-                updatedVistoria.status = 'agendar';
-                updatedVistoria.dataAgendamento = undefined;
-                setStatus('agendar');
-                setDataAgendamento('');
+                // Mantém a vistoria em "Reprovada" até o usuário clicar em "A Agendar"/"Agendada" manualmente
                 setMotivo('');
             } else if (effectiveStatus === 'aprovada_apontamento') {
                 updatedVistoria.descricaoApontamento = apontamento;
