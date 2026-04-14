@@ -1021,26 +1021,6 @@ export default function OSList() {
                                                 }}>
                                                     {STATUS_OS_LABELS[os.status]}
                                                 </span>
-                                                {/* Progress bar under status */}
-                                                {progress && (
-                                                    <div style={{
-                                                        marginTop: 4,
-                                                        height: 3,
-                                                        borderRadius: 3,
-                                                        background: 'var(--notion-border)',
-                                                        overflow: 'hidden',
-                                                        width: 80,
-                                                    }}>
-                                                        <div style={{
-                                                            height: '100%',
-                                                            width: `${progress.pct}%`,
-                                                            borderRadius: 3,
-                                                            background: `linear-gradient(90deg, ${progress.color}, ${progress.color}cc)`,
-                                                            animation: 'oslist-progressGrow 0.6s ease-out',
-                                                            transition: 'width 0.3s ease',
-                                                        }} />
-                                                    </div>
-                                                )}
                                                 {/* Mostra data de entrada/reentrada/sifap apenas na delegacia */}
                                                 {os.status === 'delegacia' && (() => {
                                                     if (os.sifap?.dataRegistro || os.statusDelegacia?.toLowerCase() === 'sifap') {
