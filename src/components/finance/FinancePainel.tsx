@@ -546,32 +546,6 @@ export default function FinancePainel({
                     <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--notion-orange)' }}>{fmt(faltaReceber)}</div>
                   </div>
                 )}
-                {!readOnly && (
-                  <button
-                    onClick={() => setShowRecebimento(true)}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                      fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap',
-                      padding: '6px 13px', borderRadius: 7,
-                      background: 'rgba(16,185,129,0.12)',
-                      color: 'var(--notion-green)',
-                      border: '1px solid rgba(16,185,129,0.35)',
-                      cursor: 'pointer',
-                      letterSpacing: '0.01em',
-                      transition: 'all 0.15s ease',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(16,185,129,0.22)';
-                      e.currentTarget.style.borderColor = 'rgba(16,185,129,0.6)';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'rgba(16,185,129,0.12)';
-                      e.currentTarget.style.borderColor = 'rgba(16,185,129,0.35)';
-                    }}
-                  >
-                    <IconPlus /> Registrar Pagamento
-                  </button>
-                )}
               </div>
             </div>
 
@@ -645,16 +619,43 @@ export default function FinancePainel({
       {/* ===== RECEBIMENTOS ===== */}
       <div style={{ borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
         <div style={{
-          display: 'flex', alignItems: 'center', padding: '10px 16px',
+          display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
           borderBottom: payments.length > 0 ? '1px solid var(--notion-border)' : 'none',
         }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Recebimentos
           </span>
           {payments.length > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--notion-text-secondary)', opacity: 0.6 }}>
+            <span style={{
+              fontSize: 11, fontWeight: 700,
+              padding: '2px 8px', borderRadius: 20,
+              background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
+            }}>
               {payments.length}
             </span>
+          )}
+          <div style={{ flex: 1 }} />
+          {!readOnly && (
+            <button
+              onClick={() => setShowRecebimento(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap',
+                padding: '7px 14px', borderRadius: 8,
+                background: 'var(--notion-green)',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                letterSpacing: '0.01em',
+                transition: 'all 0.15s ease',
+                fontFamily: 'inherit',
+                boxShadow: '0 1px 3px rgba(16,185,129,0.3)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+            >
+              <IconPlus /> Registrar Pagamento
+            </button>
           )}
         </div>
 
