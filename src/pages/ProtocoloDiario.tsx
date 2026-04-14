@@ -1,12 +1,15 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOrdens, getClientes, getVeiculos, saveProtocolo, getProtocolos } from '../lib/database';
+import { uploadFileToSupabase } from '../lib/fileStorage';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
-import type { ProtocoloProcesso, TipoServico } from '../types';
+import type { ProtocoloProcesso, TipoServico, ProtocoloDiario as ProtocoloDiarioType } from '../types';
+import { useToast } from '../components/Toast';
 import {
     FileText, Printer, Plus, Calendar, Trash2, UserPlus,
     ChevronDown, ChevronUp, Edit2, Clock, Hash, Car, User,
-    CheckCircle, RotateCcw, Shield, Loader2, ClipboardList
+    CheckCircle, RotateCcw, Shield, Loader2, ClipboardList,
+    Camera, Image as ImageIcon, ExternalLink, Check
 } from 'lucide-react';
 
 const TIPO_BADGE: Record<string, { color: string; bg: string; border: string; label: string; icon: any }> = {
@@ -18,6 +21,7 @@ const TIPO_BADGE: Record<string, { color: string; bg: string; border: string; la
 export default function ProtocoloDiario() {
     const navigate = useNavigate();
     const serviceLabels = useServiceLabels();
+    const { showToast } = useToast();
     const [data, setData] = useState(new Date().toISOString().split('T')[0]!);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -35,6 +39,14 @@ export default function ProtocoloDiario() {
     const [clientes, setClientes] = useState<any[]>([]);
     const [veiculos, setVeiculos] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Filtro de datas para protocolos anteriores
+    const [filtroDataInicio, setFiltroDataInicio] = useState('');
+    const [filtroDataFim, setFiltroDataFim] = useState('');
+
+    // Upload de foto assinada
+    const [uploadingFoto, setUploadingFoto] = useState(false);
+    const fotoInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         Promise.all([
@@ -208,6 +220,83 @@ export default function ProtocoloDiario() {
     const dataFormatada = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR', {
         weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
     });
+
+    // Verifica se um processo está pronto (doc_pronto/entregue se tem OS, ou marcado concluído se avulso)
+    const isProcessoOk = (p: any): boolean => {
+        if (p.manual) return !!p.concluido;
+        if (!p.osId) return false;
+        const os = ordens.find(o => o.id === p.osId);
+        if (!os) return false;
+        return os.status === 'doc_pronto' || os.status === 'entregue';
+    };
+
+    // Conta quantos processos de um protocolo estão prontos
+    const contarOk = (protocolo: any): { ok: number; total: number } => {
+        const total = protocolo.processos.length;
+        const ok = protocolo.processos.filter(isProcessoOk).length;
+        return { ok, total };
+    };
+
+    // Toggle manual de concluído em processo avulso
+    const toggleManualConcluido = async (protocolo: any, idx: number) => {
+        const novosProcessos = protocolo.processos.map((p: any, i: number) =>
+            i === idx ? { ...p, concluido: !p.concluido } : p
+        );
+        await saveProtocolo({ ...protocolo, processos: novosProcessos });
+        setRefreshKey(k => k + 1);
+    };
+
+    // Upload de foto do protocolo assinado
+    const handleUploadFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !protocoloHoje) return;
+        setUploadingFoto(true);
+        try {
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+            const path = `protocolos/${data}/assinado_${Date.now()}.${ext}`;
+            const url = await uploadFileToSupabase(file, path);
+            await saveProtocolo({
+                ...protocoloHoje,
+                fotoAssinadaUrl: url,
+                fotoAssinadaNome: file.name,
+                fotoAnexadaEm: new Date().toISOString(),
+            });
+            showToast('Foto do protocolo anexada com sucesso!', 'success');
+            setRefreshKey(k => k + 1);
+        } catch (err: any) {
+            showToast('Erro ao anexar foto: ' + (err?.message || err), 'error');
+        } finally {
+            setUploadingFoto(false);
+            if (fotoInputRef.current) fotoInputRef.current.value = '';
+        }
+    };
+
+    const removerFoto = async () => {
+        if (!protocoloHoje) return;
+        await saveProtocolo({
+            ...protocoloHoje,
+            fotoAssinadaUrl: '',
+            fotoAssinadaNome: '',
+            fotoAnexadaEm: '',
+        });
+        showToast('Foto removida', 'info');
+        setRefreshKey(k => k + 1);
+    };
+
+    // Filtrar protocolos anteriores por data
+    const protocolosAnterioresFiltrados = useMemo(() => {
+        let list = [...protocolos]
+            .sort((a, b) => b.data.localeCompare(a.data))
+            .filter((p: any) => p.data !== data);
+
+        if (filtroDataInicio) list = list.filter((p: any) => p.data >= filtroDataInicio);
+        if (filtroDataFim) list = list.filter((p: any) => p.data <= filtroDataFim);
+
+        // Se não há filtro de datas, limita aos últimos 9
+        if (!filtroDataInicio && !filtroDataFim) list = list.slice(0, 9);
+
+        return list;
+    }, [protocolos, data, filtroDataInicio, filtroDataFim]);
 
     if (loading) {
         return (
@@ -393,6 +482,107 @@ export default function ProtocoloDiario() {
                 </div>
             )}
 
+            {/* ===== FOTO DO PROTOCOLO ASSINADO ===== */}
+            {protocoloHoje && (
+                <div style={{
+                    background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
+                    borderRadius: 12, padding: '14px 18px', marginBottom: 16,
+                    display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+                }}>
+                    <div style={{
+                        width: 40, height: 40, borderRadius: 10,
+                        background: protocoloHoje.fotoAssinadaUrl ? 'rgba(34,197,94,0.15)' : 'rgba(139,92,246,0.12)',
+                        color: protocoloHoje.fotoAssinadaUrl ? '#22c55e' : '#8b5cf6',
+                        border: protocoloHoje.fotoAssinadaUrl ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(139,92,246,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                    }}>
+                        {protocoloHoje.fotoAssinadaUrl ? <Check size={18} strokeWidth={3} /> : <ImageIcon size={18} />}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 180 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
+                            {protocoloHoje.fotoAssinadaUrl ? 'Protocolo assinado anexado' : 'Foto do protocolo assinado'}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)', marginTop: 2 }}>
+                            {protocoloHoje.fotoAssinadaUrl
+                                ? `${protocoloHoje.fotoAssinadaNome || 'foto.jpg'} · anexada em ${protocoloHoje.fotoAnexadaEm ? new Date(protocoloHoje.fotoAnexadaEm).toLocaleString('pt-BR') : ''}`
+                                : 'Tire uma foto do protocolo depois de receber da delegacia com a assinatura'}
+                        </div>
+                    </div>
+                    <input
+                        ref={fotoInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={handleUploadFoto}
+                        style={{ display: 'none' }}
+                    />
+                    {protocoloHoje.fotoAssinadaUrl ? (
+                        <>
+                            <a
+                                href={protocoloHoje.fotoAssinadaUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    padding: '7px 14px', height: 34, boxSizing: 'border-box',
+                                    background: 'var(--notion-blue)', color: '#fff',
+                                    borderRadius: 8, fontSize: 12, fontWeight: 600,
+                                    textDecoration: 'none',
+                                }}
+                            >
+                                <ExternalLink size={13} /> Ver foto
+                            </a>
+                            <button
+                                onClick={() => fotoInputRef.current?.click()}
+                                disabled={uploadingFoto}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    padding: '7px 14px', height: 34,
+                                    background: 'var(--notion-surface)', color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)',
+                                    borderRadius: 8, fontSize: 12, fontWeight: 600,
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <Camera size={13} /> Trocar
+                            </button>
+                            <button
+                                onClick={removerFoto}
+                                style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                                    padding: '7px 12px', height: 34,
+                                    background: 'transparent', color: '#dc2626',
+                                    border: '1px solid rgba(220,38,38,0.3)',
+                                    borderRadius: 8, fontSize: 12, fontWeight: 600,
+                                    cursor: 'pointer', fontFamily: 'inherit',
+                                }}
+                            >
+                                <Trash2 size={13} />
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={() => fotoInputRef.current?.click()}
+                            disabled={uploadingFoto}
+                            style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 6,
+                                padding: '7px 14px', height: 34,
+                                background: '#8b5cf6', color: '#fff',
+                                border: 'none', borderRadius: 8,
+                                fontSize: 12, fontWeight: 600,
+                                cursor: uploadingFoto ? 'not-allowed' : 'pointer',
+                                fontFamily: 'inherit',
+                                opacity: uploadingFoto ? 0.6 : 1,
+                            }}
+                        >
+                            {uploadingFoto ? <Loader2 size={13} className="spin" /> : <Camera size={13} />}
+                            {uploadingFoto ? 'Enviando...' : 'Anexar foto'}
+                        </button>
+                    )}
+                </div>
+            )}
+
             {/* ===== PROTOCOLO - CARDS DOS PROCESSOS ===== */}
             {protocoloHoje ? (
                 <div style={{
@@ -498,6 +688,49 @@ export default function ProtocoloDiario() {
                                                 </span>
                                             </div>
                                         </div>
+
+                                        {/* Indicador OK */}
+                                        {isProcessoOk(p) && (
+                                            <span
+                                                title={p.manual ? 'Marcado como concluído' : 'Documento pronto'}
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                    fontSize: 10, fontWeight: 700,
+                                                    padding: '4px 10px', borderRadius: 20,
+                                                    background: 'rgba(34,197,94,0.15)',
+                                                    color: '#22c55e',
+                                                    border: '1px solid rgba(34,197,94,0.4)',
+                                                    flexShrink: 0,
+                                                }}>
+                                                <Check size={11} strokeWidth={3} />
+                                                PRONTO
+                                            </span>
+                                        )}
+
+                                        {/* Toggle manual de OK pra avulsos */}
+                                        {p.manual && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleManualConcluido(protocoloHoje, idx);
+                                                }}
+                                                title={p.concluido ? 'Desmarcar como concluído' : 'Marcar como concluído'}
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                    fontSize: 10, fontWeight: 700,
+                                                    padding: '4px 10px', borderRadius: 20,
+                                                    background: p.concluido ? 'rgba(34,197,94,0.15)' : 'transparent',
+                                                    color: p.concluido ? '#22c55e' : 'var(--notion-text-secondary)',
+                                                    border: `1px solid ${p.concluido ? 'rgba(34,197,94,0.4)' : 'var(--notion-border)'}`,
+                                                    cursor: 'pointer',
+                                                    fontFamily: 'inherit',
+                                                    flexShrink: 0,
+                                                }}
+                                            >
+                                                <Check size={11} strokeWidth={3} />
+                                                {p.concluido ? 'OK' : 'Marcar OK'}
+                                            </button>
+                                        )}
 
                                         {/* Badge tipo */}
                                         <span style={{
@@ -695,20 +928,75 @@ export default function ProtocoloDiario() {
                     <div style={{
                         padding: '14px 20px',
                         borderBottom: '1px solid var(--notion-border)',
-                        display: 'flex', alignItems: 'center', gap: 10,
+                        display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
                     }}>
                         <Clock size={14} style={{ color: 'var(--notion-text-secondary)' }} />
                         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             Protocolos Anteriores
                         </span>
+                        <span style={{
+                            fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                            background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
+                        }}>
+                            {protocolosAnterioresFiltrados.length}
+                        </span>
+
+                        {/* Filtro de datas */}
+                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)', fontWeight: 600 }}>
+                                Filtrar:
+                            </span>
+                            <input
+                                type="date"
+                                value={filtroDataInicio}
+                                onChange={(e) => setFiltroDataInicio(e.target.value)}
+                                placeholder="De"
+                                style={{
+                                    padding: '5px 8px', fontSize: 12,
+                                    background: 'var(--notion-bg)', color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)', borderRadius: 6,
+                                    outline: 'none', fontFamily: 'inherit',
+                                }}
+                            />
+                            <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>até</span>
+                            <input
+                                type="date"
+                                value={filtroDataFim}
+                                onChange={(e) => setFiltroDataFim(e.target.value)}
+                                placeholder="Até"
+                                style={{
+                                    padding: '5px 8px', fontSize: 12,
+                                    background: 'var(--notion-bg)', color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)', borderRadius: 6,
+                                    outline: 'none', fontFamily: 'inherit',
+                                }}
+                            />
+                            {(filtroDataInicio || filtroDataFim) && (
+                                <button
+                                    onClick={() => { setFiltroDataInicio(''); setFiltroDataFim(''); }}
+                                    style={{
+                                        padding: '5px 10px', fontSize: 11, fontWeight: 600,
+                                        background: 'transparent', color: 'var(--notion-text-secondary)',
+                                        border: '1px solid var(--notion-border)', borderRadius: 6,
+                                        cursor: 'pointer', fontFamily: 'inherit',
+                                    }}
+                                >
+                                    Limpar
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        {[...protocolos]
-                            .sort((a, b) => b.data.localeCompare(a.data))
-                            .filter((p: any) => p.data !== data)
-                            .slice(0, 10)
-                            .map((p: any, idx: number, arr: any[]) => (
+                        {protocolosAnterioresFiltrados.length === 0 ? (
+                            <div style={{ padding: 32, textAlign: 'center', color: 'var(--notion-text-secondary)', fontSize: 13 }}>
+                                Nenhum protocolo no período selecionado.
+                            </div>
+                        ) : protocolosAnterioresFiltrados.map((p: any, idx: number, arr: any[]) => {
+                            const { ok, total } = contarOk(p);
+                            const allDone = total > 0 && ok === total;
+                            const hasSigned = !!p.fotoAssinadaUrl;
+                            return (
                                 <div
                                     key={p.id}
                                     onClick={() => setData(p.data)}
@@ -717,8 +1005,9 @@ export default function ProtocoloDiario() {
                                         padding: '12px 20px', cursor: 'pointer',
                                         borderBottom: idx < arr.length - 1 ? '1px solid var(--notion-border)' : 'none',
                                         transition: 'background 0.15s',
+                                        flexWrap: 'wrap',
                                     }}
-                                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(245,158,11,0.04)'; }}
+                                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,117,222,0.04)'; }}
                                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                                 >
                                     <div style={{
@@ -734,19 +1023,52 @@ export default function ProtocoloDiario() {
                                             {new Date(p.data + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
                                         </span>
                                     </div>
-                                    <div style={{ flex: 1 }}>
+                                    <div style={{ flex: 1, minWidth: 160 }}>
                                         <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)', textTransform: 'capitalize' }}>
                                             {new Date(p.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
                                         </span>
                                     </div>
+
+                                    {/* Progresso OK */}
+                                    <span
+                                        title={`${ok} de ${total} processos prontos`}
+                                        style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                                            fontSize: 11, fontWeight: 700,
+                                            padding: '3px 10px', borderRadius: 20,
+                                            background: allDone ? 'rgba(34,197,94,0.15)' : 'rgba(0,117,222,0.1)',
+                                            color: allDone ? '#22c55e' : 'var(--notion-blue)',
+                                            border: `1px solid ${allDone ? 'rgba(34,197,94,0.4)' : 'rgba(0,117,222,0.3)'}`,
+                                        }}>
+                                        {allDone && <Check size={11} strokeWidth={3} />}
+                                        {ok}/{total} OK
+                                    </span>
+
+                                    {/* Assinado */}
+                                    {hasSigned && (
+                                        <span
+                                            title="Protocolo assinado anexado"
+                                            style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                fontSize: 10, fontWeight: 700,
+                                                padding: '3px 10px', borderRadius: 20,
+                                                background: 'rgba(139,92,246,0.15)', color: '#8b5cf6',
+                                                border: '1px solid rgba(139,92,246,0.4)',
+                                            }}>
+                                            <ImageIcon size={10} />
+                                            ASSINADO
+                                        </span>
+                                    )}
+
                                     <span style={{
-                                        fontSize: 11, fontWeight: 700, color: 'var(--notion-blue)',
-                                        background: 'rgba(245,158,11,0.1)', padding: '3px 10px', borderRadius: 6,
+                                        fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)',
+                                        background: 'var(--notion-bg-alt)', padding: '3px 10px', borderRadius: 6,
                                     }}>
-                                        {p.processos.length} processo{p.processos.length !== 1 ? 's' : ''}
+                                        {total} proc.
                                     </span>
                                 </div>
-                            ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}

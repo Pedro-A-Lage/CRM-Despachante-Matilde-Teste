@@ -274,6 +274,9 @@ function dbToProtocolo(row: any): ProtocoloDiario {
         data: row.data,
         processos: row.processos || [],
         criadoEm: row.criado_em,
+        fotoAssinadaUrl: row.foto_assinada_url ?? undefined,
+        fotoAssinadaNome: row.foto_assinada_nome ?? undefined,
+        fotoAnexadaEm: row.foto_anexada_em ?? undefined,
     };
 }
 
@@ -283,6 +286,9 @@ function protocoloToDb(p: Partial<ProtocoloDiario>): Record<string, any> {
     if (p.data !== undefined) map.data = p.data;
     if (p.processos !== undefined) map.processos = p.processos;
     if (p.criadoEm !== undefined) map.criado_em = p.criadoEm;
+    if (p.fotoAssinadaUrl !== undefined) map.foto_assinada_url = p.fotoAssinadaUrl || null;
+    if (p.fotoAssinadaNome !== undefined) map.foto_assinada_nome = p.fotoAssinadaNome || null;
+    if (p.fotoAnexadaEm !== undefined) map.foto_anexada_em = p.fotoAnexadaEm || null;
     return map;
 }
 

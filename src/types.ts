@@ -194,6 +194,9 @@ export interface ProtocoloDiario {
     data: string;
     processos: ProtocoloProcesso[];
     criadoEm: string;
+    fotoAssinadaUrl?: string;
+    fotoAssinadaNome?: string;
+    fotoAnexadaEm?: string;
 }
 
 // Dados desnormalizados intencionalmente - registro histórico do protocolo
@@ -209,6 +212,7 @@ export interface ProtocoloProcesso {
     local?: string;
     sifap?: boolean;
     manual?: boolean; // true se adicionado manualmente sem OS
+    concluido?: boolean; // marca manual de processo avulso como concluído
 }
 
 // --- ORDEM DE SERVIÇO (PROCESSO COMPLETO) ---

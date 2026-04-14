@@ -185,6 +185,7 @@ function statusToTab(status?: string): TabId {
 }
 
 function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any; onRefresh: () => void }) {
+    const { showToast } = useToast();
     const [estampariaEmail, setEstampariaEmail] = useState('itabira@natalplacasgv.com.br');
     const [mensagemCustomizada, setMensagemCustomizada] = useState(
         `Ola,\n\nSegue em anexo a folha do DETRAN para solicitacao do boleto da placa do veiculo:\n\nPlaca: ${veiculo?.placa || '—'}\nChassi: ${veiculo?.chassi || '—'}\nOS: ${os.numero}\n\nPor favor, me envie o boleto para pagamento.\n\nAtenciosamente,\nDespachante Matilde`
