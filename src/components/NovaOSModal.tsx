@@ -9,7 +9,7 @@ import {
 import { useServiceLabels } from '../hooks/useServiceLabels';
 import type { DadosIniciaisOS } from '../hooks/useNovaOSModal';
 import { extrairDadosFichaCadastro, type DadosFichaCadastro } from '../lib/fichaCadastroAI';
-import { getClientes, saveCliente, saveVeiculo, saveOrdem, updateOrdem, generateId } from '../lib/database';
+import { getClientes, getCliente, getVeiculoByPlacaOuChassi, saveCliente, saveVeiculo, saveOrdem, updateOrdem, generateId } from '../lib/database';
 import { gerarChecklistDinamico, getServiceConfig } from '../lib/configService';
 import { finalizarOS } from '../lib/osService';
 import { useNavigate } from 'react-router-dom';
@@ -431,6 +431,7 @@ interface EtapaRevisaoProps {
 function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, onVoltar, onConfirmar, erro }: EtapaRevisaoProps) {
   const serviceLabels = useServiceLabels();
   const [buscandoCep, setBuscandoCep] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const set = (key: keyof DadosIniciaisOS) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...dados, [key]: e.target.value });
 
@@ -458,18 +459,22 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
   };
 
   // Busca cliente no banco quando CPF/CNPJ é editado (onBlur)
+  const [buscandoCliente, setBuscandoCliente] = useState(false);
+  const [clienteAchado, setClienteAchado] = useState(false);
   const buscarClientePorCpfCnpj = async () => {
     const cpfNorm = (dados.cpfCnpj || '').replace(/\D/g, '');
     if (cpfNorm.length < 11) {
       onClienteEncontrado(undefined);
+      setClienteAchado(false);
       return;
     }
+    setBuscandoCliente(true);
     try {
       const clientes = await getClientes();
       const encontrado = clientes.find(c => c.cpfCnpj.replace(/\D/g, '') === cpfNorm);
       if (encontrado) {
         onClienteEncontrado(encontrado);
-        // Auto-preenche apenas campos vazios (não sobrescreve o que o usuário digitou)
+        setClienteAchado(true);
         onChange({
           ...dados,
           nomeCliente: dados.nomeCliente || encontrado.nome,
@@ -486,148 +491,379 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
         });
       } else {
         onClienteEncontrado(undefined);
+        setClienteAchado(false);
       }
     } catch (err) {
       console.warn('Erro ao buscar cliente:', err);
+    } finally {
+      setBuscandoCliente(false);
     }
   };
 
+  // Busca veículo no banco quando Placa/Chassi é editado (onBlur)
+  const [buscandoVeiculo, setBuscandoVeiculo] = useState(false);
+  const [veiculoAchado, setVeiculoAchado] = useState(false);
+  const [avisoClienteDiferente, setAvisoClienteDiferente] = useState<string | null>(null);
+
+  const buscarVeiculoPorPlacaChassi = async () => {
+    const placa = (dados.placa || '').trim();
+    const chassi = (dados.chassi || '').trim();
+    if (!placa && !chassi) {
+      setVeiculoAchado(false);
+      return;
+    }
+    setBuscandoVeiculo(true);
+    setAvisoClienteDiferente(null);
+    try {
+      const encontrado = await getVeiculoByPlacaOuChassi(placa, chassi);
+      if (encontrado) {
+        setVeiculoAchado(true);
+        // Preencher campos vazios do veículo
+        onChange({
+          ...dados,
+          placa: dados.placa || encontrado.placa,
+          chassi: dados.chassi || encontrado.chassi,
+          renavam: dados.renavam || encontrado.renavam,
+          marcaModelo: dados.marcaModelo || encontrado.marcaModelo,
+          anoFabricacao: dados.anoFabricacao || encontrado.anoFabricacao,
+          anoModelo: dados.anoModelo || encontrado.anoModelo,
+          cor: dados.cor || encontrado.cor,
+          combustivel: dados.combustivel || encontrado.combustivel,
+          categoria: dados.categoria || encontrado.categoria,
+          dataAquisicao: dados.dataAquisicao || encontrado.dataAquisicao,
+        });
+
+        // Se o veículo pertence a outro cliente, avisar
+        if (encontrado.clienteId && clienteExistente && encontrado.clienteId !== clienteExistente.id) {
+          try {
+            const donoVeic = await getCliente(encontrado.clienteId);
+            if (donoVeic) {
+              setAvisoClienteDiferente(`Este veículo está vinculado a: ${donoVeic.nome} (${donoVeic.cpfCnpj})`);
+            }
+          } catch {/* ignore */}
+        } else if (encontrado.clienteId && !clienteExistente) {
+          // Cliente não foi preenchido ainda - pré-preencher com o dono do veículo
+          try {
+            const donoVeic = await getCliente(encontrado.clienteId);
+            if (donoVeic) {
+              onClienteEncontrado(donoVeic);
+              setClienteAchado(true);
+              onChange({
+                ...dados,
+                nomeCliente: donoVeic.nome,
+                cpfCnpj: donoVeic.cpfCnpj,
+                tipoCpfCnpj: donoVeic.tipo === 'PJ' ? 'CNPJ' : 'CPF',
+                rg: donoVeic.rg,
+                orgaoExpedidor: donoVeic.orgaoExpedidor,
+                telefone: donoVeic.telefones?.[0],
+                endereco: donoVeic.endereco,
+                numero: donoVeic.numero,
+                bairro: donoVeic.bairro,
+                municipio: donoVeic.municipio,
+                uf: donoVeic.uf,
+                cep: donoVeic.cep,
+                placa: dados.placa || encontrado.placa,
+                chassi: dados.chassi || encontrado.chassi,
+                renavam: dados.renavam || encontrado.renavam,
+                marcaModelo: dados.marcaModelo || encontrado.marcaModelo,
+                anoFabricacao: dados.anoFabricacao || encontrado.anoFabricacao,
+                anoModelo: dados.anoModelo || encontrado.anoModelo,
+                cor: dados.cor || encontrado.cor,
+                combustivel: dados.combustivel || encontrado.combustivel,
+                categoria: dados.categoria || encontrado.categoria,
+                dataAquisicao: dados.dataAquisicao || encontrado.dataAquisicao,
+              });
+            }
+          } catch {/* ignore */}
+        }
+      } else {
+        setVeiculoAchado(false);
+      }
+    } catch (err) {
+      console.warn('Erro ao buscar veículo:', err);
+    } finally {
+      setBuscandoVeiculo(false);
+    }
+  };
+
+  // Validação por etapa
+  const clienteOk = !!(dados.nomeCliente && dados.cpfCnpj);
+  const veiculoOk = !!(dados.chassi || dados.placa); // pelo menos chassi ou placa
+  const servicoOk = !!dados.tipoServico;
+  const tudoOk = clienteOk && veiculoOk && servicoOk;
+
+  const podeAvancar = step === 1 ? clienteOk : step === 2 ? veiculoOk : tudoOk;
+
+  const steps = [
+    { n: 1 as const, label: 'Cliente', ok: clienteOk },
+    { n: 2 as const, label: 'Veículo', ok: veiculoOk },
+    { n: 3 as const, label: 'Dados da OS', ok: servicoOk },
+  ];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, padding: '1.25rem 1.5rem' }}>
 
-      {/* Seção Serviço */}
-      <div style={secaoStyle}>
-        <div style={secaoHeaderStyle}>Serviço</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Tipo de Serviço *</label>
-            <select style={selectStyle} value={dados.tipoServico || ''} onChange={set('tipoServico')}>
-              <option value="">Selecione...</option>
-              {Object.entries(serviceLabels).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
+      {/* Stepper */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+        {steps.map((s, i) => (
+          <div key={s.n} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+            <button
+              type="button"
+              onClick={() => setStep(s.n)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '6px 10px',
+                border: 'none',
+                background: 'transparent',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                minWidth: 0,
+                flex: '0 1 auto',
+              }}
+            >
+              <div style={{
+                width: 28,
+                height: 28,
+                borderRadius: '50%',
+                background: step === s.n
+                  ? 'var(--notion-blue)'
+                  : s.ok ? 'rgba(5,150,105,0.15)' : 'var(--notion-bg)',
+                color: step === s.n ? '#fff' : s.ok ? '#059669' : 'var(--notion-text-secondary)',
+                border: step === s.n ? 'none' : `1px solid ${s.ok ? 'rgba(5,150,105,0.4)' : 'var(--notion-border)'}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: 12,
+                flexShrink: 0,
+                transition: 'all 0.2s',
+              }}>
+                {s.ok && step !== s.n ? <CheckCircle size={14} /> : s.n}
+              </div>
+              <span style={{
+                fontSize: '0.82rem',
+                fontWeight: step === s.n ? 700 : 600,
+                color: step === s.n ? 'var(--notion-text)' : 'var(--notion-text-secondary)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>{s.label}</span>
+            </button>
+            {i < steps.length - 1 && (
+              <div style={{ flex: 1, height: 1, background: 'var(--notion-border)', margin: '0 6px', minWidth: 8 }} />
+            )}
           </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Tipo de Veículo</label>
-            <select style={selectStyle} value={dados.tipoVeiculo || 'carro'} onChange={set('tipoVeiculo')}>
-              <option value="carro">Carro</option>
-              <option value="moto">Moto</option>
-            </select>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Seção Cliente */}
-      <div style={secaoStyle}>
-        <div style={secaoHeaderStyle}>
-          Cliente
-          {clienteExistente && (
-            <span style={{ marginLeft: 8, fontSize: 12, background: 'rgba(55,114,255,0.1)', color: 'var(--notion-blue)', padding: '2px 8px', borderRadius: 20 }}>
-              Cliente existente
-            </span>
+      {/* Step 1: Cliente */}
+      {step === 1 && (
+        <div style={secaoStyle}>
+          <div style={secaoHeaderStyle}>
+            Cliente
+            {clienteExistente && (
+              <span style={{ marginLeft: 8, fontSize: 12, background: 'rgba(5,150,105,0.1)', color: '#059669', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
+                ✓ Cliente encontrado
+              </span>
+            )}
+          </div>
+          <div style={{ padding: '10px 16px 0', fontSize: '0.78rem', color: 'var(--notion-text-secondary)' }}>
+            Digite o CPF/CNPJ — se já estiver cadastrado, os dados serão preenchidos automaticamente.
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>
+                CPF/CNPJ *
+                {buscandoCliente && <Loader size={12} style={{ animation: 'spin 1s linear infinite', marginLeft: 6 }} />}
+                {clienteAchado && !buscandoCliente && <CheckCircle size={12} style={{ color: '#059669', marginLeft: 6 }} />}
+              </label>
+              <input style={inputStyle} value={dados.cpfCnpj || ''} onChange={(e) => { setClienteAchado(false); set('cpfCnpj')(e); }} onBlur={buscarClientePorCpfCnpj} autoFocus />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Tipo</label>
+              <select style={selectStyle} value={dados.tipoCpfCnpj || 'CPF'} onChange={set('tipoCpfCnpj')}>
+                <option value="CPF">CPF</option>
+                <option value="CNPJ">CNPJ</option>
+              </select>
+            </div>
+            <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Nome *</label>
+              <input style={inputStyle} value={dados.nomeCliente || ''} onChange={set('nomeCliente')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>RG</label>
+              <input style={inputStyle} value={dados.rg || ''} onChange={set('rg')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Órgão Expedidor</label>
+              <input style={inputStyle} value={dados.orgaoExpedidor || ''} onChange={set('orgaoExpedidor')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Telefone</label>
+              <input style={inputStyle} value={dados.telefone || ''} onChange={set('telefone')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>CEP {buscandoCep && <Loader size={12} style={{ animation: 'spin 1s linear infinite', marginLeft: 4 }} />}</label>
+              <input style={inputStyle} value={dados.cep || ''} onChange={set('cep')} onBlur={buscarCep} placeholder="Digite e saia do campo" />
+            </div>
+            <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Endereço</label>
+              <input style={inputStyle} value={dados.endereco || ''} onChange={set('endereco')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Número</label>
+              <input style={inputStyle} value={dados.numero || ''} onChange={set('numero')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Bairro</label>
+              <input style={inputStyle} value={dados.bairro || ''} onChange={set('bairro')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Município</label>
+              <input style={inputStyle} value={dados.municipio || ''} onChange={set('municipio')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>UF</label>
+              <input style={inputStyle} value={dados.uf || ''} onChange={set('uf')} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Veículo */}
+      {step === 2 && (
+        <div style={secaoStyle}>
+          <div style={secaoHeaderStyle}>
+            Veículo
+            {veiculoAchado && (
+              <span style={{ marginLeft: 8, fontSize: 12, background: 'rgba(5,150,105,0.1)', color: '#059669', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>
+                ✓ Veículo encontrado
+              </span>
+            )}
+          </div>
+          <div style={{ padding: '10px 16px 0', fontSize: '0.78rem', color: 'var(--notion-text-secondary)' }}>
+            Digite a Placa ou Chassi — se já estiver cadastrado, os dados serão preenchidos automaticamente.
+          </div>
+          {avisoClienteDiferente && (
+            <div style={{ margin: '8px 16px 0', padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--notion-orange)', fontWeight: 600 }}>
+              ⚠ {avisoClienteDiferente}
+            </div>
           )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>
+                Placa
+                {buscandoVeiculo && <Loader size={12} style={{ animation: 'spin 1s linear infinite', marginLeft: 6 }} />}
+                {veiculoAchado && !buscandoVeiculo && <CheckCircle size={12} style={{ color: '#059669', marginLeft: 6 }} />}
+              </label>
+              <input
+                style={inputStyle}
+                value={dados.placa || ''}
+                onChange={(e) => { setVeiculoAchado(false); set('placa')(e); }}
+                onBlur={buscarVeiculoPorPlacaChassi}
+                placeholder="Vazio p/ primeiro emplacamento"
+                autoFocus
+              />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Chassi</label>
+              <input
+                style={inputStyle}
+                value={dados.chassi || ''}
+                onChange={(e) => { setVeiculoAchado(false); set('chassi')(e); }}
+                onBlur={buscarVeiculoPorPlacaChassi}
+              />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Renavam</label>
+              <input style={inputStyle} value={dados.renavam || ''} onChange={set('renavam')} />
+            </div>
+            <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Marca/Modelo</label>
+              <input style={inputStyle} value={dados.marcaModelo || ''} onChange={set('marcaModelo')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Ano Fabricação</label>
+              <input style={inputStyle} value={dados.anoFabricacao || ''} onChange={set('anoFabricacao')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Ano Modelo</label>
+              <input style={inputStyle} value={dados.anoModelo || ''} onChange={set('anoModelo')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Cor</label>
+              <input style={inputStyle} value={dados.cor || ''} onChange={set('cor')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Combustível</label>
+              <input style={inputStyle} value={dados.combustivel || ''} onChange={set('combustivel')} />
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Data de Aquisição</label>
+              <input style={inputStyle} type="date" value={dados.dataAquisicao || ''} onChange={set('dataAquisicao')} />
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
-          <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Nome *</label>
-            <input style={inputStyle} value={dados.nomeCliente || ''} onChange={set('nomeCliente')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>CPF/CNPJ *</label>
-            <input style={inputStyle} value={dados.cpfCnpj || ''} onChange={set('cpfCnpj')} onBlur={buscarClientePorCpfCnpj} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Tipo</label>
-            <select style={selectStyle} value={dados.tipoCpfCnpj || 'CPF'} onChange={set('tipoCpfCnpj')}>
-              <option value="CPF">CPF</option>
-              <option value="CNPJ">CNPJ</option>
-            </select>
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>RG</label>
-            <input style={inputStyle} value={dados.rg || ''} onChange={set('rg')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Órgão Expedidor</label>
-            <input style={inputStyle} value={dados.orgaoExpedidor || ''} onChange={set('orgaoExpedidor')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Telefone</label>
-            <input style={inputStyle} value={dados.telefone || ''} onChange={set('telefone')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>CEP {buscandoCep && <Loader size={12} style={{ animation: 'spin 1s linear infinite', marginLeft: 4 }} />}</label>
-            <input style={inputStyle} value={dados.cep || ''} onChange={set('cep')} onBlur={buscarCep} placeholder="Digite e saia do campo" />
-          </div>
-          <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Endereço</label>
-            <input style={inputStyle} value={dados.endereco || ''} onChange={set('endereco')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Número</label>
-            <input style={inputStyle} value={dados.numero || ''} onChange={set('numero')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Bairro</label>
-            <input style={inputStyle} value={dados.bairro || ''} onChange={set('bairro')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Município</label>
-            <input style={inputStyle} value={dados.municipio || ''} onChange={set('municipio')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>UF</label>
-            <input style={inputStyle} value={dados.uf || ''} onChange={set('uf')} />
-          </div>
-        </div>
-      </div>
+      )}
 
-      {/* Seção Veículo */}
-      <div style={secaoStyle}>
-        <div style={secaoHeaderStyle}>Veículo</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Placa</label>
-            <input style={inputStyle} value={dados.placa || ''} onChange={set('placa')} placeholder="Deixe vazio p/ primeiro emplacamento" />
+      {/* Step 3: Dados da OS */}
+      {step === 3 && (
+        <div style={secaoStyle}>
+          <div style={secaoHeaderStyle}>Dados da Ordem de Serviço</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+            <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Tipo de Serviço *</label>
+              <select style={selectStyle} value={dados.tipoServico || ''} onChange={set('tipoServico')} autoFocus>
+                <option value="">Selecione...</option>
+                {Object.entries(serviceLabels).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle}>Tipo de Veículo</label>
+              <select style={selectStyle} value={dados.tipoVeiculo || 'carro'} onChange={set('tipoVeiculo')}>
+                <option value="carro">Carro</option>
+                <option value="moto">Moto</option>
+              </select>
+            </div>
           </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Chassi</label>
-            <input style={inputStyle} value={dados.chassi || ''} onChange={set('chassi')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Renavam</label>
-            <input style={inputStyle} value={dados.renavam || ''} onChange={set('renavam')} />
-          </div>
-          <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
-            <label style={labelStyle}>Marca/Modelo</label>
-            <input style={inputStyle} value={dados.marcaModelo || ''} onChange={set('marcaModelo')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Ano Fabricação</label>
-            <input style={inputStyle} value={dados.anoFabricacao || ''} onChange={set('anoFabricacao')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Ano Modelo</label>
-            <input style={inputStyle} value={dados.anoModelo || ''} onChange={set('anoModelo')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Cor</label>
-            <input style={inputStyle} value={dados.cor || ''} onChange={set('cor')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Combustível</label>
-            <input style={inputStyle} value={dados.combustivel || ''} onChange={set('combustivel')} />
-          </div>
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle}>Data de Aquisição</label>
-            <input style={inputStyle} type="date" value={dados.dataAquisicao || ''} onChange={set('dataAquisicao')} />
+
+          {/* Resumo dos dados preenchidos */}
+          <div style={{ padding: '14px 16px', borderTop: '1px solid var(--notion-border)', background: 'var(--notion-bg-alt)' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--notion-text-secondary)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Resumo
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.82rem' }}>
+              <div>
+                <span style={{ color: 'var(--notion-text-secondary)' }}>Cliente: </span>
+                <strong>{dados.nomeCliente || '—'}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--notion-text-secondary)' }}>CPF/CNPJ: </span>
+                <strong>{dados.cpfCnpj || '—'}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--notion-text-secondary)' }}>Placa: </span>
+                <strong>{dados.placa || '—'}</strong>
+              </div>
+              <div>
+                <span style={{ color: 'var(--notion-text-secondary)' }}>Chassi: </span>
+                <strong>{dados.chassi || '—'}</strong>
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <span style={{ color: 'var(--notion-text-secondary)' }}>Marca/Modelo: </span>
+                <strong>{dados.marcaModelo || '—'}</strong>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Footer */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
         {erro && (
           <div style={{
             padding: '8px 12px', borderRadius: 8,
@@ -637,28 +873,56 @@ function EtapaRevisao({ dados, onChange, clienteExistente, onClienteEncontrado, 
             {erro}
           </div>
         )}
-        {(!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente) && (
+        {!podeAvancar && step === 1 && (
           <div style={{
             padding: '6px 12px', borderRadius: 8,
             background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
             color: 'var(--notion-orange)', fontSize: 11, fontWeight: 600,
           }}>
-            Preencha: {[
-              !dados.tipoServico && 'Tipo de Serviço',
-              !dados.nomeCliente && 'Nome do Cliente',
-              !dados.cpfCnpj && 'CPF/CNPJ',
-            ].filter(Boolean).join(', ')}
+            Preencha Nome e CPF/CNPJ para continuar
+          </div>
+        )}
+        {!podeAvancar && step === 2 && (
+          <div style={{
+            padding: '6px 12px', borderRadius: 8,
+            background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+            color: 'var(--notion-orange)', fontSize: 11, fontWeight: 600,
+          }}>
+            Preencha pelo menos Placa ou Chassi para continuar
+          </div>
+        )}
+        {!podeAvancar && step === 3 && (
+          <div style={{
+            padding: '6px 12px', borderRadius: 8,
+            background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
+            color: 'var(--notion-orange)', fontSize: 11, fontWeight: 600,
+          }}>
+            Selecione o Tipo de Serviço
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <button style={btnSecondary} onClick={onVoltar}>Voltar</button>
-          <button
-            style={{ ...btnPrimary, opacity: (!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente) ? 0.5 : 1 }}
-            disabled={!dados.tipoServico || !dados.cpfCnpj || !dados.nomeCliente}
-            onClick={onConfirmar}
-          >
-            Confirmar e Criar OS
-          </button>
+          {step === 1 ? (
+            <button style={btnSecondary} onClick={onVoltar}>Voltar</button>
+          ) : (
+            <button style={btnSecondary} onClick={() => setStep((step - 1) as 1 | 2 | 3)}>← Voltar</button>
+          )}
+          {step < 3 ? (
+            <button
+              style={{ ...btnPrimary, opacity: podeAvancar ? 1 : 0.5 }}
+              disabled={!podeAvancar}
+              onClick={() => setStep((step + 1) as 1 | 2 | 3)}
+            >
+              Próximo →
+            </button>
+          ) : (
+            <button
+              style={{ ...btnPrimary, opacity: tudoOk ? 1 : 0.5 }}
+              disabled={!tudoOk}
+              onClick={onConfirmar}
+            >
+              Confirmar e Criar OS
+            </button>
+          )}
         </div>
       </div>
     </div>
