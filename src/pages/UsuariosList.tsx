@@ -490,157 +490,351 @@ export default function UsuariosList() {
         await carregar();
     }
 
+    // Cores por role
+    const roleStyle = (role: RoleUsuario) => {
+        switch (role) {
+            case 'admin':     return { bg: 'rgba(0,117,222,0.15)', color: 'var(--notion-blue)', border: 'rgba(0,117,222,0.35)' };
+            case 'gerente':   return { bg: 'rgba(221,91,0,0.15)', color: 'var(--notion-orange)', border: 'rgba(221,91,0,0.35)' };
+            case 'funcionario': return { bg: 'rgba(148,163,184,0.12)', color: 'var(--notion-text-secondary)', border: 'var(--notion-border)' };
+        }
+    };
+
+    const iconBtn = (disabled = false, danger = false): React.CSSProperties => ({
+        width: 32,
+        height: 32,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'transparent',
+        border: '1px solid transparent',
+        borderRadius: 8,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        color: disabled ? 'var(--notion-text-muted)' : danger ? '#dc2626' : 'var(--notion-text-secondary)',
+        transition: 'all 0.15s',
+        opacity: disabled ? 0.4 : 1,
+    });
+
+    const iconBtnHover = (e: React.MouseEvent<HTMLButtonElement>, danger = false) => {
+        if (e.currentTarget.disabled) return;
+        e.currentTarget.style.background = danger ? 'rgba(220,38,38,0.1)' : 'rgba(0,117,222,0.08)';
+        e.currentTarget.style.color = danger ? '#dc2626' : 'var(--notion-blue)';
+    };
+    const iconBtnLeave = (e: React.MouseEvent<HTMLButtonElement>, danger = false) => {
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.color = danger ? '#dc2626' : 'var(--notion-text-secondary)';
+    };
+
     return (
-        <div style={{ padding: '1.5rem', maxWidth: 900, margin: '0 auto' }}>
-            {/* Cabeçalho */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <Users size={22} style={{ color: 'var(--notion-blue)' }} />
-                    <div>
-                        <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700 }}>Usuários do Sistema</h2>
-                        <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--notion-text-secondary)' }}>
-                            {usuarios.length} usuário{usuarios.length !== 1 ? 's' : ''} cadastrado{usuarios.length !== 1 ? 's' : ''}
-                        </p>
-                    </div>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 4px' }}>
+            {/* Header */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                marginBottom: 20,
+                paddingBottom: 16,
+                borderBottom: '1px solid var(--notion-border)',
+            }}>
+                <div style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background: 'rgba(0,117,222,0.12)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--notion-blue)',
+                    flexShrink: 0,
+                }}>
+                    <Users size={22} />
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowNovo(true)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <UserPlus size={16} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <h1 style={{
+                        margin: 0,
+                        fontSize: '1.4rem',
+                        fontWeight: 800,
+                        color: 'var(--notion-text)',
+                        letterSpacing: '-0.02em',
+                    }}>
+                        Usuários do Sistema
+                    </h1>
+                    <p style={{
+                        margin: '2px 0 0',
+                        fontSize: '0.85rem',
+                        color: 'var(--notion-text-secondary)',
+                    }}>
+                        {usuarios.length} {usuarios.length === 1 ? 'usuário cadastrado' : 'usuários cadastrados'}
+                    </p>
+                </div>
+                <button
+                    onClick={() => setShowNovo(true)}
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '9px 16px',
+                        background: 'var(--notion-blue)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        fontFamily: 'inherit',
+                        flexShrink: 0,
+                    }}
+                >
+                    <UserPlus size={14} />
                     Novo Usuário
                 </button>
             </div>
 
             {/* Erro */}
             {erro && (
-                <div style={{ background: 'var(--notion-orange)20', border: '1px solid var(--notion-orange)', borderRadius: 8, padding: '10px 14px', color: 'var(--notion-orange)', marginBottom: '1rem', fontSize: '0.875rem' }}>
+                <div style={{
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.25)',
+                    borderRadius: 10,
+                    padding: '12px 16px',
+                    color: '#ef4444',
+                    marginBottom: 16,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                }}>
                     {erro}
                 </div>
             )}
 
             {/* Lista */}
             {carregando ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-secondary)' }}>Carregando...</div>
+                <div style={{
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
+                    borderRadius: 12,
+                    padding: 48,
+                    textAlign: 'center',
+                    color: 'var(--notion-text-secondary)',
+                }}>
+                    Carregando...
+                </div>
             ) : usuarios.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--notion-text-secondary)', fontSize: '0.9rem' }}>
-                    Nenhum usuário cadastrado.
+                <div style={{
+                    background: 'var(--notion-surface)',
+                    border: '1px solid var(--notion-border)',
+                    borderRadius: 12,
+                    padding: 48,
+                    textAlign: 'center',
+                }}>
+                    <Users size={32} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 8px' }} />
+                    <p style={{ margin: 0, color: 'var(--notion-text-secondary)', fontSize: '0.9rem' }}>
+                        Nenhum usuário cadastrado.
+                    </p>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {usuarios.map(u => {
                         const ehProprio = u.id === usuarioLogado?.id;
                         const roleEditando = editandoRole?.id === u.id;
+                        const rs = roleStyle(u.role);
+                        const inicials = u.nome.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
                         return (
                             <div
                                 key={u.id}
                                 style={{
                                     background: 'var(--notion-surface)',
-                                    border: ehProprio ? '1px solid var(--notion-blue)' : '1px solid var(--notion-border)',
-                                    borderRadius: 10,
-                                    padding: '1rem 1.25rem',
+                                    border: ehProprio ? '1px solid rgba(0,117,222,0.4)' : '1px solid var(--notion-border)',
+                                    borderRadius: 12,
+                                    padding: '14px 18px',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '1rem',
+                                    gap: 14,
                                     flexWrap: 'wrap',
+                                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                    transition: 'border-color 0.15s, box-shadow 0.15s',
+                                    position: 'relative',
                                 }}
+                                onMouseEnter={e => { if (!ehProprio) e.currentTarget.style.borderColor = 'rgba(0,117,222,0.25)'; }}
+                                onMouseLeave={e => { if (!ehProprio) e.currentTarget.style.borderColor = 'var(--notion-border)'; }}
                             >
+                                {/* Avatar */}
+                                <div style={{
+                                    width: 42,
+                                    height: 42,
+                                    borderRadius: 10,
+                                    background: rs.bg,
+                                    color: rs.color,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.95rem',
+                                    fontWeight: 800,
+                                    flexShrink: 0,
+                                    border: `1px solid ${rs.border}`,
+                                }}>
+                                    {inicials}
+                                </div>
+
                                 {/* Info principal */}
                                 <div style={{ flex: 1, minWidth: 160 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                                        <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{u.nome}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                        <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--notion-text)' }}>{u.nome}</span>
                                         {ehProprio && (
-                                            <span style={{ fontSize: '0.7rem', background: 'var(--notion-blue)', color: '#fff', borderRadius: 20, padding: '1px 8px', fontWeight: 600 }}>
-                                                Você
+                                            <span style={{
+                                                fontSize: '0.65rem',
+                                                background: 'var(--notion-blue)',
+                                                color: '#fff',
+                                                borderRadius: 20,
+                                                padding: '2px 8px',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.03em',
+                                            }}>
+                                                VOCÊ
+                                            </span>
+                                        )}
+                                        {u.primeiroLogin && (
+                                            <span style={{
+                                                fontSize: '0.65rem',
+                                                background: 'rgba(221,91,0,0.12)',
+                                                color: 'var(--notion-orange)',
+                                                border: '1px solid rgba(221,91,0,0.3)',
+                                                borderRadius: 20,
+                                                padding: '2px 8px',
+                                                fontWeight: 700,
+                                                letterSpacing: '0.03em',
+                                            }}>
+                                                AGUARDANDO SENHA
                                             </span>
                                         )}
                                     </div>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--notion-text-secondary)', marginTop: 2 }}>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--notion-text-secondary)', marginTop: 3 }}>
                                         Criado em {formatDate(u.criadoEm)}
-                                        {u.primeiroLogin && (
-                                            <span style={{ marginLeft: 8, color: 'var(--notion-orange)', fontWeight: 600 }}>
-                                                · Aguardando troca de senha
-                                            </span>
-                                        )}
                                     </div>
                                 </div>
 
-                                {/* Role */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                {/* Role badge / editor */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     {roleEditando ? (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <>
                                             <select
-                                                className="form-input"
-                                                style={{ padding: '4px 8px', fontSize: '0.82rem', height: 'auto' }}
+                                                style={{
+                                                    padding: '6px 10px',
+                                                    background: 'var(--notion-bg)',
+                                                    color: 'var(--notion-text)',
+                                                    border: '1px solid var(--notion-blue)',
+                                                    borderRadius: 8,
+                                                    fontSize: '0.82rem',
+                                                    fontWeight: 600,
+                                                    fontFamily: 'inherit',
+                                                    outline: 'none',
+                                                }}
                                                 value={editandoRole.role}
                                                 onChange={e => setEditandoRole({ id: u.id, role: e.target.value as RoleUsuario })}
                                             >
                                                 {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                                             </select>
                                             <button
-                                                className="btn btn-primary"
-                                                style={{ padding: '4px 8px' }}
                                                 onClick={() => handleSalvarRole(u.id, editandoRole.role)}
                                                 title="Confirmar"
+                                                style={{
+                                                    width: 30,
+                                                    height: 30,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: '#22c55e',
+                                                    color: '#fff',
+                                                    border: 'none',
+                                                    borderRadius: 7,
+                                                    cursor: 'pointer',
+                                                }}
                                             >
                                                 <Check size={14} />
                                             </button>
                                             <button
-                                                className="btn btn-secondary"
-                                                style={{ padding: '4px 8px' }}
                                                 onClick={() => setEditandoRole(null)}
                                                 title="Cancelar"
+                                                style={{
+                                                    width: 30,
+                                                    height: 30,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: 'var(--notion-bg)',
+                                                    color: 'var(--notion-text-secondary)',
+                                                    border: '1px solid var(--notion-border)',
+                                                    borderRadius: 7,
+                                                    cursor: 'pointer',
+                                                }}
                                             >
                                                 <X size={14} />
                                             </button>
-                                        </div>
+                                        </>
                                     ) : (
-                                        roleBadge(u.role)
+                                        <span style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: 5,
+                                            padding: '4px 12px',
+                                            borderRadius: 20,
+                                            fontSize: '0.7rem',
+                                            fontWeight: 700,
+                                            background: rs.bg,
+                                            color: rs.color,
+                                            border: `1px solid ${rs.border}`,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.04em',
+                                        }}>
+                                            <Shield size={11} />
+                                            {ROLES.find(r => r.value === u.role)?.label}
+                                        </span>
                                     )}
                                 </div>
 
                                 {/* Ações */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    {/* Editar role */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <button
-                                        className="btn btn-ghost"
-                                        style={{ padding: '6px 8px' }}
-                                        title="Alterar perfil"
+                                        style={iconBtn(ehProprio)}
+                                        title={ehProprio ? 'Não é possível alterar seu próprio perfil' : 'Alterar perfil'}
                                         disabled={ehProprio}
-                                        onClick={() => setEditandoRole({ id: u.id, role: u.role })}
+                                        onClick={() => !ehProprio && setEditandoRole({ id: u.id, role: u.role })}
+                                        onMouseEnter={e => iconBtnHover(e)}
+                                        onMouseLeave={e => iconBtnLeave(e)}
                                     >
-                                        <Pencil size={15} />
+                                        <Pencil size={14} />
                                     </button>
 
-                                    {/* Permissões (não mostrar para admin) */}
                                     {u.role !== 'admin' && (
                                         <button
-                                            className="btn btn-ghost"
-                                            style={{ padding: '6px 8px' }}
+                                            style={iconBtn()}
                                             title="Permissões"
                                             onClick={() => setModalPermissoes(u)}
+                                            onMouseEnter={e => iconBtnHover(e)}
+                                            onMouseLeave={e => iconBtnLeave(e)}
                                         >
-                                            <Lock size={15} />
+                                            <Lock size={14} />
                                         </button>
                                     )}
 
-                                    {/* Resetar senha */}
                                     <button
-                                        className="btn btn-ghost"
-                                        style={{ padding: '6px 8px' }}
+                                        style={iconBtn()}
                                         title="Resetar senha"
                                         onClick={() => setModalSenha(u)}
+                                        onMouseEnter={e => iconBtnHover(e)}
+                                        onMouseLeave={e => iconBtnLeave(e)}
                                     >
-                                        <KeyRound size={15} />
+                                        <KeyRound size={14} />
                                     </button>
 
-                                    {/* Excluir */}
                                     <button
-                                        className="btn btn-ghost"
-                                        style={{ padding: '6px 8px', color: ehProprio ? 'var(--notion-text-secondary)' : 'var(--notion-orange)' }}
+                                        style={iconBtn(ehProprio, true)}
                                         title={ehProprio ? 'Não é possível excluir sua própria conta' : 'Excluir usuário'}
                                         disabled={ehProprio}
                                         onClick={() => !ehProprio && handleExcluirComConfirmacao(u)}
+                                        onMouseEnter={e => iconBtnHover(e, true)}
+                                        onMouseLeave={e => iconBtnLeave(e, true)}
                                     >
-                                        <Trash2 size={15} />
+                                        <Trash2 size={14} />
                                     </button>
                                 </div>
                             </div>

@@ -1,40 +1,59 @@
 // src/components/EmpresaEditModal.tsx
-import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, GripVertical, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info } from 'lucide-react';
 import type { EmpresaParceira, EtapaEnvioConfig } from '../types/empresa';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogTitle,
 } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Switch } from './ui/switch';
 
-// ── Styles (matching ServiceEditModal) ───────────────────────────────────────
-const LABEL_STYLE: React.CSSProperties = {
-  textTransform: 'none',
-  fontSize: '11px',
+// ── Styles ───────────────────────────────────────────────────────────────────
+const fieldLabel: React.CSSProperties = {
+  display: 'block',
+  fontSize: '0.72rem',
+  fontWeight: 600,
   color: 'var(--notion-text-secondary)',
-  fontWeight: 500,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  marginBottom: 6,
 };
 
-const INPUT_STYLE: React.CSSProperties = {
-  background: 'var(--notion-bg-alt)',
-  border: '1px solid var(--notion-border)',
+const fieldInput: React.CSSProperties = {
+  width: '100%',
+  padding: '8px 12px',
+  background: 'var(--notion-bg)',
   color: 'var(--notion-text)',
-  fontSize: '12px',
+  border: '1px solid var(--notion-border)',
+  borderRadius: 8,
+  fontSize: 14,
+  fontFamily: 'inherit',
+  outline: 'none',
+  transition: 'border-color 150ms, box-shadow 150ms',
+  boxSizing: 'border-box',
 };
 
-const INPUT_HIGHLIGHT_STYLE: React.CSSProperties = {
-  ...INPUT_STYLE,
-  border: '1px solid rgba(0,117,222,0.35)',
-};
-
-const SECTION_STYLE: React.CSSProperties = {
+const sectionCard: React.CSSProperties = {
   background: 'var(--notion-bg-alt)',
   border: '1px solid var(--notion-border)',
-  borderRadius: '10px',
-  padding: '12px',
+  borderRadius: 10,
+  padding: 16,
+};
+
+const sectionHeader: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  marginBottom: 14,
+  paddingBottom: 10,
+  borderBottom: '1px solid var(--notion-border)',
+};
+
+const sectionTitle: React.CSSProperties = {
+  margin: 0,
+  fontSize: '0.85rem',
+  fontWeight: 700,
+  color: 'var(--notion-text)',
+  letterSpacing: '-0.01em',
 };
 
 // ── Doc label helper ─────────────────────────────────────────────────────────
@@ -73,8 +92,9 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [emailCorpo, setEmailCorpo] = useState(empresa.emailCorpoTemplate || '');
   const [novoDocInputs, setNovoDocInputs] = useState<Record<number, string>>({});
   const [docLabels, setDocLabels] = useState<Record<string, string>>(empresa.documentosLabels || {});
+  const [expandedEtapa, setExpandedEtapa] = useState<number | null>(0);
 
-  // Reset form ONLY when modal opens (not on every empresa prop change)
+  // Reset form ONLY when modal opens
   useEffect(() => {
     if (!open) return;
     setNome(empresa.nome || '');
@@ -88,11 +108,14 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     setEmailCorpo(empresa.emailCorpoTemplate || '');
     setNovoDocInputs({});
     setDocLabels(empresa.documentosLabels || {});
+    setExpandedEtapa(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const handleAddEtapa = () => {
-    setEtapas([...etapas, { ordem: etapas.length + 1, nome: '', documentos: [] }]);
+    const novaOrdem = etapas.length + 1;
+    setEtapas([...etapas, { ordem: novaOrdem, nome: '', documentos: [] }]);
+    setExpandedEtapa(etapas.length);
   };
 
   const handleRemoveEtapa = (idx: number) => {
@@ -136,269 +159,573 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     });
   };
 
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.target.style.borderColor = 'var(--notion-blue)';
+    e.target.style.boxShadow = '0 0 0 3px rgba(0,117,222,0.12)';
+  };
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.target.style.borderColor = 'var(--notion-border)';
+    e.target.style.boxShadow = 'none';
+  };
+
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) onClose(); }}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-8 [&>button]:h-8 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-4 [&>button]:right-4 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button]:opacity-100 [&>button>svg]:h-3.5 [&>button>svg]:w-3.5"
+        className="max-w-3xl max-h-[92vh] flex flex-col p-0 [&>button]:rounded-full [&>button]:w-8 [&>button]:h-8 [&>button]:bg-surface/5 [&>button]:border [&>button]:border-white/10 [&>button]:top-5 [&>button]:right-5 [&>button]:flex [&>button]:items-center [&>button]:justify-center [&>button]:opacity-100 [&>button>svg]:h-3.5 [&>button>svg]:w-3.5"
         style={{
           background: 'var(--notion-surface)',
           border: '1px solid var(--notion-border)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+          borderRadius: 16,
         }}
       >
-        <div className="overflow-y-auto flex-1 min-h-0" style={{ padding: '20px 20px 0 20px' }}>
-          {/* Header */}
-          <div style={{ marginBottom: '14px', paddingRight: '32px' }}>
-            <DialogTitle style={{ fontSize: '15px', fontWeight: 700, color: 'var(--notion-text)', lineHeight: 1.2 }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          padding: '20px 24px',
+          borderBottom: '1px solid var(--notion-border)',
+          paddingRight: 56,
+        }}>
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: 10,
+            background: `${cor}22`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: cor,
+            flexShrink: 0,
+            border: `1px solid ${cor}55`,
+          }}>
+            <Building2 size={22} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <DialogTitle style={{
+              margin: 0,
+              fontSize: '1.2rem',
+              fontWeight: 800,
+              color: 'var(--notion-text)',
+              letterSpacing: '-0.02em',
+            }}>
               {empresa.id ? 'Editar Empresa' : 'Nova Empresa'}
             </DialogTitle>
-            {empresa.id && (
-              <p style={{ fontSize: '11px', color: 'var(--notion-text-secondary)', marginTop: '3px', fontWeight: 500 }}>
-                {empresa.nome}
-              </p>
-            )}
+            <p style={{
+              margin: '2px 0 0',
+              fontSize: '0.82rem',
+              color: 'var(--notion-text-secondary)',
+            }}>
+              {empresa.id ? (empresa.nome || '—') : 'Configure os dados da empresa parceira'}
+            </p>
           </div>
+        </div>
 
-          <div className="flex flex-col gap-4">
-            {/* Row 1: Nome + Email */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label style={LABEL_STYLE}>Nome da empresa *</Label>
-                <Input
-                  value={nome}
-                  onChange={e => setNome(e.target.value)}
-                  placeholder="Ex: Guiauto"
-                  style={INPUT_HIGHLIGHT_STYLE}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label style={LABEL_STYLE}>Email para envio</Label>
-                <Input
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="empresa@email.com"
-                  type="email"
-                  style={INPUT_STYLE}
-                />
-              </div>
-            </div>
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 min-h-0" style={{ padding: '20px 24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-            {/* Row 2: Valores + Cor + Ativo */}
-            <div className="grid grid-cols-4 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label style={LABEL_STYLE}>Valor Serviço (R$)</Label>
-                <Input
-                  value={valorServico}
-                  onChange={e => setValorServico(e.target.value)}
-                  placeholder="0.00"
-                  type="number"
-                  step="0.01"
-                  style={INPUT_STYLE}
-                />
+            {/* ── Informações Básicas ── */}
+            <div style={sectionCard}>
+              <div style={sectionHeader}>
+                <Info size={16} style={{ color: 'var(--notion-blue)' }} />
+                <h3 style={sectionTitle}>Informações básicas</h3>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <Label style={LABEL_STYLE}>Valor Placa (R$)</Label>
-                <Input
-                  value={valorPlaca}
-                  onChange={e => setValorPlaca(e.target.value)}
-                  placeholder="Padrão"
-                  type="number"
-                  step="0.01"
-                  style={INPUT_STYLE}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label style={LABEL_STYLE}>Cor do badge</Label>
-                <div className="flex items-center gap-2">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={fieldLabel}>
+                    Nome da empresa <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                  </label>
                   <input
-                    type="color"
-                    value={cor}
-                    onChange={e => setCor(e.target.value)}
-                    style={{
-                      width: '36px',
-                      height: '32px',
-                      borderRadius: '6px',
-                      border: '1px solid var(--notion-border)',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      padding: 0,
-                    }}
+                    style={fieldInput}
+                    value={nome}
+                    onChange={e => setNome(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder="Ex: Guiauto"
+                    autoFocus
                   />
-                  <span style={{ fontSize: '11px', color: 'var(--notion-text-secondary)' }}>{cor}</span>
                 </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label style={LABEL_STYLE}>Status</Label>
-                <div className="flex items-center gap-2 pt-1">
-                  <Switch checked={ativo} onCheckedChange={setAtivo} />
-                  <span style={{ fontSize: '11px', color: ativo ? '#28A06A' : 'var(--notion-text-secondary)', fontWeight: 500 }}>
-                    {ativo ? 'Ativa' : 'Inativa'}
-                  </span>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={fieldLabel}>
+                    <Mail size={10} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                    Email para envio
+                  </label>
+                  <input
+                    style={fieldInput}
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder="empresa@email.com (use vírgula p/ vários)"
+                    type="email"
+                  />
                 </div>
               </div>
             </div>
 
-            {/* Etapas de Envio */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label style={{ ...LABEL_STYLE, fontSize: '12px' }}>Etapas de Envio</Label>
-                <Button
-                  size="sm"
-                  variant="ghost"
+            {/* ── Valores + Visual ── */}
+            <div style={sectionCard}>
+              <div style={sectionHeader}>
+                <DollarSign size={16} style={{ color: 'var(--notion-blue)' }} />
+                <h3 style={sectionTitle}>Valores e aparência</h3>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 }}>
+                <div>
+                  <label style={fieldLabel}>Valor Serviço (R$)</label>
+                  <input
+                    style={fieldInput}
+                    value={valorServico}
+                    onChange={e => setValorServico(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder="0,00"
+                    type="number"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label style={fieldLabel}>Valor Placa (R$)</label>
+                  <input
+                    style={fieldInput}
+                    value={valorPlaca}
+                    onChange={e => setValorPlaca(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder="Padrão"
+                    type="number"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label style={fieldLabel}>
+                    <Palette size={10} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                    Cor
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, height: 38 }}>
+                    <input
+                      type="color"
+                      value={cor}
+                      onChange={e => setCor(e.target.value)}
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 8,
+                        border: '1px solid var(--notion-border)',
+                        background: 'transparent',
+                        cursor: 'pointer',
+                        padding: 2,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{
+                      fontSize: '0.82rem',
+                      color: 'var(--notion-text-secondary)',
+                      fontFamily: 'monospace',
+                    }}>
+                      {cor}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label style={fieldLabel}>Status</label>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    height: 38,
+                    padding: '0 12px',
+                    background: 'var(--notion-bg)',
+                    border: '1px solid var(--notion-border)',
+                    borderRadius: 8,
+                  }}>
+                    <Switch checked={ativo} onCheckedChange={setAtivo} />
+                    <span style={{
+                      fontSize: '0.82rem',
+                      color: ativo ? '#22c55e' : 'var(--notion-text-secondary)',
+                      fontWeight: 600,
+                    }}>
+                      {ativo ? 'Ativa' : 'Inativa'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Etapas de Envio ── */}
+            <div style={sectionCard}>
+              <div style={sectionHeader}>
+                <Layers size={16} style={{ color: 'var(--notion-blue)' }} />
+                <h3 style={sectionTitle}>Etapas de envio</h3>
+                <span style={{
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: 20,
+                  background: 'var(--notion-bg)',
+                  color: 'var(--notion-text-secondary)',
+                }}>
+                  {etapas.length}
+                </span>
+                <button
                   onClick={handleAddEtapa}
-                  style={{ fontSize: '11px', color: 'var(--notion-blue)', height: '28px', padding: '0 8px' }}
+                  style={{
+                    marginLeft: 'auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '5px 10px',
+                    background: 'rgba(0,117,222,0.1)',
+                    color: 'var(--notion-blue)',
+                    border: '1px solid rgba(0,117,222,0.3)',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '0.78rem',
+                    fontFamily: 'inherit',
+                  }}
                 >
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Etapa
-                </Button>
+                  <Plus size={12} />
+                  Adicionar etapa
+                </button>
               </div>
 
               {etapas.length === 0 ? (
-                <div style={{ ...SECTION_STYLE, textAlign: 'center', padding: '24px' }}>
-                  <p style={{ fontSize: '12px', color: '#5A5D70' }}>
-                    Nenhuma etapa cadastrada. Clique em "+ Etapa" para adicionar.
+                <div style={{
+                  padding: 32,
+                  textAlign: 'center',
+                  background: 'var(--notion-bg)',
+                  border: '1px dashed var(--notion-border)',
+                  borderRadius: 8,
+                }}>
+                  <Layers size={28} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 8px' }} />
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
+                    Nenhuma etapa cadastrada.
+                  </p>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--notion-text-muted)' }}>
+                    Clique em "Adicionar etapa" para começar.
                   </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {etapas.map((etapa, eIdx) => (
-                    <div key={eIdx} style={SECTION_STYLE}>
-                      {/* Etapa header */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <span style={{
-                          fontSize: '10px',
-                          color: 'var(--notion-blue)',
-                          fontWeight: 700,
-                          background: 'rgba(0,117,222,0.12)',
-                          borderRadius: '4px',
-                          padding: '2px 6px',
-                          minWidth: '20px',
-                          textAlign: 'center',
-                        }}>
-                          {etapa.ordem}
-                        </span>
-                        <Input
-                          value={etapa.nome}
-                          onChange={e => handleEtapaNome(eIdx, e.target.value)}
-                          placeholder="Nome da etapa"
-                          style={{ ...INPUT_STYLE, flex: 1, height: '30px' }}
-                        />
-                        <button
-                          onClick={() => handleRemoveEtapa(eIdx)}
-                          style={{ color: '#C84040', opacity: 0.7, padding: '4px' }}
-                          className="hover:opacity-100 transition-opacity"
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {etapas.map((etapa, eIdx) => {
+                    const isExpanded = expandedEtapa === eIdx;
+                    return (
+                      <div
+                        key={eIdx}
+                        style={{
+                          background: 'var(--notion-bg)',
+                          border: `1px solid ${isExpanded ? 'rgba(0,117,222,0.3)' : 'var(--notion-border)'}`,
+                          borderRadius: 10,
+                          overflow: 'hidden',
+                          transition: 'border-color 150ms',
+                        }}
+                      >
+                        {/* Etapa header */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          padding: '10px 12px',
+                          cursor: 'pointer',
+                          background: isExpanded ? 'rgba(0,117,222,0.04)' : 'transparent',
+                        }}
+                          onClick={() => setExpandedEtapa(isExpanded ? null : eIdx)}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {/* Documentos */}
-                      <div className="pl-7 flex flex-col gap-1">
-                        {etapa.documentos.map((doc, dIdx) => (
-                          <div key={dIdx} className="flex items-center gap-2 group">
-                            <FileText className="w-3 h-3" style={{ color: '#5A5D70', flexShrink: 0 }} />
-                            <Input
-                              value={docLabels[doc] ?? docLabel(doc)}
-                              onChange={(e) => setDocLabels({ ...docLabels, [doc]: e.target.value })}
-                              placeholder={docLabel(doc)}
-                              style={{ ...INPUT_STYLE, flex: 1, height: '24px', fontSize: '11px' }}
-                            />
-                            <span style={{ fontSize: '9px', color: '#5A5D70', fontFamily: 'monospace', flexShrink: 0 }}>
-                              {doc}
-                            </span>
-                            <button
-                              onClick={() => handleRemoveDoc(eIdx, dIdx)}
-                              style={{ color: '#C84040', opacity: 0, padding: '2px', flexShrink: 0 }}
-                              className="group-hover:opacity-70 hover:!opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
+                          <div style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 6,
+                            background: 'rgba(0,117,222,0.15)',
+                            color: 'var(--notion-blue)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            flexShrink: 0,
+                          }}>
+                            {etapa.ordem}
                           </div>
-                        ))}
-
-                        {/* Add doc input */}
-                        <div className="flex items-center gap-2 mt-1">
-                          <Input
-                            value={novoDocInputs[eIdx] || ''}
-                            onChange={e => setNovoDocInputs({ ...novoDocInputs, [eIdx]: e.target.value })}
-                            placeholder="Novo documento..."
-                            style={{ ...INPUT_STYLE, height: '26px', fontSize: '11px', flex: 1 }}
-                            onKeyDown={e => e.key === 'Enter' && handleAddDoc(eIdx)}
+                          <input
+                            value={etapa.nome}
+                            onChange={e => handleEtapaNome(eIdx, e.target.value)}
+                            onClick={e => e.stopPropagation()}
+                            onFocus={(e) => { e.target.style.borderColor = 'var(--notion-blue)'; e.target.style.boxShadow = '0 0 0 2px rgba(0,117,222,0.15)'; }}
+                            onBlur={(e) => { e.target.style.borderColor = 'transparent'; e.target.style.boxShadow = 'none'; }}
+                            placeholder="Nome da etapa"
+                            style={{
+                              flex: 1,
+                              padding: '6px 10px',
+                              background: 'transparent',
+                              color: 'var(--notion-text)',
+                              border: '1px solid transparent',
+                              borderRadius: 6,
+                              fontSize: '0.88rem',
+                              fontWeight: 600,
+                              fontFamily: 'inherit',
+                              outline: 'none',
+                            }}
                           />
+                          <span style={{
+                            fontSize: '0.7rem',
+                            color: 'var(--notion-text-secondary)',
+                            padding: '2px 8px',
+                            borderRadius: 20,
+                            background: 'var(--notion-bg-alt)',
+                            flexShrink: 0,
+                          }}>
+                            {etapa.documentos.length} docs
+                          </span>
                           <button
-                            onClick={() => handleAddDoc(eIdx)}
-                            style={{ color: 'var(--notion-blue)', padding: '2px' }}
+                            onClick={(e) => { e.stopPropagation(); handleRemoveEtapa(eIdx); }}
+                            style={{
+                              width: 26,
+                              height: 26,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'transparent',
+                              border: 'none',
+                              borderRadius: 6,
+                              color: 'var(--notion-text-secondary)',
+                              cursor: 'pointer',
+                              flexShrink: 0,
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.1)'; e.currentTarget.style.color = '#dc2626'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
                           >
-                            <Plus className="w-3.5 h-3.5" />
+                            <Trash2 size={13} />
                           </button>
                         </div>
+
+                        {/* Documentos (expandido) */}
+                        {isExpanded && (
+                          <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {etapa.documentos.map((doc, dIdx) => (
+                              <div
+                                key={dIdx}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 8,
+                                  padding: '6px 10px',
+                                  background: 'var(--notion-bg-alt)',
+                                  borderRadius: 6,
+                                }}
+                              >
+                                <FileText size={13} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                                <input
+                                  value={docLabels[doc] ?? docLabel(doc)}
+                                  onChange={(e) => setDocLabels({ ...docLabels, [doc]: e.target.value })}
+                                  onFocus={(e) => e.target.style.borderColor = 'var(--notion-blue)'}
+                                  onBlur={(e) => e.target.style.borderColor = 'var(--notion-border)'}
+                                  placeholder="Nome do documento"
+                                  style={{
+                                    flex: 1,
+                                    padding: '4px 8px',
+                                    background: 'var(--notion-bg)',
+                                    color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)',
+                                    borderRadius: 5,
+                                    fontSize: '0.82rem',
+                                    fontFamily: 'inherit',
+                                    outline: 'none',
+                                  }}
+                                />
+                                <span
+                                  title={`Código: ${doc}`}
+                                  style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--notion-text-muted)',
+                                    fontFamily: 'monospace',
+                                    padding: '2px 6px',
+                                    background: 'var(--notion-surface)',
+                                    borderRadius: 4,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {doc}
+                                </span>
+                                <button
+                                  onClick={() => handleRemoveDoc(eIdx, dIdx)}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    borderRadius: 5,
+                                    color: 'var(--notion-text-secondary)',
+                                    cursor: 'pointer',
+                                    flexShrink: 0,
+                                  }}
+                                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.1)'; e.currentTarget.style.color = '#dc2626'; }}
+                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            ))}
+
+                            {/* Add doc */}
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              padding: '4px 0',
+                            }}>
+                              <input
+                                value={novoDocInputs[eIdx] || ''}
+                                onChange={e => setNovoDocInputs({ ...novoDocInputs, [eIdx]: e.target.value })}
+                                onKeyDown={e => e.key === 'Enter' && handleAddDoc(eIdx)}
+                                placeholder="Adicionar documento…"
+                                style={{
+                                  flex: 1,
+                                  padding: '6px 10px',
+                                  background: 'var(--notion-surface)',
+                                  color: 'var(--notion-text)',
+                                  border: '1px dashed var(--notion-border)',
+                                  borderRadius: 6,
+                                  fontSize: '0.82rem',
+                                  fontFamily: 'inherit',
+                                  outline: 'none',
+                                }}
+                              />
+                              <button
+                                onClick={() => handleAddDoc(eIdx)}
+                                disabled={!novoDocInputs[eIdx]?.trim()}
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  padding: '6px 12px',
+                                  background: novoDocInputs[eIdx]?.trim() ? 'var(--notion-blue)' : 'var(--notion-bg-alt)',
+                                  color: novoDocInputs[eIdx]?.trim() ? '#fff' : 'var(--notion-text-muted)',
+                                  border: 'none',
+                                  borderRadius: 6,
+                                  cursor: novoDocInputs[eIdx]?.trim() ? 'pointer' : 'not-allowed',
+                                  fontWeight: 600,
+                                  fontSize: '0.78rem',
+                                  fontFamily: 'inherit',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <Plus size={12} />
+                                Adicionar
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Templates de Email */}
-            <div>
-              <Label style={{ ...LABEL_STYLE, fontSize: '12px', marginBottom: '8px', display: 'block' }}>
-                Templates de Email
-              </Label>
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-1.5">
-                  <Label style={LABEL_STYLE}>Assunto (use {'{numero}'} e {'{placa}'})</Label>
-                  <Input
+            {/* ── Template de Email ── */}
+            <div style={sectionCard}>
+              <div style={sectionHeader}>
+                <Mail size={16} style={{ color: 'var(--notion-blue)' }} />
+                <h3 style={sectionTitle}>Template de email</h3>
+              </div>
+              <div style={{
+                padding: '8px 12px',
+                marginBottom: 12,
+                background: 'rgba(0,117,222,0.06)',
+                border: '1px solid rgba(0,117,222,0.2)',
+                borderRadius: 8,
+                fontSize: '0.78rem',
+                color: 'var(--notion-text-secondary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <Info size={14} style={{ color: 'var(--notion-blue)', flexShrink: 0 }} />
+                <span>
+                  Use <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{numero}'}</code> e <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{placa}'}</code> para substituir automaticamente.
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <label style={fieldLabel}>Assunto</label>
+                  <input
+                    style={fieldInput}
                     value={emailAssunto}
                     onChange={e => setEmailAssunto(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
                     placeholder="OS #{numero} - {placa} - Documentação"
-                    style={INPUT_STYLE}
                   />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label style={LABEL_STYLE}>Corpo do email</Label>
+                <div>
+                  <label style={fieldLabel}>Corpo do email</label>
                   <textarea
                     value={emailCorpo}
                     onChange={e => setEmailCorpo(e.target.value)}
-                    rows={3}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    rows={4}
                     placeholder="Segue documentação referente à OS #{numero}..."
-                    style={{
-                      ...INPUT_STYLE,
-                      borderRadius: '6px',
-                      padding: '8px 12px',
-                      resize: 'vertical',
-                      minHeight: '60px',
-                    }}
+                    style={{ ...fieldInput, minHeight: 96, resize: 'vertical' }}
                   />
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
         {/* Footer */}
-        <DialogFooter
-          className="flex items-center justify-end gap-2"
-          style={{
-            padding: '12px 20px',
-            borderTop: '1px solid var(--notion-border)',
-            background: 'var(--notion-bg-alt)',
-          }}
-        >
-          <Button variant="ghost" onClick={onClose} style={{ fontSize: '12px', color: 'var(--notion-text-secondary)' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 10,
+          padding: '14px 24px',
+          borderTop: '1px solid var(--notion-border)',
+          background: 'var(--notion-bg-alt)',
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '9px 18px',
+              background: 'var(--notion-surface)',
+              border: '1px solid var(--notion-border)',
+              borderRadius: 8,
+              color: 'var(--notion-text)',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              fontFamily: 'inherit',
+            }}
+          >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleSave}
             disabled={!nome.trim()}
             style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              background: nome.trim() ? 'var(--notion-blue)' : 'var(--notion-border)',
-              color: nome.trim() ? '#fff' : 'var(--notion-text-secondary)',
+              padding: '9px 22px',
+              background: nome.trim() ? 'var(--notion-blue)' : 'var(--notion-bg)',
+              border: 'none',
+              borderRadius: 8,
+              color: nome.trim() ? '#fff' : 'var(--notion-text-muted)',
+              cursor: nome.trim() ? 'pointer' : 'not-allowed',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              fontFamily: 'inherit',
+              minWidth: 100,
             }}
           >
             Salvar
-          </Button>
-        </DialogFooter>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );
