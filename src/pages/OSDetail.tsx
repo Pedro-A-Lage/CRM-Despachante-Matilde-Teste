@@ -763,9 +763,9 @@ export default function OSDetail() {
 
     return (
         <div className="os-detail-container" style={{
-            maxWidth: 1280,
+            maxWidth: '100%',
             margin: '0 auto',
-            padding: '8px 16px 32px',
+            padding: '8px 4px 32px',
             overflowX: 'hidden',
         }}>
             {/* Modal de Edição da OS */}
