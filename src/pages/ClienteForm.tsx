@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Plus, X, Loader2, User, Building2, Phone, Mail, FileText, IdCard } from 'lucide-react';
 import { getCliente, saveCliente } from '../lib/database';
+import { useToast } from '../components/Toast';
 
 import type { TipoCliente } from '../types';
 
@@ -89,6 +90,7 @@ const fieldInput: React.CSSProperties = {
 
 export default function ClienteForm() {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const { id } = useParams();
     const isEditing = Boolean(id);
 
@@ -132,7 +134,7 @@ export default function ClienteForm() {
         e.preventDefault();
 
         if (!nome.trim() || !cpfCnpj.trim()) {
-            alert('Preencha os campos obrigatórios: Nome e CPF/CNPJ');
+            showToast('Preencha os campos obrigatórios: Nome e CPF/CNPJ', 'error');
             return;
         }
 
@@ -150,7 +152,7 @@ export default function ClienteForm() {
 
             navigate(id ? `/clientes/${id}` : '/clientes');
         } catch (err) {
-            alert('Erro ao salvar cliente. Tente novamente.');
+            showToast('Erro ao salvar cliente. Tente novamente.', 'error');
             console.error('Erro saveCliente:', err);
         } finally {
             setSaving(false);

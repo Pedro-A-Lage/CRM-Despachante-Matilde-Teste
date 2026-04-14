@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useConfirm } from '../components/ConfirmProvider';
 import {
     ArrowLeft,
     Pencil,
@@ -370,6 +371,7 @@ function DocumentSlot({
     const fileRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
+    const confirmDialog = useConfirm();
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -417,7 +419,13 @@ function DocumentSlot({
     };
 
     const handleRemove = async () => {
-        if (!confirm(`Remover ${label} do cadastro?`)) return;
+        const ok = await confirmDialog({
+            title: 'Remover documento',
+            message: `Remover ${label} do cadastro?`,
+            confirmText: 'Remover',
+            danger: true,
+        });
+        if (!ok) return;
 
         const cliente = await getCliente(clienteId);
         if (!cliente) return;

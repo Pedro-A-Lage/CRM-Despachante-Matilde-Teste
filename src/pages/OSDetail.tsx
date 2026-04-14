@@ -60,6 +60,7 @@ import {
 import { getCurrentUser } from '../lib/auth';
 import { temPermissao } from '../lib/permissions';
 import { useConfirm } from '../components/ConfirmProvider';
+import { useToast } from '../components/Toast';
 import { DocumentViewer } from '../components/DocumentViewer';
 import {
     STATUS_OS_LABELS,
@@ -381,7 +382,7 @@ function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any
                                             onRefresh();
                                         } catch (err) {
                                             console.error('Erro ao anexar PDF:', err);
-                                            alert('Erro ao anexar arquivo. Tente novamente.');
+                                            showToast('Erro ao anexar arquivo. Tente novamente.', 'error');
                                         }
                                         e.target.value = '';
                                     }}
@@ -419,6 +420,7 @@ export default function OSDetail() {
     const [pageDirty, setPageDirty] = useState(false);
     const { usuario } = useAuth();
     const confirm = useConfirm();
+    const { showToast } = useToast();
 
     // ── Permissões do usuário
     const podeVerCustos = temPermissao(usuario, 'os', 'ver_custos');
@@ -599,7 +601,7 @@ export default function OSDetail() {
         const entrada = (os.delegacia?.entradas || []).find(e => e.id === id);
         const canDelete = usuario?.role === 'admin' || (entrada?.responsavel && entrada.responsavel === usuario?.nome);
         if (!canDelete) {
-            alert('Você só pode apagar registros que você mesmo criou.');
+            showToast('Você só pode apagar registros que você mesmo criou.', 'error');
             return;
         }
         const confirmed = await confirm('Tem certeza que deseja remover esta entrada?');
@@ -642,7 +644,7 @@ export default function OSDetail() {
 
     const handleSaveEdit = async () => {
         if (!editClienteId || !editVeiculoId) {
-            alert('Selecione cliente e veículo.');
+            showToast('Selecione cliente e veículo.', 'error');
             return;
         }
         setEditSaving(true);
@@ -1148,7 +1150,7 @@ export default function OSDetail() {
                                 const comm = os.comunicacoes.find(c => c.id === id);
                                 const canDelete = usuario?.role === 'admin' || (comm?.usuario && comm.usuario === usuario?.nome);
                                 if (!canDelete) {
-                                    alert('Você só pode apagar registros que você mesmo criou.');
+                                    showToast('Você só pode apagar registros que você mesmo criou.', 'error');
                                     return;
                                 }
                                 const confirmed = await confirm('Apagar este registro de comunicação?');
@@ -1954,7 +1956,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
             await gerarComunicadoExtravio(clienteProp, veiculo);
         } catch (e) {
             console.error(e);
-            alert('Erro ao gerar Comunicado de Extravio: ' + (e instanceof Error ? e.message : String(e)));
+            showToast('Erro ao gerar Comunicado de Extravio: ' + (e instanceof Error ? e.message : String(e)), 'error');
         }
     };
     const handleGerarRequerimento = async () => {
@@ -1963,10 +1965,11 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
             await gerarRequerimento2Via(clienteProp, veiculo);
         } catch (e) {
             console.error(e);
-            alert('Erro ao gerar Requerimento 2ª Via: ' + (e instanceof Error ? e.message : String(e)));
+            showToast('Erro ao gerar Requerimento 2ª Via: ' + (e instanceof Error ? e.message : String(e)), 'error');
         }
     };
     const confirm = useConfirm();
+    const { showToast } = useToast();
     const [localChecklist, setLocalChecklist] = useState<ChecklistItem[]>(() => [...(os.checklist || [])]);
     const [observacoesGlobais, setObservacoesGlobais] = useState(os.checklistObservacoes || '');
     const [novoDocNome, setNovoDocNome] = useState('');
@@ -2098,7 +2101,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
 
         } catch (error) {
             console.error('Erro ao fazer upload:', error);
-            alert('Falha ao enviar arquivo');
+            showToast('Falha ao enviar arquivo', 'error');
         } finally {
             setUploadingId(null);
             setActiveUploadItemId(null);
@@ -2585,6 +2588,8 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
     const { usuario: authUser } = useAuth();
     const isAdmin = authUser?.role === 'admin';
     const serviceLabels = useServiceLabels();
+    const confirm = useConfirm();
+    const { showToast } = useToast();
     const vistoria = os.vistoria || { status: 'agendar' as const, local: '' };
 
     const [local, setLocal] = useState(vistoria.local);
@@ -2694,11 +2699,11 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
         const effectiveStatus: StatusVistoria = status;
 
         if (effectiveStatus === 'reprovada' && !motivo.trim() && vistoria.status !== 'reprovada') {
-            alert('Informe o motivo da reprovação');
+            showToast('Informe o motivo da reprovação', 'error');
             return;
         }
         if (effectiveStatus === 'aprovada_apontamento' && !apontamento.trim() && vistoria.status !== 'aprovada_apontamento') {
-            alert('Descreva o apontamento');
+            showToast('Descreva o apontamento', 'error');
             return;
         }
 
@@ -2706,7 +2711,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
         if (effectiveStatus === 'agendada' && dataAgendamento) {
             const today = new Date().toISOString().substring(0, 10);
             if (dataAgendamento < today) {
-                alert('A data de agendamento não pode ser no passado.');
+                showToast('A data de agendamento não pode ser no passado.', 'error');
                 return;
             }
         }
@@ -3362,6 +3367,7 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
     onRefresh: () => void;
 }) {
     const confirm = useConfirm();
+    const { showToast } = useToast();
     const [showForm, setShowForm] = useState(false);
     const [tipo, setTipo] = useState<TipoEntradaDelegacia>('entrada');
     const [data, setData] = useState(new Date().toISOString().split('T')[0]!);
@@ -3400,7 +3406,7 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
 
     const handleAdd = () => {
         if (tipo === 'reentrada' && !motivoDevolucao.trim()) {
-            alert('Informe o motivo da devolução');
+            showToast('Informe o motivo da devolução', 'error');
             return;
         }
 
@@ -3809,6 +3815,7 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
     valorPendente?: number;
 }) {
     const confirm = useConfirm();
+    const { showToast } = useToast();
     const [uploading, setUploading] = useState(false);
     const [uploadMsg, setUploadMsg] = useState<string | null>(null);
     const docFileRef = useRef<HTMLInputElement>(null);
@@ -4007,11 +4014,11 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
 
     const handleEntrega = async () => {
         if (!nomeRetirada.trim()) {
-            alert('Informe o nome de quem está retirando o documento.');
+            showToast('Informe o nome de quem está retirando o documento.', 'error');
             return;
         }
         if (os.trocaPlaca && !placaTrocada) {
-            alert('Confirme que a troca da placa foi realizada fisicamente na estamparia.');
+            showToast('Confirme que a troca da placa foi realizada fisicamente na estamparia.', 'error');
             return;
         }
         const now = new Date().toISOString();

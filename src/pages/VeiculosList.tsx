@@ -5,9 +5,11 @@ import { getVeiculos, getClientes, deleteVeiculo } from '../lib/database';
 import type { Veiculo, Cliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useConfirm } from '../components/ConfirmProvider';
+import { useToast } from '../components/Toast';
 
 export default function VeiculosList() {
     const confirm = useConfirm();
+    const { showToast } = useToast();
     const [search, setSearch] = useState('');
     const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
     const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -116,7 +118,7 @@ export default function VeiculosList() {
             await deleteVeiculo(veiculo.id);
             loadData();
         } catch (err: any) {
-            alert(err.message || 'Erro ao excluir veículo.');
+            showToast(err.message || 'Erro ao excluir veículo.', 'error');
         }
     };
 

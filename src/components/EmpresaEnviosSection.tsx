@@ -13,6 +13,7 @@ import {
     removerEtapa,
 } from '../lib/empresaService';
 import { uploadFileToSupabase } from '../lib/fileStorage';
+import { useConfirm } from './ConfirmProvider';
 import { supabase } from '../lib/supabaseClient';
 import { useToast } from './Toast';
 
@@ -48,6 +49,7 @@ function isImage(nome: string): boolean {
 
 export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, placa, onUpdate }: Props) {
     const { showToast } = useToast();
+    const confirmDialog = useConfirm();
     const [editando, setEditando] = useState(false);
     const [novoDocTipo, setNovoDocTipo] = useState('');
     const [novaEtapaNome, setNovaEtapaNome] = useState('');
@@ -90,7 +92,11 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             .map((d) => ({ url: d.arquivo_url!, nome: d.arquivo_nome! }));
 
         if (anexos.length === 0) {
-            const ok = confirm('Nenhum arquivo anexado a esta etapa. Deseja enviar mesmo assim?');
+            const ok = await confirmDialog({
+                title: 'Enviar sem anexos?',
+                message: 'Nenhum arquivo anexado a esta etapa. Deseja enviar mesmo assim?',
+                confirmText: 'Enviar',
+            });
             if (!ok) return;
         }
 

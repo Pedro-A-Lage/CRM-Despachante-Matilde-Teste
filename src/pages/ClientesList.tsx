@@ -5,6 +5,7 @@ import { getClientes, deleteCliente } from '../lib/database';
 import type { Cliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useConfirm } from '../components/ConfirmProvider';
+import { useToast } from '../components/Toast';
 
 function formatCpfCnpj(value: string): string {
     if (!value) return '—';
@@ -19,6 +20,7 @@ function formatCpfCnpj(value: string): string {
 
 export default function ClientesList() {
     const confirm = useConfirm();
+    const { showToast } = useToast();
     const [search, setSearch] = useState('');
     const [clientes, setClientes] = useState<Cliente[]>([]);
     const [loading, setLoading] = useState(true);
@@ -109,7 +111,7 @@ export default function ClientesList() {
             await deleteCliente(cliente.id);
             loadClientes();
         } catch (err: any) {
-            alert(err.message || 'Erro ao excluir cliente.');
+            showToast(err.message || 'Erro ao excluir cliente.', 'error');
         }
     };
 

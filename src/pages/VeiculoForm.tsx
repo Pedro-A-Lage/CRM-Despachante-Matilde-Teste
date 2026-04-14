@@ -7,6 +7,7 @@ import { useServiceLabels } from '../hooks/useServiceLabels';
 import type { TipoServico, TipoCliente, Cliente, ChecklistItem } from '../types';
 import { extractVehicleData, type DadosExtraidos } from '../lib/pdfParser';
 import { uploadFileToSupabase } from '../lib/fileStorage';
+import { useToast } from '../components/Toast';
 
 // ===== STYLE HELPERS =====
 const sectionCard: React.CSSProperties = {
@@ -76,6 +77,7 @@ const pdfBadge: React.CSSProperties = {
 
 export default function VeiculoForm() {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const serviceLabels = useServiceLabels();
     const { id } = useParams();
     const [searchParams] = useSearchParams();
@@ -218,7 +220,7 @@ export default function VeiculoForm() {
         e.preventDefault();
 
         if (!chassi.trim() || !clienteId) {
-            alert('Preencha os campos obrigatórios: Chassi e Cliente');
+            showToast('Preencha os campos obrigatórios: Chassi e Cliente', 'error');
             return;
         }
 
@@ -276,7 +278,7 @@ export default function VeiculoForm() {
         } catch (err) {
             console.error('Erro ao salvar:', err);
             setSaving(false);
-            alert('Ocorreu um erro ao salvar. O veículo pode ter sido salvo parcialmente.');
+            showToast('Ocorreu um erro ao salvar. O veículo pode ter sido salvo parcialmente.', 'error');
             navigate('/veiculos');
         }
     };
