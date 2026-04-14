@@ -1018,6 +1018,7 @@ export default function OSList() {
                                                     fontWeight: 700,
                                                     padding: '4px 10px',
                                                     borderRadius: 8,
+                                                    whiteSpace: 'nowrap',
                                                 }}>
                                                     {STATUS_OS_LABELS[os.status]}
                                                 </span>

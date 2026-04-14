@@ -305,7 +305,7 @@ export interface OrdemDeServico {
 // TIPO_SERVICO_LABELS removido — usar useServiceLabels() ou getServiceLabels() de configService.ts
 
 export const STATUS_OS_LABELS: Record<StatusOS, string> = {
-    aguardando_documentacao: 'Aguardando Documentação',
+    aguardando_documentacao: 'Aguard. Docs',
     vistoria: 'Vistoria',
     delegacia: 'Delegacia',
     doc_pronto: 'Doc. Pronto',
