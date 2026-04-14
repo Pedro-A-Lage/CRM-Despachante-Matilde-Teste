@@ -1,24 +1,17 @@
 // src/pages/Configuracoes.tsx
-import React, { useEffect, useState, useCallback } from 'react';
-import { Settings, Edit2, DollarSign, Plus, Trash2, Save, Building2 } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { Settings, Edit2, DollarSign, Plus, Trash2, Save, Building2, X, Wrench } from 'lucide-react';
 import {
   getAllServiceConfigs, invalidateConfigCache,
 } from '../lib/configService';
 import type { ServiceConfig } from '../lib/configService';
-import { getPriceTable, updatePriceItem, addPriceItem, deactivatePriceItem, getServicePrices, updateServicePrice } from '../lib/financeService';
-import type { PriceTableItem, ServicePrice } from '../types/finance';
+import { getPriceTable, updatePriceItem, addPriceItem, deactivatePriceItem } from '../lib/financeService';
+import type { PriceTableItem } from '../types/finance';
 import { supabase } from '../lib/supabaseClient';
 import { ServiceEditModal } from '../components/ServiceEditModal';
-import { getEmpresas, saveEmpresa, deleteEmpresa } from '../lib/empresaService';
+import { getEmpresas, saveEmpresa } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { EmpresaEditModal } from '../components/EmpresaEditModal';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../components/ui/table';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
 
 // ── Label helpers ─────────────────────────────────────────────────────────────
 const daeLabel = (v: string | null) =>
@@ -37,29 +30,106 @@ function unmaskMoney(str: string): number {
   return parseInt(digits || '0', 10) / 100;
 }
 
+// ── Shared styles ─────────────────────────────────────────────────────────────
+const sectionCard: React.CSSProperties = {
+  background: 'var(--notion-surface)',
+  border: '1px solid var(--notion-border)',
+  borderRadius: 12,
+  overflow: 'hidden',
+  boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+};
+
+const tableStyle: React.CSSProperties = {
+  width: '100%',
+  borderCollapse: 'separate',
+  borderSpacing: 0,
+};
+
+const thStyle: React.CSSProperties = {
+  textAlign: 'left',
+  padding: '10px 14px',
+  fontSize: '0.72rem',
+  fontWeight: 700,
+  color: 'var(--notion-text-secondary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  borderBottom: '1px solid var(--notion-border)',
+  background: 'var(--notion-bg-alt)',
+  whiteSpace: 'nowrap',
+};
+
+const tdStyle: React.CSSProperties = {
+  padding: '12px 14px',
+  fontSize: '0.875rem',
+  color: 'var(--notion-text)',
+  borderBottom: '1px solid var(--notion-border)',
+  verticalAlign: 'middle',
+};
+
+const chipStyle: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: '3px 10px',
+  borderRadius: 20,
+  fontSize: '0.72rem',
+  fontWeight: 700,
+  background: 'var(--notion-bg-alt)',
+  color: 'var(--notion-text-secondary)',
+};
+
+const btnPrimary: React.CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '8px 14px',
+  background: 'var(--notion-blue)',
+  color: '#fff',
+  border: 'none',
+  borderRadius: 8,
+  cursor: 'pointer',
+  fontWeight: 600,
+  fontSize: '0.85rem',
+  fontFamily: 'inherit',
+};
+
+const btnGhost: React.CSSProperties = {
+  width: 30,
+  height: 30,
+  background: 'transparent',
+  border: '1px solid transparent',
+  borderRadius: 6,
+  cursor: 'pointer',
+  color: 'var(--notion-text-secondary)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  transition: 'all 0.15s',
+};
+
+type TabKey = 'servicos' | 'custos' | 'empresas';
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Configuracoes() {
   const [configs, setConfigs] = useState<ServiceConfig[]>([]);
   const [custos, setCustos] = useState<PriceTableItem[]>([]);
-  const [precos, setPrecos] = useState<ServicePrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalConfig, setModalConfig] = useState<ServiceConfig | null>(null);
   const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
   const [editingEmpresa, setEditingEmpresa] = useState<Partial<EmpresaParceira> | null>(null);
+  const [tab, setTab] = useState<TabKey>('servicos');
 
   const carregar = useCallback(async () => {
     setLoading(true);
     try {
-      const [cfgs, priceItems, servicePrices, emps] = await Promise.all([
+      const [cfgs, priceItems, emps] = await Promise.all([
         getAllServiceConfigs(),
         getPriceTable(),
-        getServicePrices(),
         getEmpresas(),
       ]);
       setConfigs(cfgs);
       setCustos(priceItems);
-      setPrecos(servicePrices);
       setEmpresas(emps);
     } finally {
       setLoading(false);
@@ -101,188 +171,309 @@ export default function Configuracoes() {
   const openNew = () => { setModalConfig(null); setModalOpen(true); };
   const openEdit = (cfg: ServiceConfig) => { setModalConfig(cfg); setModalOpen(true); };
 
+  const tabs: { key: TabKey; label: string; icon: React.ElementType; count: number }[] = [
+    { key: 'servicos', label: 'Serviços DETRAN', icon: Wrench, count: configs.length },
+    { key: 'custos', label: 'Custos Fixos', icon: DollarSign, count: custos.length },
+    { key: 'empresas', label: 'Empresas', icon: Building2, count: empresas.length },
+  ];
+
   return (
-    <div style={{ padding: '24px 32px', maxWidth: 1100, margin: '0 auto' }}>
-      {/* Page header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-        <Settings size={24} color="var(--notion-blue)" />
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--notion-text)', margin: 0 }}>
-            Configurações de Serviços
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 4px' }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 14,
+        marginBottom: 20,
+        paddingBottom: 16,
+        borderBottom: '1px solid var(--notion-border)',
+      }}>
+        <div style={{
+          width: 44,
+          height: 44,
+          borderRadius: 10,
+          background: 'rgba(0,117,222,0.12)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--notion-blue)',
+          flexShrink: 0,
+        }}>
+          <Settings size={22} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{
+            margin: 0,
+            fontSize: '1.4rem',
+            fontWeight: 800,
+            color: 'var(--notion-text)',
+            letterSpacing: '-0.02em',
+          }}>
+            Configurações
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--notion-text-secondary)', margin: '4px 0 0' }}>
-            Gerencie os tipos de serviço, documentos exigidos e configurações de custo.
+          <p style={{
+            margin: '2px 0 0',
+            fontSize: '0.85rem',
+            color: 'var(--notion-text-secondary)',
+          }}>
+            Gerencie serviços DETRAN, custos fixos e empresas parceiras
           </p>
         </div>
       </div>
 
-      <Tabs defaultValue="servicos">
-        <TabsList className="mb-4">
-          <TabsTrigger value="servicos">⚙ Serviços DETRAN</TabsTrigger>
-          <TabsTrigger value="custos">💰 Custos Fixos</TabsTrigger>
-          <TabsTrigger value="empresas" className="flex items-center gap-1">
-            <Building2 className="w-4 h-4" />
-            Empresas
-          </TabsTrigger>
-          {/* Preços agora ficam dentro do modal de cada serviço */}
-        </TabsList>
+      {/* Tabs */}
+      <div style={{
+        display: 'flex',
+        gap: 4,
+        marginBottom: 20,
+        background: 'var(--notion-surface)',
+        padding: 4,
+        borderRadius: 10,
+        border: '1px solid var(--notion-border)',
+        overflowX: 'auto',
+      }}>
+        {tabs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 14px',
+              background: tab === t.key ? 'var(--notion-blue)' : 'transparent',
+              color: tab === t.key ? '#fff' : 'var(--notion-text-secondary)',
+              border: 'none',
+              borderRadius: 7,
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              fontFamily: 'inherit',
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+            }}
+          >
+            <t.icon size={14} />
+            {t.label}
+            <span style={{
+              background: tab === t.key ? 'rgba(255,255,255,0.25)' : 'var(--notion-bg-alt)',
+              color: tab === t.key ? '#fff' : 'var(--notion-text-secondary)',
+              padding: '1px 8px',
+              borderRadius: 20,
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              minWidth: 20,
+              textAlign: 'center',
+            }}>
+              {t.count}
+            </span>
+          </button>
+        ))}
+      </div>
 
-        {/* ── Aba Serviços DETRAN ── */}
-        <TabsContent value="servicos">
-          <div className="flex items-center justify-between mb-4">
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
+      {/* ── Aba Serviços DETRAN ── */}
+      {tab === 'servicos' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
               Serviços cadastrados
             </h2>
-            <Button onClick={openNew} size="sm">
-              <Plus className="mr-1 size-4" />
+            <button onClick={openNew} style={btnPrimary}>
+              <Plus size={14} />
               Novo Serviço
-            </Button>
+            </button>
           </div>
 
           {loading ? (
-            <p style={{ color: 'var(--notion-text-secondary)', textAlign: 'center', padding: 48 }}>
+            <div style={{ ...sectionCard, padding: 48, textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
               Carregando configurações...
-            </p>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Docs PF</TableHead>
-                    <TableHead>Docs PJ</TableHead>
-                    <TableHead>DAE</TableHead>
-                    <TableHead>Vistoria</TableHead>
-                    <TableHead>Placa</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {configs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
-                        Nenhum serviço cadastrado. Clique em "Novo Serviço" para começar.
-                      </TableCell>
-                    </TableRow>
-                  ) : configs.map(cfg => (
-                    <TableRow key={cfg.id}>
-                      <TableCell className="font-medium">{cfg.nome_exibicao}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{cfg.documentos_pf.length} doc{cfg.documentos_pf.length !== 1 ? 's' : ''}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{cfg.documentos_pj.length} doc{cfg.documentos_pj.length !== 1 ? 's' : ''}</Badge>
-                      </TableCell>
-                      <TableCell>{daeLabel(cfg.dae_tipo)}</TableCell>
-                      <TableCell>{opcaoLabel(cfg.gera_vistoria)}</TableCell>
-                      <TableCell>{opcaoLabel(cfg.gera_placa)}</TableCell>
-                      <TableCell>
-                        <Badge variant={cfg.ativo ? 'default' : 'secondary'}>
-                          {cfg.ativo ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => openEdit(cfg)}>
-                          <Edit2 className="size-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
             </div>
-          )}
-        </TabsContent>
-
-        {/* ── Aba Custos Fixos ── */}
-        <TabsContent value="custos">
-          <CustosFixosSection custos={custos} onDataChanged={carregar} />
-        </TabsContent>
-
-        {/* Preços por serviço agora ficam dentro do ServiceEditModal */}
-
-        {/* ── Aba Empresas Parceiras ── */}
-        <TabsContent value="empresas">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Building2 size={18} color="var(--notion-blue)" />
-              <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
-                Empresas Parceiras
-              </h2>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => setEditingEmpresa({ nome: '', cor: '#3B82F6', ativo: true, etapasEnvio: [] })}
-            >
-              <Plus className="mr-1 size-4" />
-              Nova Empresa
-            </Button>
-          </div>
-
-          {empresas.length === 0 ? (
-            <div className="rounded-md border" style={{ padding: 48, textAlign: 'center' }}>
-              <p style={{ color: 'var(--notion-text-secondary)' }}>
-                Nenhuma empresa parceira cadastrada. Clique em "Nova Empresa" para começar.
+          ) : configs.length === 0 ? (
+            <div style={{ ...sectionCard, padding: 48, textAlign: 'center' }}>
+              <Wrench size={32} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 8px' }} />
+              <p style={{ color: 'var(--notion-text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+                Nenhum serviço cadastrado. Clique em "Novo Serviço" para começar.
               </p>
             </div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Valor Serviço</TableHead>
-                    <TableHead>Valor Placa</TableHead>
-                    <TableHead>Etapas</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {empresas.map((emp) => (
-                    <TableRow key={emp.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="inline-block rounded-full"
-                            style={{
-                              width: 10,
-                              height: 10,
-                              backgroundColor: emp.cor,
-                              boxShadow: `0 0 6px ${emp.cor}40`,
-                            }}
-                          />
-                          {emp.nome}
-                        </div>
-                      </TableCell>
-                      <TableCell style={{ color: emp.email ? 'var(--notion-text-secondary)' : 'var(--notion-text-secondary)' }}>
-                        {emp.email || '—'}
-                      </TableCell>
-                      <TableCell>{emp.valorServico != null ? maskMoney(emp.valorServico) : '—'}</TableCell>
-                      <TableCell>{emp.valorPlaca != null ? maskMoney(emp.valorPlaca) : '—'}</TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{emp.etapasEnvio.length} etapa{emp.etapasEnvio.length !== 1 ? 's' : ''}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={emp.ativo ? 'default' : 'secondary'}>
-                          {emp.ativo ? 'Ativa' : 'Inativa'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="icon" onClick={() => setEditingEmpresa(emp)}>
-                          <Edit2 className="size-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div style={sectionCard}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={tableStyle}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Nome</th>
+                      <th style={thStyle}>Docs PF</th>
+                      <th style={thStyle}>Docs PJ</th>
+                      <th style={thStyle}>DAE</th>
+                      <th style={thStyle}>Vistoria</th>
+                      <th style={thStyle}>Placa</th>
+                      <th style={thStyle}>Status</th>
+                      <th style={{ ...thStyle, width: 50 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {configs.map((cfg, i) => (
+                      <tr
+                        key={cfg.id}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => openEdit(cfg)}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg-alt)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td style={{ ...tdStyle, fontWeight: 600, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {cfg.nome_exibicao}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <span style={chipStyle}>{cfg.documentos_pf.length}</span>
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <span style={chipStyle}>{cfg.documentos_pj.length}</span>
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {daeLabel(cfg.dae_tipo)}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {opcaoLabel(cfg.gera_vistoria)}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {opcaoLabel(cfg.gera_placa)}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <span style={{
+                            ...chipStyle,
+                            background: cfg.ativo ? 'rgba(5,150,105,0.1)' : 'var(--notion-bg-alt)',
+                            color: cfg.ativo ? '#059669' : 'var(--notion-text-secondary)',
+                          }}>
+                            {cfg.ativo ? '● Ativo' : 'Inativo'}
+                          </span>
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === configs.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <button
+                            style={btnGhost}
+                            onClick={(e) => { e.stopPropagation(); openEdit(cfg); }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-bg-alt)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
+
+      {/* ── Aba Custos Fixos ── */}
+      {tab === 'custos' && (
+        <CustosFixosSection custos={custos} onDataChanged={carregar} />
+      )}
+
+      {/* ── Aba Empresas ── */}
+      {tab === 'empresas' && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
+              Empresas parceiras
+            </h2>
+            <button
+              onClick={() => setEditingEmpresa({ nome: '', cor: '#3B82F6', ativo: true, etapasEnvio: [] })}
+              style={btnPrimary}
+            >
+              <Plus size={14} />
+              Nova Empresa
+            </button>
+          </div>
+
+          {empresas.length === 0 ? (
+            <div style={{ ...sectionCard, padding: 48, textAlign: 'center' }}>
+              <Building2 size={32} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 8px' }} />
+              <p style={{ color: 'var(--notion-text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+                Nenhuma empresa cadastrada. Clique em "Nova Empresa" para começar.
+              </p>
+            </div>
+          ) : (
+            <div style={sectionCard}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={tableStyle}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Nome</th>
+                      <th style={thStyle}>Email</th>
+                      <th style={thStyle}>Valor Serviço</th>
+                      <th style={thStyle}>Valor Placa</th>
+                      <th style={thStyle}>Etapas</th>
+                      <th style={thStyle}>Status</th>
+                      <th style={{ ...thStyle, width: 50 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {empresas.map((emp, i) => (
+                      <tr
+                        key={emp.id}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setEditingEmpresa(emp)}
+                        onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg-alt)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <td style={{ ...tdStyle, fontWeight: 600, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{
+                              display: 'inline-block',
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              background: emp.cor,
+                              boxShadow: `0 0 6px ${emp.cor}40`,
+                              flexShrink: 0,
+                            }} />
+                            {emp.nome}
+                          </div>
+                        </td>
+                        <td style={{ ...tdStyle, color: 'var(--notion-text-secondary)', borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {emp.email || '—'}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {emp.valorServico != null ? maskMoney(emp.valorServico) : '—'}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          {emp.valorPlaca != null ? maskMoney(emp.valorPlaca) : '—'}
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <span style={chipStyle}>{emp.etapasEnvio.length}</span>
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <span style={{
+                            ...chipStyle,
+                            background: emp.ativo ? 'rgba(5,150,105,0.1)' : 'var(--notion-bg-alt)',
+                            color: emp.ativo ? '#059669' : 'var(--notion-text-secondary)',
+                          }}>
+                            {emp.ativo ? '● Ativa' : 'Inativa'}
+                          </span>
+                        </td>
+                        <td style={{ ...tdStyle, borderBottom: i === empresas.length - 1 ? 'none' : tdStyle.borderBottom }}>
+                          <button
+                            style={btnGhost}
+                            onClick={(e) => { e.stopPropagation(); setEditingEmpresa(emp); }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-bg-alt)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <EmpresaEditModal
         open={!!editingEmpresa}
@@ -302,131 +493,6 @@ export default function Configuracoes() {
         onSaved={handleSaved}
         onDeleted={handleDeleted}
       />
-    </div>
-  );
-}
-
-// ── Preços por Serviço Section ────────────────────────────────────────────────
-function PrecosServicoSection({
-  precos, configs, onDataChanged,
-}: {
-  precos: ServicePrice[];
-  configs: ServiceConfig[];
-  onDataChanged: () => void;
-}) {
-  const [editingPrice, setEditingPrice] = useState<{ id: string; valor: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [successId, setSuccessId] = useState<string | null>(null);
-
-  // Build a map from tipo_servico → display name
-  const labelMap: Record<string, string> = {};
-  for (const c of configs) {
-    labelMap[c.tipo_servico] = c.nome_exibicao;
-  }
-
-  // Group prices by tipo_servico
-  const grouped: Record<string, ServicePrice[]> = {};
-  for (const p of precos) {
-    if (!grouped[p.tipo_servico]) grouped[p.tipo_servico] = [];
-    grouped[p.tipo_servico]!.push(p);
-  }
-
-  const salvarPreco = async (priceId: string, valorStr: string) => {
-    try {
-      await updateServicePrice(priceId, unmaskMoney(valorStr));
-      setEditingPrice(null);
-      setError(null);
-      setSuccessId(priceId);
-      setTimeout(() => setSuccessId(null), 2000);
-      onDataChanged();
-    } catch {
-      setError('Erro ao salvar preço.');
-    }
-  };
-
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-4">
-        <DollarSign size={18} color="var(--notion-blue)" />
-        <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
-          Preços por Serviço
-        </h2>
-      </div>
-
-      {error && (
-        <p className="text-sm text-destructive mb-3">{error}</p>
-      )}
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Serviço</TableHead>
-              <TableHead>Tipo Veículo</TableHead>
-              <TableHead>Com Placa</TableHead>
-              <TableHead>Valor</TableHead>
-              <TableHead className="w-24"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {precos.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                  Nenhum preço de serviço cadastrado.
-                </TableCell>
-              </TableRow>
-            ) : (
-              Object.entries(grouped).map(([tipoServico, items]) => (
-                <React.Fragment key={tipoServico}>
-                  {items.map((price, idx) => (
-                    <TableRow key={price.id}>
-                      {idx === 0 && (
-                        <TableCell rowSpan={items.length} className="font-medium align-middle border-r">
-                          {labelMap[tipoServico] ?? tipoServico}
-                        </TableCell>
-                      )}
-                      <TableCell>{price.tipo_veiculo === 'carro' ? 'Carro' : 'Moto'}</TableCell>
-                      <TableCell>{price.com_placa ? 'Sim' : 'Não'}</TableCell>
-                      <TableCell>
-                        {editingPrice?.id === price.id ? (
-                          <Input
-                            className="w-32"
-                            value={editingPrice.valor}
-                            onChange={e => setEditingPrice({ id: price.id, valor: e.target.value })}
-                            placeholder="R$ 0,00"
-                            autoFocus
-                          />
-                        ) : (
-                          <span className={successId === price.id ? 'text-green-600 font-semibold' : ''}>
-                            {maskMoney(price.valor)}
-                            {successId === price.id && ' ✓'}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {editingPrice?.id === price.id ? (
-                          <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" onClick={() => salvarPreco(price.id, editingPrice.valor)}>
-                              <Save className="size-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => { setEditingPrice(null); setError(null); }}>
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button size="icon" variant="ghost" onClick={() => setEditingPrice({ id: price.id, valor: maskMoney(price.valor) })}>
-                            <Edit2 className="size-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </React.Fragment>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
     </div>
   );
 }
@@ -476,121 +542,199 @@ function CustosFixosSection({ custos, onDataChanged }: { custos: PriceTableItem[
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    padding: '6px 10px',
+    background: 'var(--notion-bg)',
+    color: 'var(--notion-text)',
+    border: '1px solid var(--notion-border)',
+    borderRadius: 6,
+    fontSize: '0.85rem',
+    fontFamily: 'inherit',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  };
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <DollarSign size={18} color="var(--notion-blue)" />
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--notion-text)', margin: 0 }}>
-            Custos Fixos
-          </h2>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+        <h2 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
+          Custos fixos
+        </h2>
         {!newCost && (
-          <Button size="sm" variant="outline" onClick={() => setNewCost({ descricao: '', codigo: '', valor: '' })}>
-            <Plus className="mr-1 size-4" />
+          <button
+            onClick={() => setNewCost({ descricao: '', codigo: '', valor: '' })}
+            style={btnPrimary}
+          >
+            <Plus size={14} />
             Adicionar
-          </Button>
+          </button>
         )}
       </div>
 
       {error && (
-        <p className="text-sm text-destructive mb-3">{error}</p>
+        <div style={{
+          padding: '8px 12px',
+          marginBottom: 12,
+          background: 'rgba(239,68,68,0.08)',
+          border: '1px solid rgba(239,68,68,0.2)',
+          color: '#EF4444',
+          borderRadius: 8,
+          fontSize: '0.85rem',
+          fontWeight: 600,
+        }}>
+          {error}
+        </div>
       )}
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Descrição</TableHead>
-              <TableHead>Código</TableHead>
-              <TableHead>Valor</TableHead>
-              <TableHead className="w-24"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {custos.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                  Nenhum custo fixo cadastrado.
-                </TableCell>
-              </TableRow>
-            )}
-            {custos.map(cost => (
-              <TableRow key={cost.id}>
-                <TableCell>{cost.descricao}</TableCell>
-                <TableCell className="font-mono text-sm">{cost.codigo}</TableCell>
-                <TableCell>
-                  {editingCost?.id === cost.id ? (
-                    <Input
-                      className="w-32"
-                      value={editingCost.valor}
-                      onChange={e => setEditingCost({ id: cost.id, valor: e.target.value })}
-                      placeholder="R$ 0,00"
-                      autoFocus
-                    />
-                  ) : (
-                    maskMoney(cost.valor)
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    {editingCost?.id === cost.id ? (
-                      <Button size="icon" variant="ghost" onClick={() => salvarCusto(cost.id, editingCost.valor)}>
-                        <Save className="size-4" />
-                      </Button>
-                    ) : (
-                      <Button size="icon" variant="ghost" onClick={() => setEditingCost({ id: cost.id, valor: maskMoney(cost.valor) })}>
-                        <Edit2 className="size-4" />
-                      </Button>
-                    )}
-                    <Button size="icon" variant="ghost" onClick={() => removerCusto(cost.id)}>
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+      {custos.length === 0 && !newCost ? (
+        <div style={{ ...sectionCard, padding: 48, textAlign: 'center' }}>
+          <DollarSign size={32} style={{ color: 'var(--notion-text-muted)', margin: '0 auto 8px' }} />
+          <p style={{ color: 'var(--notion-text-secondary)', fontSize: '0.9rem', margin: 0 }}>
+            Nenhum custo fixo cadastrado. Clique em "Adicionar" para começar.
+          </p>
+        </div>
+      ) : (
+        <div style={sectionCard}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={thStyle}>Descrição</th>
+                  <th style={thStyle}>Código</th>
+                  <th style={thStyle}>Valor</th>
+                  <th style={{ ...thStyle, width: 90 }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {custos.map((cost, i) => {
+                  const isLast = i === custos.length - 1 && !newCost;
+                  return (
+                    <tr
+                      key={cost.id}
+                      onMouseEnter={e => { if (editingCost?.id !== cost.id) e.currentTarget.style.background = 'var(--notion-bg-alt)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <td style={{ ...tdStyle, fontWeight: 500, borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
+                        {cost.descricao}
+                      </td>
+                      <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--notion-text-secondary)', borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
+                        {cost.codigo}
+                      </td>
+                      <td style={{ ...tdStyle, fontWeight: 600, borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
+                        {editingCost?.id === cost.id ? (
+                          <input
+                            style={{ ...inputStyle, width: 140 }}
+                            value={editingCost.valor}
+                            onChange={e => setEditingCost({ id: cost.id, valor: e.target.value })}
+                            placeholder="R$ 0,00"
+                            autoFocus
+                          />
+                        ) : (
+                          maskMoney(cost.valor)
+                        )}
+                      </td>
+                      <td style={{ ...tdStyle, borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          {editingCost?.id === cost.id ? (
+                            <>
+                              <button
+                                style={{ ...btnGhost, color: '#059669' }}
+                                onClick={() => salvarCusto(cost.id, editingCost.valor)}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(5,150,105,0.1)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <Save size={14} />
+                              </button>
+                              <button
+                                style={btnGhost}
+                                onClick={() => { setEditingCost(null); setError(null); }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg-alt)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <X size={14} />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                style={btnGhost}
+                                onClick={() => setEditingCost({ id: cost.id, valor: maskMoney(cost.valor) })}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-bg-alt)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button
+                                style={btnGhost}
+                                onClick={() => removerCusto(cost.id)}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#EF4444'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
 
-            {newCost && (
-              <TableRow>
-                <TableCell>
-                  <Input
-                    value={newCost.descricao}
-                    onChange={e => setNewCost({ ...newCost, descricao: e.target.value })}
-                    placeholder="Descrição"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    value={newCost.codigo}
-                    onChange={e => setNewCost({ ...newCost, codigo: e.target.value })}
-                    placeholder="codigo_custo"
-                    className="font-mono"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    value={newCost.valor}
-                    onChange={e => setNewCost({ ...newCost, valor: e.target.value })}
-                    placeholder="R$ 0,00"
-                    className="w-32"
-                  />
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" onClick={adicionarCusto}>
-                      <Save className="size-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => { setNewCost(null); setError(null); }}>
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                {newCost && (
+                  <tr style={{ background: 'rgba(0,117,222,0.04)' }}>
+                    <td style={{ ...tdStyle, borderBottom: 'none' }}>
+                      <input
+                        style={inputStyle}
+                        value={newCost.descricao}
+                        onChange={e => setNewCost({ ...newCost, descricao: e.target.value })}
+                        placeholder="Ex: Taxa Detran"
+                        autoFocus
+                      />
+                    </td>
+                    <td style={{ ...tdStyle, borderBottom: 'none' }}>
+                      <input
+                        style={{ ...inputStyle, fontFamily: 'monospace' }}
+                        value={newCost.codigo}
+                        onChange={e => setNewCost({ ...newCost, codigo: e.target.value })}
+                        placeholder="codigo_custo"
+                      />
+                    </td>
+                    <td style={{ ...tdStyle, borderBottom: 'none' }}>
+                      <input
+                        style={{ ...inputStyle, width: 140 }}
+                        value={newCost.valor}
+                        onChange={e => setNewCost({ ...newCost, valor: e.target.value })}
+                        placeholder="R$ 0,00"
+                      />
+                    </td>
+                    <td style={{ ...tdStyle, borderBottom: 'none' }}>
+                      <div style={{ display: 'flex', gap: 4 }}>
+                        <button
+                          style={{ ...btnGhost, color: '#059669' }}
+                          onClick={adicionarCusto}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(5,150,105,0.1)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <Save size={14} />
+                        </button>
+                        <button
+                          style={btnGhost}
+                          onClick={() => { setNewCost(null); setError(null); }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'var(--notion-bg-alt)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
