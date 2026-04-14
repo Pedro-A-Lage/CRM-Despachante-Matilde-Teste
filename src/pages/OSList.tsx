@@ -1012,7 +1012,7 @@ export default function OSList() {
                                             {getServicoLabel(serviceLabels, os.tipoServico)}
                                         </td>
                                         <td data-label="Status" style={{ padding: '14px 16px' }}>
-                                            <div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                                                 <span className={`badge ${getStatusBadge(os.status)}`} style={{
                                                     fontSize: '0.72rem',
                                                     fontWeight: 700,
@@ -1024,7 +1024,7 @@ export default function OSList() {
                                                 {/* Progress bar under status */}
                                                 {progress && (
                                                     <div style={{
-                                                        marginTop: 8,
+                                                        marginTop: 4,
                                                         height: 3,
                                                         borderRadius: 3,
                                                         background: 'var(--notion-border)',
@@ -1046,9 +1046,14 @@ export default function OSList() {
                                                     if (os.sifap?.dataRegistro || os.statusDelegacia?.toLowerCase() === 'sifap') {
                                                         const dateStr = os.sifap?.dataRegistro || (os.delegacia?.entradas?.length ? os.delegacia.entradas[os.delegacia.entradas.length - 1]?.data : null);
                                                         return dateStr ? (
-                                                            <span style={{ fontSize: 10, color: 'var(--notion-green)', display: 'block', marginTop: 4, fontWeight: 700, textTransform: 'uppercase' }}>
-                                                                SIFAP: {new Date(dateStr).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
-                                                            </span>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, marginTop: 2 }}>
+                                                                <span style={{ fontSize: 10, color: 'var(--notion-green)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                                                    SIFAP
+                                                                </span>
+                                                                <span style={{ fontSize: 10, color: 'var(--notion-green)', fontWeight: 600, opacity: 0.85 }}>
+                                                                    {new Date(dateStr).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                                                </span>
+                                                            </div>
                                                         ) : null;
                                                     }
 
@@ -1064,9 +1069,14 @@ export default function OSList() {
                                                         const color = last.tipo === 'sifap' ? 'var(--notion-green)' : last.tipo === 'reentrada' ? 'var(--notion-orange)' : 'var(--notion-blue)';
 
                                                         return (
-                                                            <span style={{ fontSize: 10, color, display: 'block', marginTop: 4, fontWeight: 700, textTransform: 'uppercase' }}>
-                                                                {label}: {new Date(last.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
-                                                            </span>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, marginTop: 2 }}>
+                                                                <span style={{ fontSize: 10, color, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                                                                    {label}
+                                                                </span>
+                                                                <span style={{ fontSize: 10, color, fontWeight: 600, opacity: 0.85 }}>
+                                                                    {new Date(last.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}
+                                                                </span>
+                                                            </div>
                                                         );
                                                     }
                                                     return null;
