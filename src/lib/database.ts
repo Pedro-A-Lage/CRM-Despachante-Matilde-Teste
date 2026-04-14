@@ -563,9 +563,15 @@ export async function saveOrdem(ordem: Partial<OrdemDeServico> & { clienteId: st
         atualizadoEm: timestamp,
     };
     const dbData = ordemToDb(nova);
-    // Usar DB SERIAL para gerar numero automaticamente (evita race condition)
-    // Não definimos 'numero' — o DEFAULT nextval() do banco gera o próximo valor
-    delete dbData.numero;
+    // Calcular próximo numero = MAX(numero) + 1
+    // Usa maybeSingle() pra não quebrar em tabela vazia
+    const { data: maxRow } = await supabase
+        .from('ordens_de_servico')
+        .select('numero')
+        .order('numero', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+    dbData.numero = (maxRow?.numero ?? 0) + 1;
     const { data, error } = await supabase
         .from('ordens_de_servico')
         .insert(dbData)
