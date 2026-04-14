@@ -67,124 +67,17 @@ function ExtensionListener() {
             if (event.origin !== window.location.origin && !event.origin.startsWith('chrome-extension://')) return;
             // Check if message comes from our extension
             if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'PROCESS_DETRAN_PDF') {
-                const { fileUrl, fileName, placa, chassi, crmServico, confirmarDadosText, osId: pdfOsId } = event.data.payload;
-                console.log('CRM recebeu documento da extensão:', { fileName, placa, chassi, crmServico, hasConfirmarDadosText: !!confirmarDadosText });
-
-                try {
-                    console.log('Iniciando processamento do documento interceptado...');
-
-                    const { extractVehicleData, extractVehicleDataFromText } = await import('./lib/pdfParser');
-
-                    // 3. Converte Base64 (Data URI) p/ Arquivo
-                    // Normalmente a extensão vai enviar Data URI: "data:application/pdf;base64,JVBERi..."
-                    let file: File;
-                    try {
-                        if (fileUrl.startsWith('data:')) {
-                            console.log("Matilde: Extraindo dados do Data URI...");
-                            const arr = fileUrl.split(',');
-                            const mime = arr[0].match(/:(.*?);/)?.[1] || 'application/pdf';
-                            const bstr = atob(arr[1]);
-                            let n = bstr.length;
-                            const u8arr = new Uint8Array(n);
-                            while (n--) {
-                                u8arr[n] = bstr.charCodeAt(n);
-                            }
-                            file = new File([u8arr], fileName || `cadastro_${placa || chassi}.pdf`, { type: mime });
-                            console.log("Matilde: Conversão Base64 -> File concluída", { size: file.size, type: file.type });
-                        } else {
-                            // Se fosse URL pura teríamos que fazer um fetch(fileUrl).blob()
-                            console.log("Matilde: Arquivo veio como URL normal, fazendo fetch...", fileUrl);
-                            const response = await fetch(fileUrl);
-                            const blob = await response.blob();
-                            file = new File([blob], fileName || `cadastro_${placa || chassi}.pdf`, { type: blob.type || 'application/pdf' });
-                        }
-
-                        // Força o download do arquivo no navegador do usuário (opcional, só para ele ter o arquivo)
-                        const a = document.createElement('a');
-                        // Se criamos um File a partir do blob/base64, precisamos de uma URL local pra ele baixar
-                        const objectUrl = URL.createObjectURL(file);
-                        a.href = objectUrl;
-                        a.download = file.name;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(() => URL.revokeObjectURL(objectUrl), 10000); // Limpa memória
-
-                    } catch (conversionError) {
-                        console.error("Matilde: Erro gravíssimo ao converter arquivo PDF! Detalhes:", conversionError);
-                        alert(`❌ Erro interno ao tentar preparar o PDF para o CRM.\nDetalhes: ${conversionError}`);
-                        return; // Aborta porque não tem arquivo pra enviar pro Drive ou OCR
-                    }
-
-                    // 4. Extrai os dados do PDF ou da Página (tolerante a falhas)
-                    console.log('Extraindo dados do processo...');
-                    let extracted: any = { placa: placa || '', chassi: chassi || '', cpfCnpj: '', nomeProprietario: '', renavam: '', marcaModelo: '' };
-                    let extractedSuccessfully = false;
-
-                    // A) Tenta extrair pelo texto bruto capturado na tela confirmar-dados (mais confiável)
-                    if (confirmarDadosText) {
-                        try {
-                            console.log("Matilde: Extraindo dados a partir do texto de confirmar-dados...");
-                            const textExtraction = extractVehicleDataFromText(confirmarDadosText);
-                            if (textExtraction && (textExtraction.chassi || textExtraction.placa || textExtraction.cpfCnpj)) {
-                                extracted = textExtraction;
-                                extractedSuccessfully = true;
-                                console.log("Dados extraídos com sucesso A PARTIR DO TEXTO DA WEB:", extracted);
-                            } else {
-                                console.warn("Matilde: Texto confirmar-dados não retornou chassi/placa, caindo para fallback OCR pdf...");
-                            }
-                        } catch (textParseError) {
-                            console.warn("Matilde: Erro ao tentar ler o texto confirmar-dados.", textParseError);
-                        }
-                    }
-
-                    // B) Fallback para ler dados diretamente de DENTRO do PDF
-                    if (!extractedSuccessfully) {
-                        try {
-                            console.log('Extraindo dados do PDF via pdfParser...');
-                            extracted = await extractVehicleData(file);
-                            console.log("Dados extraídos com sucesso A PARTIR DO PDF:", extracted);
-                        } catch (parseError) {
-                            console.warn("Matilde: Não foi possível extrair dados do PDF (pode ser um formato não suportado). Usando dados da extensão.", parseError);
-                            // Usa os dados que vieram em hard-code da extensão como fallback 3
-                            extracted.placa = placa || '';
-                            extracted.chassi = chassi || '';
-                        }
-                    }
-
-                    // Extrair dados do cliente para a revisão
-                    const clienteCpfCnpj = extracted.cpfCnpjAdquirente || extracted.cpfCnpj;
-                    const clienteNome = extracted.nomeAdquirente || extracted.nomeProprietario || "CLIENTE IMPORTADO DO DETRAN";
-
-                    // Navega para OSForm com os dados pré-preenchidos
-                    const tipoServDetected = (event.data.payload.crmServico as TipoServico) || 'transferencia';
-
-                    // Converte File para base64 para passar via navigation state
-                    const fileBase64 = await new Promise<string>((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result as string);
-                        reader.readAsDataURL(file);
-                    });
-
-                    openNovaOS({
-                        tipoServico: tipoServDetected,
-                        placa: extracted.placa || placa || undefined,
-                        chassi: extracted.chassi || chassi || undefined,
-                        renavam: extracted.renavam || undefined,
-                        marcaModelo: extracted.marcaModelo || undefined,
-                        nomeCliente: clienteNome,
-                        cpfCnpj: clienteCpfCnpj || undefined,
-                        fileBase64,
-                        fileName: file.name,
-                    });
-
-                } catch (error: any) {
-                    console.error('Erro ao processar documento da extensão:', error);
-                    const errorMsg = error?.message || error?.toString() || 'Erro desconhecido';
-                    alert(`❌ Erro ao processar documento do Detran no CRM.\n\nDetalhes: ${errorMsg}\n\nVerifique o Console do navegador (F12) para mais informações.`);
-                }
+                // Extensão desvinculada do sistema de Serviços Detran: ignorar captura automática de PDF.
+                // Vistoria e CRLV continuam funcionando normalmente (handlers abaixo).
+                console.log('[Matilde] PROCESS_DETRAN_PDF ignorado — integração Detran desvinculada.');
+                return;
             }
             else if (event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === 'CAPTURED_CONFIRMAR_DADOS') {
+                // Extensão desvinculada do Detran: ignorar captura de dados do formulário confirmar-dados.
+                console.log('[Matilde] CAPTURED_CONFIRMAR_DADOS ignorado — integração Detran desvinculada.');
+                return;
+            }
+            else if (false && event.data && event.data.source === 'MATILDE_EXTENSION' && event.data.type === '__DISABLED_CAPTURED_CONFIRMAR_DADOS__') {
                 const payload = event.data.payload || {};
                 const { crmServico, dadosRicos } = payload;
                 if (!dadosRicos || (!dadosRicos.placa && !dadosRicos.chassi)) {
