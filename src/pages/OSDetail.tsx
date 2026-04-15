@@ -220,7 +220,16 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
 
+    const ultimoEnvio = (os.auditLog || [])
+        .filter(log => log.acao === 'Placa')
+        .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())[0];
+    const jaEnviado = !!ultimoEnvio;
+
     const handleEmailPlaca = async () => {
+        if (jaEnviado) {
+            setErrorMsg('O e-mail desta OS já foi enviado. Não é possível enviar novamente.');
+            return;
+        }
         if (!estampariaEmail) {
             setErrorMsg('Por favor, informe o e-mail da estampadora de placa.');
             return;
@@ -229,7 +238,7 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
             setErrorMsg('A OS não possui um PDF do Detran capturado. Capture-o primeiro.');
             return;
         }
-        
+
         localStorage.setItem('matilde_estampariaEmail', estampariaEmail);
         setSending(true);
         setErrorMsg('');
@@ -316,30 +325,41 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
 
                             <button
                                 className="btn btn-primary"
-                                style={{ width: 'fit-content', padding: '10px 20px', opacity: sending ? 0.7 : 1, cursor: sending ? 'not-allowed' : 'pointer' }}
+                                style={{ width: 'fit-content', padding: '10px 20px', opacity: (sending || jaEnviado) ? 0.6 : 1, cursor: (sending || jaEnviado) ? 'not-allowed' : 'pointer' }}
                                 onClick={handleEmailPlaca}
-                                disabled={sending || !os.pdfDetranUrl}
+                                disabled={sending || !os.pdfDetranUrl || jaEnviado}
+                                title={jaEnviado ? 'Este e-mail já foi enviado e não pode ser reenviado.' : undefined}
                             >
-                                <Send size={16} style={{ marginRight: 8 }} /> 
-                                {sending ? 'Enviando...' : 'Enviar Email'}
+                                <Send size={16} style={{ marginRight: 8 }} />
+                                {jaEnviado ? 'E-mail já enviado' : (sending ? 'Enviando...' : 'Enviar Email')}
                             </button>
-                            
-                            {(() => {
-                                const ultimoEnvio = (os.auditLog || [])
-                                    .filter(log => log.acao === 'Placa')
-                                    .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())[0];
-                                
-                                if (!ultimoEnvio) return null;
-                                
-                                return (
-                                    <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <CheckCircle size={14} style={{ color: 'var(--notion-green)' }} />
-                                        <span>
-                                            Último envio arquivado no histórico: <strong>{new Date(ultimoEnvio.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às {new Date(ultimoEnvio.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}</strong> por {ultimoEnvio.usuario}
-                                        </span>
-                                    </div>
-                                );
-                            })()}
+
+                            {jaEnviado && (
+                                <div
+                                    style={{
+                                        marginTop: 8,
+                                        padding: '10px 12px',
+                                        borderRadius: 8,
+                                        background: 'rgba(34, 197, 94, 0.08)',
+                                        border: '1px solid rgba(34, 197, 94, 0.25)',
+                                        fontSize: 12,
+                                        color: 'var(--notion-text)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                    }}
+                                >
+                                    <CheckCircle size={14} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
+                                    <span>
+                                        E-mail já enviado em{' '}
+                                        <strong>
+                                            {new Date(ultimoEnvio.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às{' '}
+                                            {new Date(ultimoEnvio.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
+                                        </strong>{' '}
+                                        por {ultimoEnvio.usuario}. Não é possível enviar novamente.
+                                    </span>
+                                </div>
+                            )}
 
                             {errorMsg && (
                                 <div style={{ color: 'var(--notion-orange)', fontSize: 12, fontWeight: 600, marginTop: 4 }}>
