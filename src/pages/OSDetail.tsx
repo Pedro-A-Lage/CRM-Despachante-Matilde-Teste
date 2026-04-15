@@ -184,11 +184,21 @@ function statusToTab(status?: string): TabId {
     }
 }
 
-function PlacaTab({ os, veiculo, onRefresh }: { os: OrdemDeServico; veiculo: any; onRefresh: () => void }) {
+function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; veiculo: any; cliente: any; onRefresh: () => void }) {
     const { showToast } = useToast();
     const [estampariaEmail, setEstampariaEmail] = useState('itabira@natalplacasgv.com.br');
+    const enderecoCompleto = (() => {
+        if (!cliente) return '—';
+        const linha1 = [cliente.endereco, cliente.numero].filter(Boolean).join(', ');
+        const complemento = cliente.complemento ? ` - ${cliente.complemento}` : '';
+        const bairro = cliente.bairro ? ` - ${cliente.bairro}` : '';
+        const cidade = [cliente.municipio, cliente.uf].filter(Boolean).join('/');
+        const cep = cliente.cep ? ` - CEP ${cliente.cep}` : '';
+        const full = `${linha1}${complemento}${bairro}${cidade ? ' - ' + cidade : ''}${cep}`.trim();
+        return full || '—';
+    })();
     const [mensagemCustomizada, setMensagemCustomizada] = useState(
-        `Ola,\n\nSegue em anexo a folha do DETRAN para solicitacao do boleto da placa do veiculo:\n\nPlaca: ${veiculo?.placa || '—'}\nChassi: ${veiculo?.chassi || '—'}\nOS: ${os.numero}\n\nPor favor, me envie o boleto para pagamento.\n\nAtenciosamente,\nDespachante Matilde`
+        `Ola,\n\nSegue em anexo a folha do DETRAN para solicitacao do boleto da placa do veiculo.\n\nDados do cliente:\nNome: ${cliente?.nome || '—'}\nCPF/CNPJ: ${cliente?.cpfCnpj || '—'}\nEndereco: ${enderecoCompleto}\n\nDados do veiculo:\nPlaca: ${veiculo?.placa || '—'}\nChassi: ${veiculo?.chassi || '—'}\nRenavam: ${veiculo?.renavam || '—'}\nOS: ${os.numero}\n\nPor favor, me envie o boleto para pagamento.\n\nAtenciosamente,\nDespachante Matilde`
     );
     const [sending, setSending] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
@@ -1175,7 +1185,7 @@ export default function OSDetail() {
                             }} />
                         )}
                         {activeTab === 'placa' && (
-                            <PlacaTab os={os} veiculo={veiculo} onRefresh={refresh} />
+                            <PlacaTab os={os} veiculo={veiculo} cliente={cliente} onRefresh={refresh} />
                         )}
                         {activeTab === 'historico' && (
                             <HistoricoTab os={os} />
