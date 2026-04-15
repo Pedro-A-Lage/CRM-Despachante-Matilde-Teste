@@ -17,6 +17,9 @@ import {
     Loader2,
     ExternalLink,
     Trash2,
+    MapPin,
+    Hash,
+    Calendar,
 } from 'lucide-react';
 import { getCliente, getVeiculosByCliente, getOrdensByCliente, updateCliente, generateId } from '../lib/database';
 import { uploadFileToSupabase } from '../lib/fileStorage';
@@ -135,40 +138,73 @@ export default function ClienteDetail() {
                 <div className="card-header">
                     <h3 className="card-title">Dados do Cliente</h3>
                 </div>
-                <div className="info-grid">
-                    <div className="info-item">
-                        <span className="info-item-label">{cliente.tipo === 'PF' ? 'CPF' : 'CNPJ'}</span>
-                        <span className="info-item-value">{cliente.cpfCnpj}</span>
-                    </div>
-                    {cliente.telefones.map((tel, i) => (
-                        <div className="info-item" key={i}>
-                            <span className="info-item-label">
-                                <Phone size={12} style={{ display: 'inline', marginRight: 4 }} />
-                                Telefone {cliente.telefones.length > 1 ? i + 1 : ''}
-                            </span>
-                            <span className="info-item-value">{tel}</span>
-                        </div>
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                        gap: 'var(--space-3)',
+                    }}
+                >
+                    <InfoCell label={cliente.tipo === 'PF' ? 'CPF' : 'CNPJ'} value={cliente.cpfCnpj} icon={<Hash size={11} />} />
+                    {cliente.tipo === 'PF' && (
+                        <InfoCell label="RG" value={cliente.rg} icon={<Hash size={11} />} />
+                    )}
+                    {cliente.tipo === 'PF' && (cliente.orgaoExpedidor || cliente.ufDocumento) && (
+                        <InfoCell
+                            label="Órgão Expedidor"
+                            value={[cliente.orgaoExpedidor, cliente.ufDocumento].filter(Boolean).join(' / ')}
+                        />
+                    )}
+                    {cliente.telefones.filter(Boolean).map((tel, i) => (
+                        <InfoCell
+                            key={i}
+                            label={`Telefone${cliente.telefones.filter(Boolean).length > 1 ? ' ' + (i + 1) : ''}`}
+                            value={tel}
+                            icon={<Phone size={11} />}
+                        />
                     ))}
                     {cliente.email && (
-                        <div className="info-item">
-                            <span className="info-item-label">
-                                <Mail size={12} style={{ display: 'inline', marginRight: 4 }} />
-                                E-mail
-                            </span>
-                            <span className="info-item-value">{cliente.email}</span>
-                        </div>
+                        <InfoCell label="E-mail" value={cliente.email} icon={<Mail size={11} />} />
                     )}
-                    <div className="info-item">
-                        <span className="info-item-label">Cadastro</span>
-                        <span className="info-item-value">
-                            {new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-                        </span>
-                    </div>
+                    {cliente.cep && (
+                        <InfoCell label="CEP" value={cliente.cep} icon={<MapPin size={11} />} />
+                    )}
+                    {(cliente.endereco || cliente.numero) && (
+                        <InfoCell
+                            label="Endereço"
+                            value={[cliente.endereco, cliente.numero].filter(Boolean).join(', ')}
+                            span={2}
+                            icon={<MapPin size={11} />}
+                        />
+                    )}
+                    {cliente.complemento && (
+                        <InfoCell label="Complemento" value={cliente.complemento} />
+                    )}
+                    {cliente.bairro && (
+                        <InfoCell label="Bairro" value={cliente.bairro} />
+                    )}
+                    {(cliente.municipio || cliente.uf) && (
+                        <InfoCell
+                            label="Município / UF"
+                            value={[cliente.municipio, cliente.uf].filter(Boolean).join(' / ')}
+                        />
+                    )}
+                    <InfoCell
+                        label="Cadastro"
+                        value={new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                        icon={<Calendar size={11} />}
+                    />
                 </div>
                 {cliente.observacoes && (
-                    <div style={{ marginTop: 'var(--space-4)' }}>
-                        <span className="info-item-label">Observações</span>
-                        <p className="text-sm" style={{ marginTop: 4 }}>
+                    <div style={{
+                        marginTop: 'var(--space-4)',
+                        padding: 'var(--space-3)',
+                        background: 'var(--notion-bg-alt)',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--notion-border)',
+                    }}>
+                        <span className="info-item-label" style={{ display: 'block', marginBottom: 4 }}>Observações</span>
+                        <p className="text-sm" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
                             {cliente.observacoes}
                         </p>
                     </div>
@@ -441,29 +477,30 @@ function DocumentSlot({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: 'var(--space-4)',
-                background: uploaded ? 'var(--notion-green)' : 'var(--notion-bg-alt)',
+                padding: 'var(--space-3) var(--space-4)',
+                background: uploaded ? 'rgba(16,185,129,0.08)' : 'var(--notion-bg-alt)',
                 borderRadius: 'var(--radius-md)',
-                border: `1px solid ${uploaded ? 'var(--notion-green)' : 'var(--notion-border)'}`,
+                border: `1px solid ${uploaded ? 'rgba(16,185,129,0.35)' : 'var(--notion-border)'}`,
+                borderLeft: `3px solid ${uploaded ? 'var(--notion-green)' : 'var(--notion-border)'}`,
                 transition: 'all var(--transition-fast)',
             }}
         >
             <div className="flex items-center gap-3">
                 {uploaded ? (
-                    <CheckCircle size={20} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
+                    <CheckCircle size={18} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
                 ) : (
-                    <File size={20} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                    <File size={18} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                 )}
                 <div>
-                    <p className="font-semibold text-sm">{label}</p>
+                    <p className="font-semibold text-sm" style={{ margin: 0, color: 'var(--notion-text)' }}>{label}</p>
                     {uploaded ? (
-                        <p className="text-xs text-gray">
+                        <p className="text-xs" style={{ margin: 0, color: 'var(--notion-green)', fontWeight: 600 }}>
                             Enviado em {new Date(uploaded.dataUpload!).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         </p>
                     ) : (
-                        <p className="text-xs text-gray">Nenhum arquivo enviado</p>
+                        <p className="text-xs text-gray" style={{ margin: 0 }}>Nenhum arquivo enviado</p>
                     )}
-                    {error && <p className="text-xs" style={{ color: 'var(--notion-orange)' }}>{error}</p>}
+                    {error && <p className="text-xs" style={{ color: 'var(--notion-orange)', margin: 0 }}>{error}</p>}
                 </div>
             </div>
 
@@ -508,6 +545,66 @@ function DocumentSlot({
                     )}
                 </button>
             </div>
+        </div>
+    );
+}
+
+// ===== INFO CELL =====
+function InfoCell({
+    label,
+    value,
+    icon,
+    span,
+}: {
+    label: string;
+    value?: string | null;
+    icon?: React.ReactNode;
+    span?: number;
+}) {
+    const display = value && value.trim() ? value : '—';
+    const isEmpty = display === '—';
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+                padding: '8px 12px',
+                background: 'var(--notion-bg-alt)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--notion-border)',
+                minWidth: 0,
+                ...(span ? { gridColumn: `span ${span}` } : {}),
+            }}
+        >
+            <span
+                style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    color: 'var(--notion-text-secondary)',
+                }}
+            >
+                {icon} {label}
+            </span>
+            <span
+                style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: isEmpty ? 'var(--notion-text-secondary)' : 'var(--notion-text)',
+                    fontStyle: isEmpty ? 'italic' : 'normal',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                }}
+                title={display}
+            >
+                {display}
+            </span>
         </div>
     );
 }
