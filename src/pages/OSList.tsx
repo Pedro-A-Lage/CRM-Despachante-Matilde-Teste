@@ -50,17 +50,33 @@ const STATUS_BORDER_COLOR: Record<string, string> = {
     entregue:                '#6B7280',
 };
 
-// Persistência de filtros no localStorage
+// Persistência de filtros no localStorage (com expiração automática)
 const FILTROS_KEY = 'oslist_filtros';
+const FILTROS_TTL_MS = 2 * 60 * 1000; // 2 minutos
 function loadFiltros() {
     try {
         const raw = localStorage.getItem(FILTROS_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            // Se tem timestamp e já expirou, descarta
+            if (parsed && typeof parsed.savedAt === 'number') {
+                if (Date.now() - parsed.savedAt > FILTROS_TTL_MS) {
+                    localStorage.removeItem(FILTROS_KEY);
+                    return {};
+                }
+                const { savedAt: _savedAt, ...rest } = parsed;
+                return rest;
+            }
+            // Sem timestamp (formato antigo) — ignora pra não persistir pra sempre
+            return {};
+        }
     } catch { /* ignore */ }
     return {};
 }
 function saveFiltros(filtros: Record<string, any>) {
-    try { localStorage.setItem(FILTROS_KEY, JSON.stringify(filtros)); } catch { /* ignore */ }
+    try {
+        localStorage.setItem(FILTROS_KEY, JSON.stringify({ ...filtros, savedAt: Date.now() }));
+    } catch { /* ignore */ }
 }
 
 // Inject keyframe animations once
@@ -124,6 +140,25 @@ export default function OSList() {
         setUrgentFilter(false);
         setSortConfig(null);
     }, []);
+
+    // Auto-expira os filtros após 2 minutos sem mudança.
+    // "view" é preservada (visual) — só os filtros de busca/status/tipo/urgente/ordenação são limpos.
+    useEffect(() => {
+        const temFiltroAtivo =
+            !!search.trim() || !!statusFilter || !!tipoFilter || !!urgentFilter || !!sortConfig || !!empresaFilter;
+        if (!temFiltroAtivo) return;
+
+        const timer = setTimeout(() => {
+            setSearch('');
+            setStatusFilter('');
+            setTipoFilter('');
+            setUrgentFilter(false);
+            setSortConfig(null);
+            setEmpresaFilter('');
+        }, FILTROS_TTL_MS);
+
+        return () => clearTimeout(timer);
+    }, [search, statusFilter, tipoFilter, urgentFilter, sortConfig, empresaFilter]);
 
     const loadData = useCallback(async (silently = false) => {
         if (!silently) setLoading(true);
