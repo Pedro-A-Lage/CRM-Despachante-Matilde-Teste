@@ -27,6 +27,8 @@ import { STATUS_OS_LABELS } from '../types';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { DocumentoCliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import ClienteEditFullModal from '../components/ClienteEditFullModal';
+import VeiculoEditFullModal from '../components/VeiculoEditFullModal';
 
 function getStatusBadge(status: string) {
     const map: Record<string, string> = {
@@ -60,6 +62,8 @@ export default function ClienteDetail() {
     const [veiculos, setVeiculos] = useState<import('../types').Veiculo[]>([]);
     const [ordens, setOrdens] = useState<import('../types').OrdemDeServico[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isEditClienteOpen, setIsEditClienteOpen] = useState(false);
+    const [editingVeiculo, setEditingVeiculo] = useState<import('../types').Veiculo | null>(null);
 
     const loadData = async () => {
         if (!id) return;
@@ -127,9 +131,12 @@ export default function ClienteDetail() {
                             <FolderOpen size={16} /> Google Drive
                         </a>
                     )}
-                    <Link to={`/clientes/${id}/editar`} className="btn btn-secondary">
+                    <button
+                        onClick={() => setIsEditClienteOpen(true)}
+                        className="btn btn-secondary"
+                    >
                         <Pencil size={16} /> Editar
-                    </Link>
+                    </button>
                 </div>
             </div>
 
@@ -287,9 +294,13 @@ export default function ClienteDetail() {
                                                     <FolderOpen size={14} /> Drive
                                                 </a>
                                             )}
-                                            <Link to={`/veiculos/${v.id}/editar`} className="btn btn-ghost btn-sm" title="Editar veículo">
+                                            <button
+                                                onClick={() => setEditingVeiculo(v)}
+                                                className="btn btn-ghost btn-sm"
+                                                title="Editar veículo"
+                                            >
                                                 <Pencil size={14} />
-                                            </Link>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -378,6 +389,23 @@ export default function ClienteDetail() {
                     </div>
                 )}
             </div>
+
+            {/* ===== MODAIS DE EDIÇÃO ===== */}
+            <ClienteEditFullModal
+                isOpen={isEditClienteOpen}
+                cliente={cliente}
+                onClose={() => setIsEditClienteOpen(false)}
+                onSaved={() => { setIsEditClienteOpen(false); loadData(); }}
+            />
+
+            {editingVeiculo && (
+                <VeiculoEditFullModal
+                    isOpen={!!editingVeiculo}
+                    veiculo={editingVeiculo}
+                    onClose={() => setEditingVeiculo(null)}
+                    onSaved={() => { setEditingVeiculo(null); loadData(); }}
+                />
+            )}
         </div>
     );
 }
