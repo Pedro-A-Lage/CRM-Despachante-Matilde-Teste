@@ -629,6 +629,38 @@ export async function addAuditEntry(osId: string, acao: string, detalhes: string
     });
 }
 
+/**
+ * Cancela o envio de e-mail da Placa: preserva o histórico (renomeando as
+ * entradas 'Placa' anteriores para 'Placa (cancelado)') e adiciona uma
+ * entrada 'Placa - Envio Cancelado'. Após isto, o botão "Enviar Email"
+ * fica novamente habilitado.
+ */
+export async function cancelarEnvioPlaca(osId: string, motivo?: string): Promise<void> {
+    const ordem = await getOrdem(osId);
+    if (!ordem) return;
+
+    const { getCurrentUser } = await import('./auth');
+    const nomeUsuario = getCurrentUser() || 'Sistema';
+
+    const auditAtualizado = ordem.auditLog.map((entry) =>
+        entry.acao === 'Placa' ? { ...entry, acao: 'Placa (cancelado)' } : entry
+    );
+
+    const cancelEntry: AuditEntry = {
+        id: generateId(),
+        acao: 'Placa - Envio Cancelado',
+        detalhes: motivo?.trim()
+            ? `Envio cancelado para permitir reenvio. Motivo: ${motivo.trim()}`
+            : 'Envio cancelado para permitir reenvio.',
+        usuario: nomeUsuario,
+        dataHora: now(),
+    };
+
+    await updateOrdem(osId, {
+        auditLog: [...auditAtualizado, cancelEntry],
+    });
+}
+
 // --- PROTOCOLOS DIÁRIOS ---
 export async function getProtocolos(): Promise<ProtocoloDiario[]> {
     const { data, error } = await supabase

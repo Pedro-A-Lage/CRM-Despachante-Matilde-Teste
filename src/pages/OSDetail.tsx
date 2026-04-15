@@ -202,6 +202,9 @@ function statusToTab(status?: string): TabId {
 
 function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; veiculo: any; cliente: any; onRefresh: () => void }) {
     const { showToast } = useToast();
+    const confirm = useConfirm();
+    const { usuario } = useAuth();
+    const podeCancelarEnvio = temPermissao(usuario, 'os', 'cancelar_envio_placa');
     const [estampariaEmail, setEstampariaEmail] = useState('itabira@natalplacasgv.com.br');
     const enderecoCompleto = (() => {
         if (!cliente) return '—';
@@ -223,7 +226,38 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
     const ultimoEnvio = (os.auditLog || [])
         .filter(log => log.acao === 'Placa')
         .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())[0];
-    const jaEnviado = !!ultimoEnvio;
+    const ultimoCancelamento = (os.auditLog || [])
+        .filter(log => log.acao === 'Placa - Envio Cancelado')
+        .sort((a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime())[0];
+    // Só está "enviado" se existe um envio mais recente que o último cancelamento
+    const jaEnviado = !!ultimoEnvio && (
+        !ultimoCancelamento ||
+        new Date(ultimoEnvio.dataHora).getTime() > new Date(ultimoCancelamento.dataHora).getTime()
+    );
+    const [cancelando, setCancelando] = useState(false);
+
+    const handleCancelarEnvio = async () => {
+        if (!podeCancelarEnvio) return;
+        const ok = await confirm({
+            title: 'Cancelar envio do e-mail da Placa?',
+            message: 'Isto libera o botão para reenviar o e-mail à estampadora. O registro do envio anterior ficará marcado como cancelado no histórico.',
+            confirmText: 'Cancelar envio',
+            danger: true,
+        });
+        if (!ok) return;
+        setCancelando(true);
+        try {
+            const { cancelarEnvioPlaca } = await import('../lib/database');
+            await cancelarEnvioPlaca(os.id);
+            showToast('Envio cancelado. Você já pode reenviar o e-mail.', 'success');
+            onRefresh();
+        } catch (err: any) {
+            console.error('Erro ao cancelar envio:', err);
+            showToast(err.message || 'Erro ao cancelar envio.', 'error');
+        } finally {
+            setCancelando(false);
+        }
+    };
 
     const handleEmailPlaca = async () => {
         if (jaEnviado) {
@@ -347,16 +381,72 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: 8,
+                                        flexWrap: 'wrap',
                                     }}
                                 >
                                     <CheckCircle size={14} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
-                                    <span>
+                                    <span style={{ flex: 1, minWidth: 220 }}>
                                         E-mail já enviado em{' '}
                                         <strong>
-                                            {new Date(ultimoEnvio.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às{' '}
-                                            {new Date(ultimoEnvio.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(ultimoEnvio!.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às{' '}
+                                            {new Date(ultimoEnvio!.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
                                         </strong>{' '}
-                                        por {ultimoEnvio.usuario}. Não é possível enviar novamente.
+                                        por {ultimoEnvio!.usuario}.{' '}
+                                        {podeCancelarEnvio
+                                            ? 'Para reenviar, cancele o envio abaixo.'
+                                            : 'Não é possível enviar novamente (somente admin pode liberar reenvio).'}
+                                    </span>
+                                    {podeCancelarEnvio && (
+                                        <button
+                                            type="button"
+                                            onClick={handleCancelarEnvio}
+                                            disabled={cancelando}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: 6,
+                                                padding: '6px 12px',
+                                                borderRadius: 6,
+                                                border: '1px solid var(--notion-orange)',
+                                                background: 'transparent',
+                                                color: 'var(--notion-orange)',
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                cursor: cancelando ? 'not-allowed' : 'pointer',
+                                                opacity: cancelando ? 0.6 : 1,
+                                            }}
+                                            title="Somente admin pode cancelar um envio já realizado"
+                                        >
+                                            <RotateCcw size={12} />
+                                            {cancelando ? 'Cancelando...' : 'Cancelar envio (liberar reenvio)'}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {ultimoCancelamento && (!ultimoEnvio || new Date(ultimoCancelamento.dataHora).getTime() >= new Date(ultimoEnvio.dataHora).getTime()) && (
+                                <div
+                                    style={{
+                                        marginTop: 8,
+                                        padding: '8px 12px',
+                                        borderRadius: 8,
+                                        background: 'rgba(234, 179, 8, 0.08)',
+                                        border: '1px solid rgba(234, 179, 8, 0.25)',
+                                        fontSize: 12,
+                                        color: 'var(--notion-text-secondary)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 8,
+                                    }}
+                                >
+                                    <AlertTriangle size={14} style={{ color: '#CA8A04', flexShrink: 0 }} />
+                                    <span>
+                                        Envio anterior cancelado em{' '}
+                                        <strong>
+                                            {new Date(ultimoCancelamento.dataHora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })} às{' '}
+                                            {new Date(ultimoCancelamento.dataHora).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
+                                        </strong>{' '}
+                                        por {ultimoCancelamento.usuario}. Você pode reenviar o e-mail.
                                     </span>
                                 </div>
                             )}

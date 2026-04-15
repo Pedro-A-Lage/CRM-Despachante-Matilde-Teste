@@ -372,6 +372,7 @@ export interface PermissoesUsuario {
         editar_vistoria?: boolean;      // Editar vistoria
         editar_delegacia?: boolean;     // Editar delegacia
         excluir_os?: boolean;           // Deletar OS
+        cancelar_envio_placa?: boolean; // Cancelar envio de e-mail da Placa (para reenviar)
     };
     // Dados pessoais
     dados?: {
