@@ -158,7 +158,7 @@ export default function ClienteEditFullModal({ isOpen, cliente, onClose, onSaved
             style={{ ...overlayStyle, zIndex: 1100 }}
             onClick={() => { /* clique no fundo não fecha — evita perda de edição */ }}
         >
-            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+            <div style={{ ...modalStyle, maxWidth: 960, maxHeight: '95vh' }} onClick={(e) => e.stopPropagation()}>
                 <div style={headerStyle}>
                     <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                         Editar Cliente {isDirty && <span style={{ color: 'var(--notion-orange)', fontWeight: 500, fontSize: '0.8rem', marginLeft: 6 }}>• alterações não salvas</span>}
