@@ -5,6 +5,7 @@ import { uploadFileToSupabase } from '../lib/fileStorage';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { ProtocoloProcesso, TipoServico, ProtocoloDiario as ProtocoloDiarioType } from '../types';
 import { useToast } from '../components/Toast';
+import { useConfirm } from '../components/ConfirmProvider';
 import {
     FileText, Printer, Plus, Calendar, Trash2, UserPlus,
     ChevronDown, ChevronUp, Edit2, Clock, Hash, Car, User,
@@ -22,6 +23,7 @@ export default function ProtocoloDiario() {
     const navigate = useNavigate();
     const serviceLabels = useServiceLabels();
     const { showToast } = useToast();
+    const confirmDialog = useConfirm();
     const [data, setData] = useState(new Date().toISOString().split('T')[0]!);
     const [refreshKey, setRefreshKey] = useState(0);
 
@@ -33,6 +35,13 @@ export default function ProtocoloDiario() {
     const [mServico, setMServico] = useState<TipoServico>('transferencia');
     const [mTipoEntrada, setMTipoEntrada] = useState<string>('entrada');
     const [showAvulso, setShowAvulso] = useState(false);
+
+    // Estado para edição de processo avulso já existente no protocolo
+    const [editingAvulso, setEditingAvulso] = useState<{
+        protocoloId: string;
+        idx: number;
+        processo: ProtocoloProcesso;
+    } | null>(null);
 
     const [protocolos, setProtocolos] = useState<any[]>([]);
     const [ordens, setOrdens] = useState<any[]>([]);
@@ -273,6 +282,46 @@ export default function ProtocoloDiario() {
         );
         await saveProtocolo({ ...protocolo, processos: novosProcessos });
         setRefreshKey(k => k + 1);
+    };
+
+    // Exclui um processo avulso do protocolo (com confirmação)
+    const handleDeleteAvulso = async (protocolo: any, idx: number) => {
+        const processo = protocolo.processos[idx];
+        if (!processo?.manual) return;
+        const ok = await confirmDialog({
+            title: 'Excluir processo avulso?',
+            message: `Deseja realmente excluir o processo de "${processo.clienteNome}"? Esta ação não pode ser desfeita.`,
+            confirmText: 'Excluir',
+            cancelText: 'Cancelar',
+            danger: true,
+        });
+        if (!ok) return;
+        try {
+            const novosProcessos = protocolo.processos.filter((_: any, i: number) => i !== idx);
+            await saveProtocolo({ ...protocolo, processos: novosProcessos });
+            showToast('Processo avulso excluído', 'success');
+            setRefreshKey(k => k + 1);
+        } catch (err: any) {
+            showToast('Erro ao excluir: ' + (err?.message || err), 'error');
+        }
+    };
+
+    // Salva alterações feitas em um processo avulso via modal de edição
+    const handleSaveEditAvulso = async () => {
+        if (!editingAvulso) return;
+        const protocolo = protocolos.find(p => p.id === editingAvulso.protocoloId);
+        if (!protocolo) return;
+        try {
+            const novosProcessos = protocolo.processos.map((p: any, i: number) =>
+                i === editingAvulso.idx ? { ...p, ...editingAvulso.processo, manual: true } : p
+            );
+            await saveProtocolo({ ...protocolo, processos: novosProcessos });
+            showToast('Processo avulso atualizado', 'success');
+            setEditingAvulso(null);
+            setRefreshKey(k => k + 1);
+        } catch (err: any) {
+            showToast('Erro ao salvar: ' + (err?.message || err), 'error');
+        }
     };
 
     // Upload de foto do protocolo assinado
@@ -786,29 +835,70 @@ export default function ProtocoloDiario() {
                                             </span>
                                         )}
 
-                                        {/* Toggle manual de OK pra avulsos */}
+                                        {/* Toggle manual de OK pra avulsos + Editar + Excluir */}
                                         {p.manual && (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleManualConcluido(protocoloHoje, idx);
-                                                }}
-                                                title={p.concluido ? 'Desmarcar como concluído' : 'Marcar como concluído'}
-                                                style={{
-                                                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                                                    fontSize: 10, fontWeight: 700,
-                                                    padding: '4px 10px', borderRadius: 20,
-                                                    background: p.concluido ? 'rgba(34,197,94,0.15)' : 'transparent',
-                                                    color: p.concluido ? '#22c55e' : 'var(--notion-text-secondary)',
-                                                    border: `1px solid ${p.concluido ? 'rgba(34,197,94,0.4)' : 'var(--notion-border)'}`,
-                                                    cursor: 'pointer',
-                                                    fontFamily: 'inherit',
-                                                    flexShrink: 0,
-                                                }}
-                                            >
-                                                <Check size={11} strokeWidth={3} />
-                                                {p.concluido ? 'OK' : 'Marcar OK'}
-                                            </button>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleManualConcluido(protocoloHoje, idx);
+                                                    }}
+                                                    title={p.concluido ? 'Desmarcar como concluído' : 'Marcar como concluído'}
+                                                    style={{
+                                                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                        fontSize: 10, fontWeight: 700,
+                                                        padding: '4px 10px', borderRadius: 20,
+                                                        background: p.concluido ? 'rgba(34,197,94,0.15)' : 'transparent',
+                                                        color: p.concluido ? '#22c55e' : 'var(--notion-text-secondary)',
+                                                        border: `1px solid ${p.concluido ? 'rgba(34,197,94,0.4)' : 'var(--notion-border)'}`,
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'inherit',
+                                                    }}
+                                                >
+                                                    <Check size={11} strokeWidth={3} />
+                                                    {p.concluido ? 'OK' : 'Marcar OK'}
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingAvulso({
+                                                            protocoloId: protocoloHoje.id,
+                                                            idx,
+                                                            processo: { ...p },
+                                                        });
+                                                    }}
+                                                    title="Editar processo avulso"
+                                                    style={{
+                                                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                        width: 28, height: 28, borderRadius: 6,
+                                                        background: 'transparent',
+                                                        color: 'var(--notion-text-secondary)',
+                                                        border: '1px solid var(--notion-border)',
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'inherit',
+                                                    }}
+                                                >
+                                                    <Edit2 size={12} />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteAvulso(protocoloHoje, idx);
+                                                    }}
+                                                    title="Excluir processo avulso"
+                                                    style={{
+                                                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                        width: 28, height: 28, borderRadius: 6,
+                                                        background: 'transparent',
+                                                        color: 'var(--notion-orange)',
+                                                        border: '1px solid var(--notion-border)',
+                                                        cursor: 'pointer',
+                                                        fontFamily: 'inherit',
+                                                    }}
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
                                         )}
 
                                         {/* Badge tipo */}
@@ -1304,6 +1394,189 @@ export default function ProtocoloDiario() {
                                 </div>
                             );
                         })}
+                    </div>
+                </div>
+            )}
+
+            {/* ===== MODAL DE EDIÇÃO DE PROCESSO AVULSO ===== */}
+            {editingAvulso && (
+                <div
+                    onClick={() => setEditingAvulso(null)}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 1100,
+                        background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+                    }}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            background: 'var(--notion-surface)',
+                            borderRadius: 16,
+                            border: '1px solid var(--notion-border)',
+                            width: '100%', maxWidth: 560,
+                            maxHeight: '90vh',
+                            display: 'flex', flexDirection: 'column',
+                            overflow: 'hidden',
+                            boxShadow: 'var(--shadow-deep)',
+                        }}
+                    >
+                        <div style={{
+                            padding: '16px 20px',
+                            borderBottom: '1px solid var(--notion-border)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            flexShrink: 0,
+                        }}>
+                            <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <UserPlus size={16} style={{ color: 'var(--notion-purple, #9065B0)' }} />
+                                Editar Processo Avulso
+                            </h2>
+                            <button
+                                onClick={() => setEditingAvulso(null)}
+                                style={{
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    color: 'var(--notion-text-secondary)', padding: 4,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+                                {[
+                                    { label: 'Nome Cliente *', key: 'clienteNome', icon: User, placeholder: 'Nome do cliente' },
+                                    { label: 'Placa', key: 'veiculoPlaca', icon: Car, placeholder: 'ABC1D23' },
+                                    { label: 'Chassi', key: 'veiculoChassi', icon: Hash, placeholder: 'Chassi' },
+                                    { label: 'Renavam', key: 'veiculoRenavam', icon: Hash, placeholder: 'Renavam' },
+                                ].map(field => (
+                                    <div key={field.key}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 4 }}>
+                                            <field.icon size={10} /> {field.label}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={(editingAvulso.processo as any)[field.key] || ''}
+                                            onChange={(e) => setEditingAvulso({
+                                                ...editingAvulso,
+                                                processo: { ...editingAvulso.processo, [field.key]: e.target.value },
+                                            })}
+                                            placeholder={field.placeholder}
+                                            style={{ fontSize: 12, padding: '7px 10px', borderRadius: 8, width: '100%', boxSizing: 'border-box' }}
+                                        />
+                                    </div>
+                                ))}
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 4 }}>
+                                        <FileText size={10} /> Serviço
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        value={editingAvulso.processo.tipoServico}
+                                        onChange={(e) => setEditingAvulso({
+                                            ...editingAvulso,
+                                            processo: { ...editingAvulso.processo, tipoServico: e.target.value as TipoServico },
+                                        })}
+                                        style={{ fontSize: 12, padding: '7px 10px', borderRadius: 8, width: '100%', boxSizing: 'border-box' }}
+                                    >
+                                        {Object.entries(serviceLabels).map(([k, v]) => (
+                                            <option key={k} value={k}>{v}</option>
+                                        ))}
+                                        <option value="requerimento">Requerimento</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 4 }}>
+                                        <ClipboardList size={10} /> Tipo
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        value={editingAvulso.processo.tipoEntrada}
+                                        onChange={(e) => setEditingAvulso({
+                                            ...editingAvulso,
+                                            processo: { ...editingAvulso.processo, tipoEntrada: e.target.value },
+                                        })}
+                                        style={{ fontSize: 12, padding: '7px 10px', borderRadius: 8, width: '100%', boxSizing: 'border-box' }}
+                                    >
+                                        <option value="entrada">Entrada</option>
+                                        <option value="reentrada">Reentrada</option>
+                                        <option value="sifap">SIFAP</option>
+                                    </select>
+                                </div>
+                                <div style={{ gridColumn: '1 / -1' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 4 }}>
+                                        Local
+                                    </label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={editingAvulso.processo.local || ''}
+                                        onChange={(e) => setEditingAvulso({
+                                            ...editingAvulso,
+                                            processo: { ...editingAvulso.processo, local: e.target.value },
+                                        })}
+                                        placeholder="Local (opcional)"
+                                        style={{ fontSize: 12, padding: '7px 10px', borderRadius: 8, width: '100%', boxSizing: 'border-box' }}
+                                    />
+                                </div>
+                                <label style={{
+                                    gridColumn: '1 / -1',
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    fontSize: 12, color: 'var(--notion-text)',
+                                    padding: '8px 10px', borderRadius: 8,
+                                    background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
+                                    cursor: 'pointer',
+                                }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!editingAvulso.processo.sifap}
+                                        onChange={(e) => setEditingAvulso({
+                                            ...editingAvulso,
+                                            processo: { ...editingAvulso.processo, sifap: e.target.checked },
+                                        })}
+                                    />
+                                    SIFAP
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style={{
+                            padding: '12px 20px',
+                            borderTop: '1px solid var(--notion-border)',
+                            display: 'flex', justifyContent: 'flex-end', gap: 8,
+                            flexShrink: 0,
+                        }}>
+                            <button
+                                onClick={() => setEditingAvulso(null)}
+                                style={{
+                                    padding: '8px 14px', borderRadius: 8,
+                                    background: 'var(--notion-bg-alt)', color: 'var(--notion-text)',
+                                    border: '1px solid var(--notion-border)',
+                                    fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                    fontFamily: 'inherit',
+                                }}
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={handleSaveEditAvulso}
+                                disabled={!editingAvulso.processo.clienteNome?.trim()}
+                                style={{
+                                    padding: '8px 14px', borderRadius: 8,
+                                    background: editingAvulso.processo.clienteNome?.trim() ? '#8B5CF6' : 'var(--notion-border)',
+                                    color: editingAvulso.processo.clienteNome?.trim() ? '#fff' : 'var(--notion-text-secondary)',
+                                    border: 'none',
+                                    fontSize: 12, fontWeight: 700,
+                                    cursor: editingAvulso.processo.clienteNome?.trim() ? 'pointer' : 'not-allowed',
+                                    fontFamily: 'inherit',
+                                    display: 'flex', alignItems: 'center', gap: 6,
+                                }}
+                            >
+                                <Check size={14} /> Salvar alterações
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
