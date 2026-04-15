@@ -1,11 +1,12 @@
 // src/components/EmpresaEnviosSection.tsx
 import React, { useState, useRef } from 'react';
-import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X } from 'lucide-react';
+import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X, RotateCcw } from 'lucide-react';
 import type { EtapaEnvioStatus, EtapaDocumento } from '../types/empresa';
 import type { EmpresaParceira } from '../types/empresa';
 import {
     marcarDocumentoPronto,
     marcarEtapaEnviada,
+    desmarcarEtapaEnviada,
     etapaCompleta,
     adicionarDocumentoNaEtapa,
     removerDocumentoDaEtapa,
@@ -64,6 +65,18 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
     const handleMarcarEnviada = (etapaIdx: number) => {
         onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
+    };
+
+    const handleDesmarcarEnviada = async (etapaIdx: number) => {
+        const ok = await confirmDialog({
+            title: 'Remover envio?',
+            message: 'A etapa deixará de estar marcada como enviada. Isso não apaga o email já enviado — apenas libera a etapa para edição e novo envio.',
+            confirmText: 'Remover envio',
+            danger: true,
+        });
+        if (!ok) return;
+        onUpdate(desmarcarEtapaEnviada(enviosStatus, etapaIdx));
+        showToast('Envio removido. Etapa liberada para edição.', 'success');
     };
 
     const [enviandoEmailIdx, setEnviandoEmailIdx] = useState<number | null>(null);
@@ -468,6 +481,22 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         <Mail size={12} />
                                         Ver email enviado
                                     </a>
+                                )}
+                                {enviado && (
+                                    <button
+                                        onClick={() => handleDesmarcarEnviada(etapaIdx)}
+                                        title="Remove a marcação de enviado para poder editar e reenviar"
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '4px',
+                                            fontSize: '11px', fontWeight: 500, color: '#C84040',
+                                            background: 'rgba(200,64,64,0.10)', border: '1px solid rgba(200,64,64,0.25)',
+                                            borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
+                                            marginLeft: 'auto',
+                                        }}
+                                    >
+                                        <RotateCcw size={12} />
+                                        Remover envio
+                                    </button>
                                 )}
                             </div>
                         </div>

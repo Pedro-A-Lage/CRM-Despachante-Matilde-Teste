@@ -154,6 +154,13 @@ export function marcarEtapaEnviada(envios: EtapaEnvioStatus[], etapaIndex: numbe
     });
 }
 
+export function desmarcarEtapaEnviada(envios: EtapaEnvioStatus[], etapaIndex: number): EtapaEnvioStatus[] {
+    return envios.map((etapa, i) => {
+        if (i !== etapaIndex) return etapa;
+        return { ...etapa, enviado: false, enviado_em: null };
+    });
+}
+
 export function etapaCompleta(etapa: EtapaEnvioStatus): boolean {
     return etapa.documentos.every((doc) => doc.pronto);
 }
