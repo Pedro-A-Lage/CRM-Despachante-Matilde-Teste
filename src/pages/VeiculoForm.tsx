@@ -137,7 +137,7 @@ export default function VeiculoForm() {
                     setDataAquisicao(
                         veiculo.dataAquisicao
                             ? (veiculo.dataAquisicao.includes('T')
-                                ? veiculo.dataAquisicao.split('T')[0]
+                                ? (veiculo.dataAquisicao.split('T')[0] ?? '')
                                 : veiculo.dataAquisicao)
                             : ''
                     );
