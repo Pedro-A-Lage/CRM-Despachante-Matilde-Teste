@@ -92,6 +92,14 @@ export default function VeiculoForm() {
     const [marcaModelo, setMarcaModelo] = useState('');
     const [clienteId, setClienteId] = useState(searchParams.get('clienteId') || '');
     const [observacoes, setObservacoes] = useState('');
+    // Campos extras (mesmo conjunto do VeiculoEditFullModal)
+    const [categoria, setCategoria] = useState('');
+    const [anoFabricacao, setAnoFabricacao] = useState('');
+    const [anoModelo, setAnoModelo] = useState('');
+    const [cor, setCor] = useState('');
+    const [combustivel, setCombustivel] = useState('');
+    const [dataAquisicao, setDataAquisicao] = useState('');
+    const [hodometro, setHodometro] = useState('');
 
     // PDF extraction state
     const [extracting, setExtracting] = useState(false);
@@ -121,6 +129,19 @@ export default function VeiculoForm() {
                     setMarcaModelo(veiculo.marcaModelo);
                     setClienteId(veiculo.clienteId);
                     setObservacoes(veiculo.observacoes || '');
+                    setCategoria(veiculo.categoria || '');
+                    setAnoFabricacao(veiculo.anoFabricacao || '');
+                    setAnoModelo(veiculo.anoModelo || '');
+                    setCor(veiculo.cor || '');
+                    setCombustivel(veiculo.combustivel || '');
+                    setDataAquisicao(
+                        veiculo.dataAquisicao
+                            ? (veiculo.dataAquisicao.includes('T')
+                                ? veiculo.dataAquisicao.split('T')[0]
+                                : veiculo.dataAquisicao)
+                            : ''
+                    );
+                    setHodometro(veiculo.hodometro || '');
                 }
             }
         })();
@@ -236,6 +257,13 @@ export default function VeiculoForm() {
                 marcaModelo: marcaModelo.trim(),
                 clienteId,
                 observacoes: observacoes.trim() || undefined,
+                categoria: categoria.trim() || undefined,
+                anoFabricacao: anoFabricacao.trim() || undefined,
+                anoModelo: anoModelo.trim() || undefined,
+                cor: cor.trim() || undefined,
+                combustivel: combustivel.trim() || undefined,
+                dataAquisicao: dataAquisicao.trim() || undefined,
+                hodometro: hodometro.trim() || undefined,
             });
 
             if (pdfFile && !isEditing) {
@@ -293,7 +321,7 @@ export default function VeiculoForm() {
     };
 
     return (
-        <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 4px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 4px' }}>
             {/* Header */}
             <div style={{
                 display: 'flex',
@@ -531,7 +559,7 @@ export default function VeiculoForm() {
                         <h2 style={sectionTitle}>Identificação</h2>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                         <div>
                             <label style={fieldLabel}>
                                 Placa
@@ -543,12 +571,25 @@ export default function VeiculoForm() {
                                 onChange={(e) => setPlaca(e.target.value)}
                                 onFocus={handleFocus}
                                 onBlur={handleBlur}
-                                placeholder="ABC1D23"
+                                placeholder="Vazio p/ primeiro emplacamento"
                                 style={{ ...fieldInput, textTransform: 'uppercase' }}
                             />
-                            <p style={{ marginTop: 6, fontSize: '0.72rem', color: 'var(--notion-text-muted)' }}>
-                                Pode ficar vazio para primeiro emplacamento
-                            </p>
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>
+                                Chassi <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                                {fieldsFilledFromPdf.includes('Chassi') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                            </label>
+                            <input
+                                type="text"
+                                value={chassi}
+                                onChange={(e) => setChassi(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder="9BWHE21JX24060960"
+                                required
+                                style={{ ...fieldInput, textTransform: 'uppercase', fontFamily: 'monospace' }}
+                            />
                         </div>
                         <div>
                             <label style={fieldLabel}>
@@ -565,40 +606,99 @@ export default function VeiculoForm() {
                                 style={fieldInput}
                             />
                         </div>
-                    </div>
-
-                    <div style={{ marginTop: 14 }}>
-                        <label style={fieldLabel}>
-                            Chassi <span style={{ color: 'var(--notion-orange)' }}>*</span>
-                            {fieldsFilledFromPdf.includes('Chassi') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
-                        </label>
-                        <input
-                            type="text"
-                            value={chassi}
-                            onChange={(e) => setChassi(e.target.value)}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            placeholder="9BWHE21JX24060960"
-                            required
-                            style={{ ...fieldInput, textTransform: 'uppercase', fontFamily: 'monospace' }}
-                        />
-                    </div>
-
-                    <div style={{ marginTop: 14 }}>
-                        <label style={fieldLabel}>
-                            <Tag size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
-                            Marca / Modelo
-                            {fieldsFilledFromPdf.includes('Marca/Modelo') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
-                        </label>
-                        <input
-                            type="text"
-                            value={marcaModelo}
-                            onChange={(e) => setMarcaModelo(e.target.value)}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            placeholder="Ex: VW Gol 1.0"
-                            style={fieldInput}
-                        />
+                        <div>
+                            <label style={fieldLabel}>Categoria</label>
+                            <input
+                                type="text"
+                                value={categoria}
+                                onChange={(e) => setCategoria(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div style={{ gridColumn: '1 / -1' }}>
+                            <label style={fieldLabel}>
+                                <Tag size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                                Marca / Modelo
+                                {fieldsFilledFromPdf.includes('Marca/Modelo') && <span style={pdfBadge}><CheckCircle size={10} /> do PDF</span>}
+                            </label>
+                            <input
+                                type="text"
+                                value={marcaModelo}
+                                onChange={(e) => setMarcaModelo(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                placeholder="Ex: VW Gol 1.0"
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>Ano Fabricação</label>
+                            <input
+                                type="text"
+                                value={anoFabricacao}
+                                onChange={(e) => setAnoFabricacao(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>Ano Modelo</label>
+                            <input
+                                type="text"
+                                value={anoModelo}
+                                onChange={(e) => setAnoModelo(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>Cor</label>
+                            <input
+                                type="text"
+                                value={cor}
+                                onChange={(e) => setCor(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>Combustível</label>
+                            <input
+                                type="text"
+                                value={combustivel}
+                                onChange={(e) => setCombustivel(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>Data de Aquisição (Recibo)</label>
+                            <input
+                                type="date"
+                                value={dataAquisicao}
+                                onChange={(e) => setDataAquisicao(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
+                        <div>
+                            <label style={fieldLabel}>Hodômetro</label>
+                            <input
+                                type="text"
+                                value={hodometro}
+                                onChange={(e) => setHodometro(e.target.value)}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                style={fieldInput}
+                            />
+                        </div>
                     </div>
                 </div>
 
