@@ -237,6 +237,7 @@ const SECOES: { titulo: string; items: PermissaoItem[] }[] = [
             { categoria: 'os', chave: 'editar_vistoria', label: 'Editar vistoria' },
             { categoria: 'os', chave: 'editar_delegacia', label: 'Editar delegacia' },
             { categoria: 'os', chave: 'excluir_os', label: 'Excluir OS' },
+            { categoria: 'os', chave: 'cancelar_envio', label: 'Cancelar envio de e-mail (Placa e Empresa) para liberar reenvio' },
         ],
     },
     {

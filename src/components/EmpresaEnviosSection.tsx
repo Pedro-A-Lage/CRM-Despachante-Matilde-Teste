@@ -1,11 +1,12 @@
 // src/components/EmpresaEnviosSection.tsx
 import React, { useState, useRef } from 'react';
-import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X } from 'lucide-react';
+import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X, RotateCcw } from 'lucide-react';
 import type { EtapaEnvioStatus, EtapaDocumento } from '../types/empresa';
 import type { EmpresaParceira } from '../types/empresa';
 import {
     marcarDocumentoPronto,
     marcarEtapaEnviada,
+    desmarcarEtapaEnviada,
     etapaCompleta,
     adicionarDocumentoNaEtapa,
     removerDocumentoDaEtapa,
@@ -16,6 +17,9 @@ import { uploadFileToSupabase } from '../lib/fileStorage';
 import { useConfirm } from './ConfirmProvider';
 import { supabase } from '../lib/supabaseClient';
 import { useToast } from './Toast';
+import { useAuth } from '../contexts/AuthContext';
+import { temPermissao } from '../lib/permissions';
+import { addAuditEntry } from '../lib/database';
 
 interface Props {
     empresa: EmpresaParceira;
@@ -50,6 +54,8 @@ function isImage(nome: string): boolean {
 export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, placa, onUpdate }: Props) {
     const { showToast } = useToast();
     const confirmDialog = useConfirm();
+    const { usuario } = useAuth();
+    const podeCancelarEnvio = temPermissao(usuario, 'os', 'cancelar_envio');
     const [editando, setEditando] = useState(false);
     const [novoDocTipo, setNovoDocTipo] = useState('');
     const [novaEtapaNome, setNovaEtapaNome] = useState('');
@@ -64,6 +70,33 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
     const handleMarcarEnviada = (etapaIdx: number) => {
         onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
+    };
+
+    const handleDesmarcarEnviada = async (etapaIdx: number) => {
+        if (!podeCancelarEnvio) {
+            showToast('Somente administradores podem cancelar um envio. Solicite ao admin.', 'error');
+            return;
+        }
+        const etapa = enviosStatus[etapaIdx];
+        const ok = await confirmDialog({
+            title: 'Cancelar envio desta etapa?',
+            message: `A etapa "${etapa?.nome || ''}" deixará de estar marcada como enviada. Isso NÃO apaga o email já enviado à empresa — apenas libera a etapa para edição e reenvio. O cancelamento fica registrado no histórico.`,
+            confirmText: 'Cancelar envio',
+            danger: true,
+        });
+        if (!ok) return;
+        onUpdate(desmarcarEtapaEnviada(enviosStatus, etapaIdx));
+        // Registra no histórico da OS
+        try {
+            await addAuditEntry(
+                osId,
+                'Envio Empresa - Cancelado',
+                `Envio da etapa "${etapa?.nome || etapaIdx + 1}" (${empresa.nome}) foi cancelado para permitir reenvio.`
+            );
+        } catch (err) {
+            console.warn('Falha ao registrar cancelamento no histórico:', err);
+        }
+        showToast('Envio cancelado. Etapa liberada para reenvio.', 'success');
     };
 
     const [enviandoEmailIdx, setEnviandoEmailIdx] = useState<number | null>(null);
@@ -175,7 +208,16 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         setPendingUpload(null);
     };
 
-    const handleRemoveFile = (etapaIdx: number, tipoDoc: string) => {
+    const handleRemoveFile = async (etapaIdx: number, tipoDoc: string, enviado: boolean) => {
+        if (enviado) {
+            const ok = await confirmDialog({
+                title: 'Apagar documento já enviado?',
+                message: 'Esta etapa já foi marcada como enviada. Apagar o arquivo aqui não desfaz o email já enviado, mas permite anexar um arquivo correto e reenviar.',
+                confirmText: 'Apagar arquivo',
+                danger: true,
+            });
+            if (!ok) return;
+        }
         const updated = enviosStatus.map((etapa, i) => {
             if (i !== etapaIdx) return etapa;
             return {
@@ -187,6 +229,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             };
         });
         onUpdate(updated);
+        showToast('Arquivo removido.', 'success');
     };
 
     const handleAddDoc = (etapaIdx: number) => {
@@ -293,9 +336,37 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {enviado && (
-                                        <span style={{ fontSize: '10px', color: '#28A06A', fontWeight: 500 }}>
-                                            Enviado {new Date(etapa.enviado_em!).toLocaleDateString('pt-BR')}
-                                        </span>
+                                        <>
+                                            <span style={{ fontSize: '10px', color: '#28A06A', fontWeight: 500 }}>
+                                                Enviado {new Date(etapa.enviado_em!).toLocaleDateString('pt-BR')}
+                                            </span>
+                                            {podeCancelarEnvio ? (
+                                                <button
+                                                    onClick={() => handleDesmarcarEnviada(etapaIdx)}
+                                                    title="Cancelar envio (enviado por engano) — libera para reenviar"
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: '4px',
+                                                        fontSize: '11px', fontWeight: 600, color: '#FFFFFF',
+                                                        background: '#C84040', border: '1px solid #C84040',
+                                                        borderRadius: '6px', padding: '4px 10px', cursor: 'pointer',
+                                                        boxShadow: '0 1px 2px rgba(200,64,64,0.25)',
+                                                    }}
+                                                >
+                                                    <RotateCcw size={11} />
+                                                    Cancelar envio
+                                                </button>
+                                            ) : (
+                                                <span
+                                                    title="Somente admin pode cancelar um envio já realizado"
+                                                    style={{
+                                                        fontSize: '10px', fontStyle: 'italic',
+                                                        color: 'var(--notion-text-secondary)',
+                                                    }}
+                                                >
+                                                    (admin pode cancelar)
+                                                </span>
+                                            )}
+                                        </>
                                     )}
                                     {editando && !enviado && (
                                         <button onClick={() => handleRemoveEtapa(etapaIdx)} style={{ color: '#C84040', opacity: 0.7, padding: '2px', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -347,16 +418,14 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                                     >
                                                         {doc.arquivo_nome}
                                                     </a>
-                                                    {!enviado && (
-                                                        <button
-                                                            onClick={() => handleRemoveFile(etapaIdx, doc.tipo)}
-                                                            style={{ color: '#C84040', opacity: 0.5, background: 'none', border: 'none', cursor: 'pointer', padding: '1px' }}
-                                                            className="hover:!opacity-100"
-                                                            title="Remover arquivo"
-                                                        >
-                                                            <X size={11} />
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => handleRemoveFile(etapaIdx, doc.tipo, enviado)}
+                                                        style={{ color: '#C84040', opacity: 0.5, background: 'none', border: 'none', cursor: 'pointer', padding: '1px' }}
+                                                        className="hover:!opacity-100"
+                                                        title={enviado ? 'Apagar arquivo enviado por engano' : 'Remover arquivo'}
+                                                    >
+                                                        <X size={11} />
+                                                    </button>
                                                 </div>
                                             ) : !enviado ? (
                                                 <button
