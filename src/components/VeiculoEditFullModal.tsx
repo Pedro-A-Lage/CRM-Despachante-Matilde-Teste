@@ -4,7 +4,7 @@
 // do passo "Veículo" do NovaOSModal (padronização visual).
 // ============================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Save, X } from 'lucide-react';
 import {
     overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle,
@@ -13,6 +13,7 @@ import {
 } from './ModalBase';
 import type { Veiculo } from '../types';
 import { saveVeiculo } from '../lib/database';
+import { useConfirm } from './ConfirmProvider';
 
 interface Props {
     isOpen: boolean;
@@ -22,12 +23,47 @@ interface Props {
 }
 
 export default function VeiculoEditFullModal({ isOpen, veiculo, onClose, onSaved }: Props) {
+    const confirmDialog = useConfirm();
     const [form, setForm] = useState<Partial<Veiculo>>({});
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         if (isOpen) setForm({ ...veiculo });
     }, [isOpen, veiculo]);
+
+    const isDirty = useMemo(() => {
+        if (!isOpen || !form) return false;
+        const keys: (keyof Veiculo)[] = [
+            'placa', 'chassi', 'renavam', 'categoria', 'marcaModelo',
+            'anoFabricacao', 'anoModelo', 'cor', 'combustivel', 'dataAquisicao',
+            'hodometro', 'observacoes',
+        ];
+        return keys.some((k) => (form[k] ?? '') !== (veiculo[k] ?? ''));
+    }, [isOpen, form, veiculo]);
+
+    const attemptClose = async () => {
+        if (isDirty) {
+            const ok = await confirmDialog({
+                title: 'Descartar alterações?',
+                message: 'Você fez alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.',
+                confirmText: 'Descartar e sair',
+                cancelText: 'Continuar editando',
+                danger: true,
+            });
+            if (!ok) return;
+        }
+        onClose();
+    };
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') attemptClose();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, isDirty]);
 
     if (!isOpen) return null;
 
@@ -47,14 +83,17 @@ export default function VeiculoEditFullModal({ isOpen, veiculo, onClose, onSaved
     };
 
     return (
-        <div style={{ ...overlayStyle, zIndex: 1100 }} onClick={onClose}>
-            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+        <div
+            style={{ ...overlayStyle, zIndex: 1100, alignItems: 'flex-start', paddingTop: '5vh', paddingBottom: '5vh', overflowY: 'auto' }}
+            onClick={() => { /* clique no fundo não fecha — evita perda de edição */ }}
+        >
+            <div style={{ ...modalStyle, maxHeight: 'calc(100vh - 10vh - 8px)' }} onClick={(e) => e.stopPropagation()}>
                 <div style={headerStyle}>
                     <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
-                        Editar Veículo
+                        Editar Veículo {isDirty && <span style={{ color: 'var(--notion-orange)', fontWeight: 500, fontSize: '0.8rem', marginLeft: 6 }}>• alterações não salvas</span>}
                     </h2>
                     <button
-                        onClick={onClose}
+                        onClick={attemptClose}
                         style={{ background: 'none', border: 'none', color: 'var(--notion-text-secondary)', cursor: 'pointer', padding: 4 }}
                     >
                         <X size={20} />
@@ -136,7 +175,7 @@ export default function VeiculoEditFullModal({ isOpen, veiculo, onClose, onSaved
                 </div>
 
                 <div style={footerStyle}>
-                    <button style={btnSecondary} onClick={onClose}>Cancelar</button>
+                    <button style={btnSecondary} onClick={attemptClose}>Cancelar</button>
                     <button
                         style={{ ...btnPrimary, opacity: saving ? 0.6 : 1 }}
                         disabled={saving}
