@@ -772,11 +772,12 @@ export default function ProtocoloDiario() {
                                         {/* Número */}
                                         <div style={{
                                             width: 36, height: 36, borderRadius: 8, flexShrink: 0,
-                                            background: p.manual ? 'rgba(139,92,246,0.1)' : 'rgba(59,130,246,0.08)',
+                                            background: p.manual ? 'rgba(167,139,250,0.22)' : 'rgba(59,130,246,0.08)',
+                                            border: p.manual ? '1px solid rgba(167,139,250,0.45)' : 'none',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         }}>
                                             {p.manual ? (
-                                                <UserPlus size={14} style={{ color: 'var(--notion-purple, #9065B0)' }} />
+                                                <UserPlus size={14} style={{ color: '#C4B5FD' }} />
                                             ) : (
                                                 <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--notion-blue)' }}>
                                                     #{p.osNumero}
@@ -796,9 +797,12 @@ export default function ProtocoloDiario() {
                                                 </span>
                                                 {p.manual && (
                                                     <span style={{
-                                                        fontSize: 9, fontWeight: 700, padding: '1px 6px',
-                                                        borderRadius: 4, background: 'rgba(139,92,246,0.1)',
-                                                        color: 'var(--notion-purple, #9065B0)',
+                                                        fontSize: 9, fontWeight: 800, padding: '2px 8px',
+                                                        borderRadius: 4,
+                                                        background: 'rgba(167,139,250,0.25)',
+                                                        color: '#DDD6FE',
+                                                        border: '1px solid rgba(167,139,250,0.5)',
+                                                        letterSpacing: '0.05em',
                                                     }}>AVULSO</span>
                                                 )}
                                             </div>
@@ -960,10 +964,11 @@ export default function ProtocoloDiario() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{
                             width: 30, height: 30, borderRadius: 8,
-                            background: 'rgba(139,92,246,0.1)',
+                            background: 'rgba(167,139,250,0.22)',
+                            border: '1px solid rgba(167,139,250,0.45)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                            <UserPlus size={14} style={{ color: 'var(--notion-purple, #9065B0)' }} />
+                            <UserPlus size={14} style={{ color: '#C4B5FD' }} />
                         </div>
                         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>
                             Processo Avulso (sem OS)
@@ -971,7 +976,8 @@ export default function ProtocoloDiario() {
                         {manualProcessos.length > 0 && (
                             <span style={{
                                 fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 5,
-                                background: 'rgba(139,92,246,0.1)', color: 'var(--notion-purple, #9065B0)',
+                                background: 'rgba(167,139,250,0.25)', color: '#DDD6FE',
+                                border: '1px solid rgba(167,139,250,0.5)',
                             }}>{manualProcessos.length}</span>
                         )}
                     </div>
@@ -1046,7 +1052,7 @@ export default function ProtocoloDiario() {
                                         display: 'flex', alignItems: 'center', gap: 10,
                                         padding: '8px 12px', borderRadius: 8,
                                         background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
-                                        borderLeft: '3px solid var(--notion-purple, #9065B0)',
+                                        borderLeft: '3px solid #A78BFA',
                                     }}>
                                         <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text)', flex: 1 }}>
                                             {p.clienteNome}
@@ -1428,7 +1434,7 @@ export default function ProtocoloDiario() {
                             flexShrink: 0,
                         }}>
                             <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <UserPlus size={16} style={{ color: 'var(--notion-purple, #9065B0)' }} />
+                                <UserPlus size={16} style={{ color: '#C4B5FD' }} />
                                 Editar Processo Avulso
                             </h2>
                             <button
