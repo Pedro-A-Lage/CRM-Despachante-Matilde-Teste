@@ -17,6 +17,9 @@ import { uploadFileToSupabase } from '../lib/fileStorage';
 import { useConfirm } from './ConfirmProvider';
 import { supabase } from '../lib/supabaseClient';
 import { useToast } from './Toast';
+import { useAuth } from '../contexts/AuthContext';
+import { temPermissao } from '../lib/permissions';
+import { addAuditEntry } from '../lib/database';
 
 interface Props {
     empresa: EmpresaParceira;
@@ -51,6 +54,8 @@ function isImage(nome: string): boolean {
 export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, placa, onUpdate }: Props) {
     const { showToast } = useToast();
     const confirmDialog = useConfirm();
+    const { usuario } = useAuth();
+    const podeCancelarEnvio = temPermissao(usuario, 'os', 'cancelar_envio');
     const [editando, setEditando] = useState(false);
     const [novoDocTipo, setNovoDocTipo] = useState('');
     const [novaEtapaNome, setNovaEtapaNome] = useState('');
@@ -68,15 +73,30 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
     };
 
     const handleDesmarcarEnviada = async (etapaIdx: number) => {
+        if (!podeCancelarEnvio) {
+            showToast('Somente administradores podem cancelar um envio. Solicite ao admin.', 'error');
+            return;
+        }
+        const etapa = enviosStatus[etapaIdx];
         const ok = await confirmDialog({
-            title: 'Remover envio?',
-            message: 'A etapa deixará de estar marcada como enviada. Isso não apaga o email já enviado — apenas libera a etapa para edição e novo envio.',
-            confirmText: 'Remover envio',
+            title: 'Cancelar envio desta etapa?',
+            message: `A etapa "${etapa?.nome || ''}" deixará de estar marcada como enviada. Isso NÃO apaga o email já enviado à empresa — apenas libera a etapa para edição e reenvio. O cancelamento fica registrado no histórico.`,
+            confirmText: 'Cancelar envio',
             danger: true,
         });
         if (!ok) return;
         onUpdate(desmarcarEtapaEnviada(enviosStatus, etapaIdx));
-        showToast('Envio removido. Etapa liberada para edição.', 'success');
+        // Registra no histórico da OS
+        try {
+            await addAuditEntry(
+                osId,
+                'Envio Empresa - Cancelado',
+                `Envio da etapa "${etapa?.nome || etapaIdx + 1}" (${empresa.nome}) foi cancelado para permitir reenvio.`
+            );
+        } catch (err) {
+            console.warn('Falha ao registrar cancelamento no histórico:', err);
+        }
+        showToast('Envio cancelado. Etapa liberada para reenvio.', 'success');
     };
 
     const [enviandoEmailIdx, setEnviandoEmailIdx] = useState<number | null>(null);
@@ -320,19 +340,32 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                             <span style={{ fontSize: '10px', color: '#28A06A', fontWeight: 500 }}>
                                                 Enviado {new Date(etapa.enviado_em!).toLocaleDateString('pt-BR')}
                                             </span>
-                                            <button
-                                                onClick={() => handleDesmarcarEnviada(etapaIdx)}
-                                                title="Remover envio (enviado por engano)"
-                                                style={{
-                                                    display: 'flex', alignItems: 'center', gap: '3px',
-                                                    fontSize: '10px', fontWeight: 500, color: '#C84040',
-                                                    background: 'rgba(200,64,64,0.10)', border: '1px solid rgba(200,64,64,0.25)',
-                                                    borderRadius: '4px', padding: '2px 6px', cursor: 'pointer',
-                                                }}
-                                            >
-                                                <RotateCcw size={10} />
-                                                Remover envio
-                                            </button>
+                                            {podeCancelarEnvio ? (
+                                                <button
+                                                    onClick={() => handleDesmarcarEnviada(etapaIdx)}
+                                                    title="Cancelar envio (enviado por engano) — libera para reenviar"
+                                                    style={{
+                                                        display: 'flex', alignItems: 'center', gap: '4px',
+                                                        fontSize: '11px', fontWeight: 600, color: '#FFFFFF',
+                                                        background: '#C84040', border: '1px solid #C84040',
+                                                        borderRadius: '6px', padding: '4px 10px', cursor: 'pointer',
+                                                        boxShadow: '0 1px 2px rgba(200,64,64,0.25)',
+                                                    }}
+                                                >
+                                                    <RotateCcw size={11} />
+                                                    Cancelar envio
+                                                </button>
+                                            ) : (
+                                                <span
+                                                    title="Somente admin pode cancelar um envio já realizado"
+                                                    style={{
+                                                        fontSize: '10px', fontStyle: 'italic',
+                                                        color: 'var(--notion-text-secondary)',
+                                                    }}
+                                                >
+                                                    (admin pode cancelar)
+                                                </span>
+                                            )}
                                         </>
                                     )}
                                     {editando && !enviado && (

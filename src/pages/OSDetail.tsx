@@ -204,7 +204,7 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
     const { showToast } = useToast();
     const confirm = useConfirm();
     const { usuario } = useAuth();
-    const podeCancelarEnvio = temPermissao(usuario, 'os', 'cancelar_envio_placa');
+    const podeCancelarEnvio = temPermissao(usuario, 'os', 'cancelar_envio');
     const [estampariaEmail, setEstampariaEmail] = useState('itabira@natalplacasgv.com.br');
     const enderecoCompleto = (() => {
         if (!cliente) return '—';

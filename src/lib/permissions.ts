@@ -4,17 +4,17 @@ import type { Usuario, PermissoesUsuario } from '../types';
 const DEFAULTS: Record<string, PermissoesUsuario> = {
     admin: {
         paginas: { financeiro: true, controle_pagamentos: true, configuracoes: true, usuarios: true, backup: true, emails: true, servicos_detran: true, protocolo_diario: true, calendario_vistorias: true },
-        os: { ver_custos: true, ver_honorarios: true, ver_valor_servico: true, receber_pagamento: true, editar_status: true, editar_checklist: true, editar_vistoria: true, editar_delegacia: true, excluir_os: true, cancelar_envio_placa: true },
+        os: { ver_custos: true, ver_honorarios: true, ver_valor_servico: true, receber_pagamento: true, editar_status: true, editar_checklist: true, editar_vistoria: true, editar_delegacia: true, excluir_os: true, cancelar_envio: true },
         dados: { editar_perfil: true },
     },
     gerente: {
         paginas: { financeiro: true, controle_pagamentos: true, configuracoes: false, usuarios: false, backup: false, emails: true, servicos_detran: true, protocolo_diario: true, calendario_vistorias: true },
-        os: { ver_custos: true, ver_honorarios: true, ver_valor_servico: true, receber_pagamento: true, editar_status: true, editar_checklist: true, editar_vistoria: true, editar_delegacia: true, excluir_os: false, cancelar_envio_placa: false },
+        os: { ver_custos: true, ver_honorarios: true, ver_valor_servico: true, receber_pagamento: true, editar_status: true, editar_checklist: true, editar_vistoria: true, editar_delegacia: true, excluir_os: false, cancelar_envio: false },
         dados: { editar_perfil: true },
     },
     funcionario: {
         paginas: { financeiro: false, controle_pagamentos: false, configuracoes: false, usuarios: false, backup: false, emails: false, servicos_detran: false, protocolo_diario: true, calendario_vistorias: true },
-        os: { ver_custos: false, ver_honorarios: false, ver_valor_servico: true, receber_pagamento: true, editar_status: true, editar_checklist: true, editar_vistoria: true, editar_delegacia: true, excluir_os: false, cancelar_envio_placa: false },
+        os: { ver_custos: false, ver_honorarios: false, ver_valor_servico: true, receber_pagamento: true, editar_status: true, editar_checklist: true, editar_vistoria: true, editar_delegacia: true, excluir_os: false, cancelar_envio: false },
         dados: { editar_perfil: true },
     },
 };
