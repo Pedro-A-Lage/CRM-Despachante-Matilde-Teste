@@ -455,9 +455,9 @@ export default function FinancePainel({
       {/* ===== BANNER HEADER UNIFICADO ===== */}
       {(() => {
         const FLBL: React.CSSProperties = { display: 'block', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--notion-text-secondary)', marginBottom: 2 };
-        const bannerColor = isQuitado ? 'var(--notion-green)' : faltaReceber > 0 ? 'var(--notion-orange)' : 'var(--notion-orange)';
-        const bannerBg = isQuitado ? 'rgba(16,185,129,0.06)' : faltaReceber > 0 ? 'rgba(239,68,68,0.04)' : 'rgba(245,158,11,0.04)';
-        const bannerBorder = isQuitado ? 'rgba(16,185,129,0.18)' : faltaReceber > 0 ? 'rgba(239,68,68,0.18)' : 'rgba(245,158,11,0.18)';
+        const bannerColor = isQuitado ? 'var(--notion-green)' : faltaReceber > 0 ? '#ef4444' : 'var(--notion-orange)';
+        const bannerBg = isQuitado ? 'rgba(16,185,129,0.06)' : faltaReceber > 0 ? 'rgba(239,68,68,0.06)' : 'rgba(245,158,11,0.04)';
+        const bannerBorder = isQuitado ? 'rgba(16,185,129,0.18)' : faltaReceber > 0 ? 'rgba(239,68,68,0.35)' : 'rgba(245,158,11,0.18)';
         const statusLabel = isQuitado ? 'QUITADO' : faltaReceber > 0 ? 'DEVENDO' : 'EM DIA';
         return (
           <div style={{
@@ -543,7 +543,7 @@ export default function FinancePainel({
                 {faltaReceber > 0 && (
                   <div style={{ textAlign: 'center' }}>
                     <span style={FLBL}>Falta</span>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--notion-orange)' }}>{fmt(faltaReceber)}</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: '#ef4444' }}>{fmt(faltaReceber)}</div>
                   </div>
                 )}
               </div>

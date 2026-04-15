@@ -1124,7 +1124,7 @@ export default function OSDetail() {
                                         className={`tab ${activeTab === tab.id ? 'active' : ''}`}
                                         onClick={() => handleTabSwitch(tab.id)}
                                         style={
-                                            isFinanceiroComDebito ? { color: 'var(--notion-orange)', fontWeight: 700 }
+                                            isFinanceiroComDebito ? { color: '#ef4444', fontWeight: 700 }
                                             : isEmpresaTudoEnviado ? { color: '#28A06A', fontWeight: 700 }
                                             : undefined
                                         }
@@ -1132,7 +1132,7 @@ export default function OSDetail() {
                                         {tab.icon}
                                         {tab.label}
                                         {isFinanceiroComDebito && (
-                                            <span style={{ fontSize: 9, marginLeft: 4, background: 'rgba(239,68,68,0.15)', color: 'var(--notion-orange)', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>
+                                            <span style={{ fontSize: 9, marginLeft: 4, background: 'rgba(239,68,68,0.18)', color: '#ef4444', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>
                                                 Pendente
                                             </span>
                                         )}
