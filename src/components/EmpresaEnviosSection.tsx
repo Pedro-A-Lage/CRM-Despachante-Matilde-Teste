@@ -316,9 +316,24 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {enviado && (
-                                        <span style={{ fontSize: '10px', color: '#28A06A', fontWeight: 500 }}>
-                                            Enviado {new Date(etapa.enviado_em!).toLocaleDateString('pt-BR')}
-                                        </span>
+                                        <>
+                                            <span style={{ fontSize: '10px', color: '#28A06A', fontWeight: 500 }}>
+                                                Enviado {new Date(etapa.enviado_em!).toLocaleDateString('pt-BR')}
+                                            </span>
+                                            <button
+                                                onClick={() => handleDesmarcarEnviada(etapaIdx)}
+                                                title="Remover envio (enviado por engano)"
+                                                style={{
+                                                    display: 'flex', alignItems: 'center', gap: '3px',
+                                                    fontSize: '10px', fontWeight: 500, color: '#C84040',
+                                                    background: 'rgba(200,64,64,0.10)', border: '1px solid rgba(200,64,64,0.25)',
+                                                    borderRadius: '4px', padding: '2px 6px', cursor: 'pointer',
+                                                }}
+                                            >
+                                                <RotateCcw size={10} />
+                                                Remover envio
+                                            </button>
+                                        </>
                                     )}
                                     {editando && !enviado && (
                                         <button onClick={() => handleRemoveEtapa(etapaIdx)} style={{ color: '#C84040', opacity: 0.7, padding: '2px', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -481,22 +496,6 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         <Mail size={12} />
                                         Ver email enviado
                                     </a>
-                                )}
-                                {enviado && (
-                                    <button
-                                        onClick={() => handleDesmarcarEnviada(etapaIdx)}
-                                        title="Remove a marcação de enviado para poder editar e reenviar"
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '4px',
-                                            fontSize: '11px', fontWeight: 500, color: '#C84040',
-                                            background: 'rgba(200,64,64,0.10)', border: '1px solid rgba(200,64,64,0.25)',
-                                            borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
-                                            marginLeft: 'auto',
-                                        }}
-                                    >
-                                        <RotateCcw size={12} />
-                                        Remover envio
-                                    </button>
                                 )}
                             </div>
                         </div>
