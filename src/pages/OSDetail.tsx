@@ -90,6 +90,22 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import FinancePainel from '../components/finance/FinancePainel';
 import { getChargesByOS, getPaymentsByOS, marcarCustoPago, cancelarCobrancasDaOS, getPriceByCodigo, updateCharge } from '../lib/financeService';
 import { EmpresaEnviosSection } from '../components/EmpresaEnviosSection';
+import ClienteEditFullModal from '../components/ClienteEditFullModal';
+import VeiculoEditFullModal from '../components/VeiculoEditFullModal';
+import {
+    overlayStyle as mbOverlayStyle,
+    modalStyle as mbModalStyle,
+    headerStyle as mbHeaderStyle,
+    bodyStyle as mbBodyStyle,
+    footerStyle as mbFooterStyle,
+    btnPrimary as mbBtnPrimary,
+    btnSecondary as mbBtnSecondary,
+    selectStyle as mbSelectStyle,
+    labelStyle as mbLabelStyle,
+    fieldWrapStyle as mbFieldWrapStyle,
+    secaoStyle as mbSecaoStyle,
+    secaoHeaderStyle as mbSecaoHeaderStyle,
+} from '../components/ModalBase';
 import { getEmpresa, getEmpresasAtivas, criarEnviosStatusFromEtapas, sincronizarEnviosComEtapas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { gerarComunicadoExtravio, gerarRequerimento2Via } from '../lib/gerarDocumentos2Via';
@@ -465,17 +481,14 @@ export default function OSDetail() {
     const [editClienteId, setEditClienteId] = useState('');
     const [editVeiculoId, setEditVeiculoId] = useState('');
     const [editTipoServico, setEditTipoServico] = useState<TipoServico>('primeiro_emplacamento');
+    const [editTipoVeiculo, setEditTipoVeiculo] = useState<'carro' | 'moto'>('carro');
     const [editClientes, setEditClientes] = useState<any[]>([]);
     const [editVeiculos, setEditVeiculos] = useState<any[]>([]);
     const [editSaving, setEditSaving] = useState(false);
 
-    // ── Estado do modal de Edição Completa de Cliente
+    // ── Estado dos modais de edição completa
     const [isFullEditClienteOpen, setIsFullEditClienteOpen] = useState(false);
-    const [fullEditCliente, setFullEditCliente] = useState<Partial<Cliente>>({ telefones: [''] });
-
-    // ── Estado do modal de Edição Completa de Veículo
     const [isFullEditVeiculoOpen, setIsFullEditVeiculoOpen] = useState(false);
-    const [fullEditVeiculo, setFullEditVeiculo] = useState<Partial<Veiculo>>({});
 
     const hasLoadedRef = useRef(false);
     const [temDebitosPendentes, setTemDebitosPendentes] = useState(false);
@@ -650,6 +663,7 @@ export default function OSDetail() {
         setEditClienteId(os.clienteId);
         setEditVeiculoId(os.veiculoId);
         setEditTipoServico(os.tipoServico);
+        setEditTipoVeiculo(os.tipoVeiculo ?? 'carro');
         setEditModalOpen(true);
     };
 
@@ -691,6 +705,7 @@ export default function OSDetail() {
                 clienteId: editClienteId,
                 veiculoId: editVeiculoId,
                 tipoServico: editTipoServico,
+                tipoVeiculo: editTipoVeiculo,
             });
 
             // Se tipo mudou, gera novas cobranças
@@ -711,47 +726,12 @@ export default function OSDetail() {
 
     const handleOpenFullEditCliente = () => {
         if (!cliente) return;
-        setFullEditCliente({
-            ...cliente,
-            telefones: cliente.telefones?.length ? cliente.telefones : ['']
-        });
         setIsFullEditClienteOpen(true);
-    };
-
-    const handleSaveFullEditCliente = async () => {
-        if (!cliente?.id) return;
-        setEditSaving(true);
-        try {
-            await updateCliente(cliente.id, {
-                ...fullEditCliente,
-                telefones: fullEditCliente.telefones?.filter((t: string) => t.trim() !== '') || []
-            });
-            setIsFullEditClienteOpen(false);
-            refresh();
-        } finally {
-            setEditSaving(false);
-        }
     };
 
     const handleOpenFullEditVeiculo = () => {
         if (!veiculo) return;
-        setFullEditVeiculo({ ...veiculo });
         setIsFullEditVeiculoOpen(true);
-    };
-
-    const handleSaveFullEditVeiculo = async () => {
-        if (!veiculo?.id) return;
-        setEditSaving(true);
-        try {
-            await saveVeiculo({
-                ...veiculo,
-                ...fullEditVeiculo
-            });
-            setIsFullEditVeiculoOpen(false);
-            refresh();
-        } finally {
-            setEditSaving(false);
-        }
     };
 
     const tabs = [
@@ -778,47 +758,70 @@ export default function OSDetail() {
             padding: '8px 4px 32px',
             overflowX: 'hidden',
         }}>
-            {/* Modal de Edição da OS */}
+            {/* Modal de Edição da OS — padronizado com Nova OS */}
             {editModalOpen && (
-                <div className="modal-overlay" style={{ zIndex: 200 }}>
-                    <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">Editar Ordem de Serviço</h3>
-                            <button className="btn btn-ghost" onClick={() => setEditModalOpen(false)}><X size={20} /></button>
+                <div style={{ ...mbOverlayStyle, zIndex: 1100 }} onClick={() => setEditModalOpen(false)}>
+                    <div style={mbModalStyle} onClick={e => e.stopPropagation()}>
+                        <div style={mbHeaderStyle}>
+                            <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
+                                Editar Ordem de Serviço
+                            </h2>
+                            <button
+                                onClick={() => setEditModalOpen(false)}
+                                style={{ background: 'none', border: 'none', color: 'var(--notion-text-secondary)', cursor: 'pointer', padding: 4 }}
+                            >
+                                <X size={20} />
+                            </button>
                         </div>
-                        <div className="modal-body">
-                            <div className="form-group">
-                                <label className="form-label">Cliente</label>
-                                <select className="form-select" value={editClienteId} onChange={e => setEditClienteId(e.target.value)}>
-                                    <option value="">Selecione...</option>
-                                    {editClientes.map(c => (
-                                        <option key={c.id} value={c.id}>{c.nome} — {c.cpfCnpj}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Veículo</label>
-                                <select className="form-select" value={editVeiculoId} onChange={e => setEditVeiculoId(e.target.value)}>
-                                    <option value="">Selecione...</option>
-                                    {editVeiculos
-                                        .filter(v => !editClienteId || v.clienteId === editClienteId)
-                                        .map(v => (
-                                            <option key={v.id} value={v.id}>{v.placa || v.chassi} — {v.marcaModelo}</option>
-                                        ))}
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Tipo de Serviço</label>
-                                <select className="form-select" value={editTipoServico} onChange={e => setEditTipoServico(e.target.value as TipoServico)}>
-                                    {Object.entries(serviceLabels).map(([k, v]) => (
-                                        <option key={k} value={k}>{v}</option>
-                                    ))}
-                                </select>
+                        <div style={mbBodyStyle}>
+                            <div style={mbSecaoStyle}>
+                                <div style={mbSecaoHeaderStyle}>Dados da Ordem de Serviço</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+                                    <div style={{ ...mbFieldWrapStyle, gridColumn: '1 / -1' }}>
+                                        <label style={mbLabelStyle}>Cliente</label>
+                                        <select style={mbSelectStyle} value={editClienteId} onChange={e => setEditClienteId(e.target.value)}>
+                                            <option value="">Selecione...</option>
+                                            {editClientes.map(c => (
+                                                <option key={c.id} value={c.id}>{c.nome} — {c.cpfCnpj}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div style={{ ...mbFieldWrapStyle, gridColumn: '1 / -1' }}>
+                                        <label style={mbLabelStyle}>Veículo</label>
+                                        <select style={mbSelectStyle} value={editVeiculoId} onChange={e => setEditVeiculoId(e.target.value)}>
+                                            <option value="">Selecione...</option>
+                                            {editVeiculos
+                                                .filter(v => !editClienteId || v.clienteId === editClienteId)
+                                                .map(v => (
+                                                    <option key={v.id} value={v.id}>{v.placa || v.chassi} — {v.marcaModelo}</option>
+                                                ))}
+                                        </select>
+                                    </div>
+                                    <div style={{ ...mbFieldWrapStyle, gridColumn: '1 / -1' }}>
+                                        <label style={mbLabelStyle}>Tipo de Serviço *</label>
+                                        <select style={mbSelectStyle} value={editTipoServico} onChange={e => setEditTipoServico(e.target.value as TipoServico)}>
+                                            {Object.entries(serviceLabels).map(([k, v]) => (
+                                                <option key={k} value={k}>{v}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div style={mbFieldWrapStyle}>
+                                        <label style={mbLabelStyle}>Tipo de Veículo</label>
+                                        <select style={mbSelectStyle} value={editTipoVeiculo} onChange={e => setEditTipoVeiculo(e.target.value as 'carro' | 'moto')}>
+                                            <option value="carro">Carro</option>
+                                            <option value="moto">Moto</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="modal-footer">
-                            <button className="btn btn-ghost" onClick={() => setEditModalOpen(false)}>Cancelar</button>
-                            <button className="btn btn-primary" onClick={handleSaveEdit} disabled={editSaving}>
+                        <div style={mbFooterStyle}>
+                            <button style={mbBtnSecondary} onClick={() => setEditModalOpen(false)}>Cancelar</button>
+                            <button
+                                style={{ ...mbBtnPrimary, opacity: editSaving ? 0.6 : 1 }}
+                                disabled={editSaving}
+                                onClick={handleSaveEdit}
+                            >
                                 <Save size={16} /> {editSaving ? 'Salvando...' : 'Salvar Alterações'}
                             </button>
                         </div>
@@ -826,132 +829,24 @@ export default function OSDetail() {
                 </div>
             )}
 
-            {/* Modal de Edição Completa de Cliente */}
-            {isFullEditClienteOpen && (
-                <div className="modal-overlay" style={{ zIndex: 200 }}>
-                    <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 640 }}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">Editar Cliente Completo</h3>
-                            <button className="btn btn-ghost" onClick={() => setIsFullEditClienteOpen(false)}><X size={20} /></button>
-                        </div>
-                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                            <div className="form-group">
-                                <label className="form-label">Tipo de Cliente</label>
-                                <div className="toggle-group">
-                                    <button
-                                        type="button"
-                                        className={`toggle-btn ${fullEditCliente.tipo === 'PF' ? 'active' : ''}`}
-                                        onClick={() => setFullEditCliente({ ...fullEditCliente, tipo: 'PF' })}
-                                    >Pessoa Física</button>
-                                    <button
-                                        type="button"
-                                        className={`toggle-btn ${fullEditCliente.tipo === 'PJ' ? 'active' : ''}`}
-                                        onClick={() => setFullEditCliente({ ...fullEditCliente, tipo: 'PJ' })}
-                                    >Pessoa Jurídica</button>
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">{fullEditCliente.tipo === 'PF' ? 'Nome Completo' : 'Razão Social'} *</label>
-                                <input type="text" className="form-input" value={fullEditCliente.nome || ''} onChange={e => setFullEditCliente({ ...fullEditCliente, nome: e.target.value })} required />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">{fullEditCliente.tipo === 'PF' ? 'CPF' : 'CNPJ'} *</label>
-                                <input type="text" className="form-input" value={fullEditCliente.cpfCnpj || ''} onChange={(e) => {
-                                    const raw = e.target.value;
-                                    const detectedTipo = detectTipo(raw);
-                                    const formatted = detectedTipo === 'PF' ? formatCPF(raw) : formatCNPJ(raw);
-                                    setFullEditCliente({ ...fullEditCliente, cpfCnpj: formatted, tipo: detectedTipo });
-                                }} required maxLength={fullEditCliente.tipo === 'PF' ? 14 : 18} />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Telefone(s)</label>
-                                {fullEditCliente.telefones?.map((tel, idx) => (
-                                    <div key={idx} className="flex gap-2 mb-2">
-                                        <input type="text" className="form-input" value={tel} onChange={(e) => {
-                                            const updated = [...(fullEditCliente.telefones || [])];
-                                            updated[idx] = formatPhone(e.target.value);
-                                            setFullEditCliente({ ...fullEditCliente, telefones: updated });
-                                        }} maxLength={15} />
-                                        {(fullEditCliente.telefones?.length || 0) > 1 && (
-                                            <button type="button" className="btn btn-ghost" onClick={() => {
-                                                const updated = fullEditCliente.telefones?.filter((_, i) => i !== idx);
-                                                setFullEditCliente({ ...fullEditCliente, telefones: updated });
-                                            }}><X size={16} /></button>
-                                        )}
-                                    </div>
-                                ))}
-                                <button type="button" className="btn btn-secondary btn-sm" onClick={() => {
-                                    setFullEditCliente({ ...fullEditCliente, telefones: [...(fullEditCliente.telefones || []), ''] });
-                                }}><Plus size={14} /> Adicionar telefone</button>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">E-mail</label>
-                                <input type="email" className="form-input" value={fullEditCliente.email || ''} onChange={e => setFullEditCliente({ ...fullEditCliente, email: e.target.value })} />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Observações</label>
-                                <textarea className="form-textarea" value={fullEditCliente.observacoes || ''} onChange={e => setFullEditCliente({ ...fullEditCliente, observacoes: e.target.value })} />
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn btn-ghost" onClick={() => setIsFullEditClienteOpen(false)}>Cancelar</button>
-                            <button className="btn btn-primary" onClick={handleSaveFullEditCliente} disabled={editSaving}>
-                                <Save size={16} /> {editSaving ? 'Salvando...' : 'Salvar Cliente'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            {/* Modal de Edição Completa de Cliente — padronizado com Nova OS */}
+            {cliente && (
+                <ClienteEditFullModal
+                    isOpen={isFullEditClienteOpen}
+                    cliente={cliente}
+                    onClose={() => setIsFullEditClienteOpen(false)}
+                    onSaved={refresh}
+                />
             )}
 
-            {/* Modal de Edição Completa de Veículo */}
-            {isFullEditVeiculoOpen && (
-                <div className="modal-overlay" style={{ zIndex: 200 }}>
-                    <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 640 }}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">Editar Veículo Completo</h3>
-                            <button className="btn btn-ghost" onClick={() => setIsFullEditVeiculoOpen(false)}><X size={20} /></button>
-                        </div>
-                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                            <div className="grid os-form-row-2" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                                <div className="form-group">
-                                    <label className="form-label">Placa</label>
-                                    <input type="text" className="form-input" value={fullEditVeiculo.placa || ''} onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, placa: e.target.value.toUpperCase() })} />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Renavam</label>
-                                    <input type="text" className="form-input" value={fullEditVeiculo.renavam || ''} onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, renavam: e.target.value })} />
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Chassi *</label>
-                                <input type="text" className="form-input" value={fullEditVeiculo.chassi || ''} onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, chassi: e.target.value.toUpperCase() })} required />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Marca / Modelo</label>
-                                <input type="text" className="form-input" value={fullEditVeiculo.marcaModelo || ''} onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, marcaModelo: e.target.value })} />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Data do Recibo (Aquisição)</label>
-                                <input
-                                    type="date"
-                                    className="form-input"
-                                    value={fullEditVeiculo.dataAquisicao ? (fullEditVeiculo.dataAquisicao.includes('T') ? fullEditVeiculo.dataAquisicao.split('T')[0] : fullEditVeiculo.dataAquisicao) : ''}
-                                    onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, dataAquisicao: e.target.value })}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Observações</label>
-                                <textarea className="form-textarea" value={fullEditVeiculo.observacoes || ''} onChange={e => setFullEditVeiculo({ ...fullEditVeiculo, observacoes: e.target.value })} />
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn btn-ghost" onClick={() => setIsFullEditVeiculoOpen(false)}>Cancelar</button>
-                            <button className="btn btn-primary" onClick={handleSaveFullEditVeiculo} disabled={editSaving}>
-                                <Save size={16} /> {editSaving ? 'Salvando...' : 'Salvar Veículo'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            {/* Modal de Edição Completa de Veículo — padronizado com Nova OS */}
+            {veiculo && (
+                <VeiculoEditFullModal
+                    isOpen={isFullEditVeiculoOpen}
+                    veiculo={veiculo}
+                    onClose={() => setIsFullEditVeiculoOpen(false)}
+                    onSaved={refresh}
+                />
             )}
 
             {/* ===== TOP BAR (compact) ===== */}
