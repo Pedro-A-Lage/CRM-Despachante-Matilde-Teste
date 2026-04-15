@@ -99,6 +99,14 @@ export default function ClienteEditFullModal({ isOpen, cliente, onClose, onSaved
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, isDirty]);
 
+    // Trava o scroll da página de fundo enquanto o modal está aberto
+    useEffect(() => {
+        if (!isOpen) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previous; };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const set = <K extends keyof Cliente>(key: K, value: Cliente[K]) =>
@@ -147,10 +155,10 @@ export default function ClienteEditFullModal({ isOpen, cliente, onClose, onSaved
 
     return (
         <div
-            style={{ ...overlayStyle, zIndex: 1100, alignItems: 'flex-start', paddingTop: '5vh', paddingBottom: '5vh', overflowY: 'auto' }}
+            style={{ ...overlayStyle, zIndex: 1100 }}
             onClick={() => { /* clique no fundo não fecha — evita perda de edição */ }}
         >
-            <div style={{ ...modalStyle, maxHeight: 'calc(100vh - 10vh - 8px)' }} onClick={(e) => e.stopPropagation()}>
+            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
                 <div style={headerStyle}>
                     <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--notion-text)' }}>
                         Editar Cliente {isDirty && <span style={{ color: 'var(--notion-orange)', fontWeight: 500, fontSize: '0.8rem', marginLeft: 6 }}>• alterações não salvas</span>}
