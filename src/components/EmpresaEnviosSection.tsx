@@ -175,7 +175,16 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         setPendingUpload(null);
     };
 
-    const handleRemoveFile = (etapaIdx: number, tipoDoc: string) => {
+    const handleRemoveFile = async (etapaIdx: number, tipoDoc: string, enviado: boolean) => {
+        if (enviado) {
+            const ok = await confirmDialog({
+                title: 'Apagar documento já enviado?',
+                message: 'Esta etapa já foi marcada como enviada. Apagar o arquivo aqui não desfaz o email já enviado, mas permite anexar um arquivo correto e reenviar.',
+                confirmText: 'Apagar arquivo',
+                danger: true,
+            });
+            if (!ok) return;
+        }
         const updated = enviosStatus.map((etapa, i) => {
             if (i !== etapaIdx) return etapa;
             return {
@@ -187,6 +196,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             };
         });
         onUpdate(updated);
+        showToast('Arquivo removido.', 'success');
     };
 
     const handleAddDoc = (etapaIdx: number) => {
@@ -347,16 +357,14 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                                     >
                                                         {doc.arquivo_nome}
                                                     </a>
-                                                    {!enviado && (
-                                                        <button
-                                                            onClick={() => handleRemoveFile(etapaIdx, doc.tipo)}
-                                                            style={{ color: '#C84040', opacity: 0.5, background: 'none', border: 'none', cursor: 'pointer', padding: '1px' }}
-                                                            className="hover:!opacity-100"
-                                                            title="Remover arquivo"
-                                                        >
-                                                            <X size={11} />
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                        onClick={() => handleRemoveFile(etapaIdx, doc.tipo, enviado)}
+                                                        style={{ color: '#C84040', opacity: 0.5, background: 'none', border: 'none', cursor: 'pointer', padding: '1px' }}
+                                                        className="hover:!opacity-100"
+                                                        title={enviado ? 'Apagar arquivo enviado por engano' : 'Remover arquivo'}
+                                                    >
+                                                        <X size={11} />
+                                                    </button>
                                                 </div>
                                             ) : !enviado ? (
                                                 <button
