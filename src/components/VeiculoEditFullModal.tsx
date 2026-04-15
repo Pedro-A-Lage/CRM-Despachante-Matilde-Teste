@@ -5,6 +5,7 @@
 // ============================================
 
 import { useEffect, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Save, X } from 'lucide-react';
 import {
     overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle,
@@ -90,7 +91,7 @@ export default function VeiculoEditFullModal({ isOpen, veiculo, onClose, onSaved
         }
     };
 
-    return (
+    return createPortal(
         <div
             style={{ ...overlayStyle, zIndex: 1100 }}
             onClick={() => { /* clique no fundo não fecha — evita perda de edição */ }}
@@ -193,6 +194,7 @@ export default function VeiculoEditFullModal({ isOpen, veiculo, onClose, onSaved
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
