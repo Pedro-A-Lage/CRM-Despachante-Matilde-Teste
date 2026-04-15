@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, Plus, X, Loader2, User, Building2, Phone, Mail, FileText, IdCard } from 'lucide-react';
+import { Save, ArrowLeft, Plus, X, Loader2, Loader, User, Building2 } from 'lucide-react';
 import { getCliente, saveCliente } from '../lib/database';
 import { useToast } from '../components/Toast';
+import {
+    inputStyle, labelStyle, fieldWrapStyle, secaoStyle, secaoHeaderStyle,
+} from '../components/ModalBase';
 
 import type { TipoCliente } from '../types';
 
@@ -37,57 +40,6 @@ function detectTipo(cpfCnpj: string): TipoCliente {
     return digits.length > 11 ? 'PJ' : 'PF';
 }
 
-// ===== STYLE HELPERS =====
-const sectionCard: React.CSSProperties = {
-    background: 'var(--notion-surface)',
-    border: '1px solid var(--notion-border)',
-    borderRadius: 12,
-    padding: '20px 24px',
-    marginBottom: 16,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-};
-
-const sectionHeader: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 18,
-    paddingBottom: 12,
-    borderBottom: '1px solid var(--notion-border)',
-};
-
-const sectionTitle: React.CSSProperties = {
-    margin: 0,
-    fontSize: '1rem',
-    fontWeight: 700,
-    color: 'var(--notion-text)',
-    letterSpacing: '-0.01em',
-};
-
-const fieldLabel: React.CSSProperties = {
-    display: 'block',
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    color: 'var(--notion-text-secondary)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginBottom: 6,
-};
-
-const fieldInput: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    background: 'var(--notion-bg)',
-    color: 'var(--notion-text)',
-    border: '1px solid var(--notion-border)',
-    borderRadius: 8,
-    fontSize: 16,
-    fontFamily: 'inherit',
-    outline: 'none',
-    transition: 'border-color 150ms, box-shadow 150ms',
-    boxSizing: 'border-box',
-};
-
 export default function ClienteForm() {
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -97,10 +49,21 @@ export default function ClienteForm() {
     const [tipo, setTipo] = useState<TipoCliente>('PF');
     const [nome, setNome] = useState('');
     const [cpfCnpj, setCpfCnpj] = useState('');
+    const [rg, setRg] = useState('');
+    const [orgaoExpedidor, setOrgaoExpedidor] = useState('');
+    const [ufDocumento, setUfDocumento] = useState('');
     const [telefones, setTelefones] = useState<string[]>(['']);
     const [email, setEmail] = useState('');
+    const [cep, setCep] = useState('');
+    const [numero, setNumero] = useState('');
+    const [endereco, setEndereco] = useState('');
+    const [complemento, setComplemento] = useState('');
+    const [bairro, setBairro] = useState('');
+    const [municipio, setMunicipio] = useState('');
+    const [uf, setUf] = useState('');
     const [observacoes, setObservacoes] = useState('');
     const [saving, setSaving] = useState(false);
+    const [buscandoCep, setBuscandoCep] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -110,8 +73,18 @@ export default function ClienteForm() {
                     setTipo(cliente.tipo);
                     setNome(cliente.nome);
                     setCpfCnpj(cliente.cpfCnpj);
+                    setRg(cliente.rg || '');
+                    setOrgaoExpedidor(cliente.orgaoExpedidor || '');
+                    setUfDocumento(cliente.ufDocumento || '');
                     setTelefones(cliente.telefones.length > 0 ? cliente.telefones : ['']);
                     setEmail(cliente.email || '');
+                    setCep(cliente.cep || '');
+                    setNumero(cliente.numero || '');
+                    setEndereco(cliente.endereco || '');
+                    setComplemento(cliente.complemento || '');
+                    setBairro(cliente.bairro || '');
+                    setMunicipio(cliente.municipio || '');
+                    setUf(cliente.uf || '');
                     setObservacoes(cliente.observacoes || '');
                 }
             })();
@@ -130,6 +103,26 @@ export default function ClienteForm() {
         setTelefones(updated);
     };
 
+    const buscarCep = async () => {
+        const cepLimpo = (cep || '').replace(/\D/g, '');
+        if (cepLimpo.length !== 8) return;
+        setBuscandoCep(true);
+        try {
+            const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+            const json = await resp.json();
+            if (!json.erro) {
+                if (json.logradouro && !endereco) setEndereco(json.logradouro);
+                if (json.bairro && !bairro) setBairro(json.bairro);
+                if (json.localidade && !municipio) setMunicipio(json.localidade);
+                if (json.uf && !uf) setUf(json.uf);
+            }
+        } catch (err) {
+            console.warn('Erro ao buscar CEP:', err);
+        } finally {
+            setBuscandoCep(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -145,8 +138,18 @@ export default function ClienteForm() {
                 tipo,
                 nome: nome.trim(),
                 cpfCnpj: cpfCnpj.trim(),
+                rg: rg.trim() || undefined,
+                orgaoExpedidor: orgaoExpedidor.trim() || undefined,
+                ufDocumento: ufDocumento.trim() || undefined,
                 telefones: telefones.filter((t) => t.trim() !== ''),
                 email: email.trim() || undefined,
+                cep: cep.trim() || undefined,
+                numero: numero.trim() || undefined,
+                endereco: endereco.trim() || undefined,
+                complemento: complemento.trim() || undefined,
+                bairro: bairro.trim() || undefined,
+                municipio: municipio.trim() || undefined,
+                uf: uf.trim() || undefined,
                 observacoes: observacoes.trim() || undefined,
             });
 
@@ -159,24 +162,15 @@ export default function ClienteForm() {
         }
     };
 
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        e.target.style.borderColor = 'var(--notion-blue)';
-        e.target.style.boxShadow = '0 0 0 3px rgba(0,117,222,0.12)';
-    };
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        e.target.style.borderColor = 'var(--notion-border)';
-        e.target.style.boxShadow = 'none';
-    };
-
     return (
-        <div style={{ maxWidth: 880, margin: '0 auto', padding: '0 4px' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 4px' }}>
             {/* Header */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 14,
-                marginBottom: 24,
-                paddingBottom: 16,
+                marginBottom: 20,
+                paddingBottom: 14,
                 borderBottom: '1px solid var(--notion-border)',
             }}>
                 <button
@@ -233,74 +227,47 @@ export default function ClienteForm() {
             </div>
 
             <form onSubmit={handleSubmit}>
-                {/* ───── Tipo de Cliente ───── */}
-                <div style={sectionCard}>
-                    <div style={sectionHeader}>
-                        <IdCard size={18} style={{ color: 'var(--notion-blue)' }} />
-                        <h2 style={sectionTitle}>Tipo de Cliente</h2>
-                    </div>
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: 10,
-                    }}>
-                        {(['PF', 'PJ'] as TipoCliente[]).map((t) => (
-                            <button
-                                key={t}
-                                type="button"
-                                onClick={() => setTipo(t)}
-                                style={{
-                                    padding: '14px 16px',
-                                    borderRadius: 10,
-                                    border: tipo === t ? '2px solid var(--notion-blue)' : '1px solid var(--notion-border)',
-                                    background: tipo === t ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
-                                    color: tipo === t ? 'var(--notion-blue)' : 'var(--notion-text)',
-                                    cursor: 'pointer',
-                                    fontWeight: 600,
-                                    fontSize: '0.9rem',
-                                    fontFamily: 'inherit',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 8,
-                                    transition: 'all 0.15s',
-                                }}
-                            >
-                                {t === 'PF' ? <User size={16} /> : <Building2 size={16} />}
-                                {t === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* ───── Identificação ───── */}
-                <div style={sectionCard}>
-                    <div style={sectionHeader}>
-                        <FileText size={18} style={{ color: 'var(--notion-blue)' }} />
-                        <h2 style={sectionTitle}>Identificação</h2>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 14 }}>
-                        <div>
-                            <label style={fieldLabel}>
-                                {tipo === 'PF' ? 'Nome Completo' : 'Razão Social'} <span style={{ color: 'var(--notion-orange)' }}>*</span>
-                            </label>
-                            <input
-                                type="text"
-                                value={nome}
-                                onChange={(e) => setNome(e.target.value)}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                placeholder={tipo === 'PF' ? 'Nome do cliente' : 'Razão social da empresa'}
-                                required
-                                style={fieldInput}
-                            />
+                <div style={secaoStyle}>
+                    <div style={secaoHeaderStyle}>Cliente</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, padding: '14px 16px' }}>
+                        <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+                            <label style={labelStyle}>Tipo de Cliente</label>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setTipo('PF')}
+                                    style={{
+                                        flex: 1, padding: '8px 12px', borderRadius: 8,
+                                        border: '1px solid var(--notion-border)',
+                                        background: tipo === 'PF' ? 'var(--notion-blue)' : 'var(--notion-surface)',
+                                        color: tipo === 'PF' ? '#fff' : 'var(--notion-text)',
+                                        fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                                        fontFamily: 'inherit',
+                                    }}
+                                >
+                                    Pessoa Física
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTipo('PJ')}
+                                    style={{
+                                        flex: 1, padding: '8px 12px', borderRadius: 8,
+                                        border: '1px solid var(--notion-border)',
+                                        background: tipo === 'PJ' ? 'var(--notion-blue)' : 'var(--notion-surface)',
+                                        color: tipo === 'PJ' ? '#fff' : 'var(--notion-text)',
+                                        fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                                        fontFamily: 'inherit',
+                                    }}
+                                >
+                                    Pessoa Jurídica
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <label style={fieldLabel}>
-                                {tipo === 'PF' ? 'CPF' : 'CNPJ'} <span style={{ color: 'var(--notion-orange)' }}>*</span>
-                            </label>
+
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>{tipo === 'PF' ? 'CPF' : 'CNPJ'} *</label>
                             <input
-                                type="text"
+                                style={inputStyle}
                                 value={cpfCnpj}
                                 onChange={(e) => {
                                     const raw = e.target.value;
@@ -309,119 +276,150 @@ export default function ClienteForm() {
                                     const formatted = detectedTipo === 'PF' ? formatCPF(raw) : formatCNPJ(raw);
                                     setCpfCnpj(formatted);
                                 }}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
                                 placeholder={tipo === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'}
                                 maxLength={tipo === 'PF' ? 14 : 18}
                                 required
-                                style={fieldInput}
                             />
                         </div>
-                    </div>
-                </div>
 
-                {/* ───── Contato ───── */}
-                <div style={sectionCard}>
-                    <div style={sectionHeader}>
-                        <Phone size={18} style={{ color: 'var(--notion-blue)' }} />
-                        <h2 style={sectionTitle}>Contato</h2>
-                    </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>{tipo === 'PF' ? 'RG' : 'Inscrição Estadual'}</label>
+                            <input style={inputStyle} value={rg} onChange={(e) => setRg(e.target.value)} />
+                        </div>
 
-                    <div style={{ marginBottom: 16 }}>
-                        <label style={fieldLabel}>Telefone(s)</label>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+                            <label style={labelStyle}>{tipo === 'PF' ? 'Nome Completo' : 'Razão Social'} *</label>
+                            <input
+                                style={inputStyle}
+                                value={nome}
+                                onChange={(e) => setNome(e.target.value)}
+                                placeholder={tipo === 'PF' ? 'Nome do cliente' : 'Razão social da empresa'}
+                                required
+                            />
+                        </div>
+
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>Órgão Expedidor</label>
+                            <input style={inputStyle} value={orgaoExpedidor} onChange={(e) => setOrgaoExpedidor(e.target.value)} />
+                        </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>UF do Documento</label>
+                            <input
+                                style={inputStyle}
+                                value={ufDocumento}
+                                onChange={(e) => setUfDocumento(e.target.value.toUpperCase())}
+                                maxLength={2}
+                            />
+                        </div>
+
+                        <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+                            <label style={labelStyle}>Telefone(s)</label>
                             {telefones.map((tel, idx) => (
-                                <div key={idx} style={{ display: 'flex', gap: 8 }}>
+                                <div key={idx} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
                                     <input
-                                        type="text"
+                                        style={inputStyle}
                                         value={tel}
                                         onChange={(e) => updateTelefone(idx, formatPhone(e.target.value))}
-                                        onFocus={handleFocus}
-                                        onBlur={handleBlur}
                                         placeholder="(00) 00000-0000"
                                         maxLength={15}
-                                        style={{ ...fieldInput, flex: 1 }}
                                     />
                                     {telefones.length > 1 && (
                                         <button
                                             type="button"
                                             onClick={() => removeTelefone(idx)}
                                             style={{
-                                                width: 40,
-                                                height: 40,
-                                                borderRadius: 8,
+                                                background: 'none',
                                                 border: '1px solid var(--notion-border)',
-                                                background: 'var(--notion-bg)',
-                                                color: 'var(--notion-text-secondary)',
+                                                borderRadius: 8,
+                                                padding: '0 10px',
                                                 cursor: 'pointer',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                flexShrink: 0,
+                                                color: 'var(--notion-text-secondary)',
                                             }}
                                             aria-label="Remover telefone"
                                         >
-                                            <X size={16} />
+                                            <X size={14} />
                                         </button>
                                     )}
                                 </div>
                             ))}
+                            <button
+                                type="button"
+                                onClick={addTelefone}
+                                style={{
+                                    alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 4,
+                                    padding: '4px 10px', borderRadius: 6, border: '1px solid var(--notion-border)',
+                                    background: 'var(--notion-bg-alt)', fontSize: '0.78rem', cursor: 'pointer',
+                                    color: 'var(--notion-text-secondary)',
+                                    fontFamily: 'inherit',
+                                }}
+                            >
+                                <Plus size={12} /> Adicionar telefone
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            onClick={addTelefone}
-                            style={{
-                                marginTop: 8,
-                                padding: '7px 12px',
-                                background: 'transparent',
-                                border: '1px dashed var(--notion-border)',
-                                borderRadius: 8,
-                                color: 'var(--notion-text-secondary)',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                fontSize: '0.82rem',
-                                fontWeight: 600,
-                                fontFamily: 'inherit',
-                            }}
-                        >
-                            <Plus size={14} /> Adicionar telefone
-                        </button>
-                    </div>
 
-                    <div>
-                        <label style={fieldLabel}>
-                            <Mail size={12} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
-                            E-mail (opcional)
-                        </label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                            placeholder="email@exemplo.com"
-                            style={fieldInput}
-                        />
-                    </div>
-                </div>
+                        <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+                            <label style={labelStyle}>E-mail</label>
+                            <input
+                                type="email"
+                                style={inputStyle}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="email@exemplo.com"
+                            />
+                        </div>
 
-                {/* ───── Observações ───── */}
-                <div style={sectionCard}>
-                    <div style={sectionHeader}>
-                        <FileText size={18} style={{ color: 'var(--notion-blue)' }} />
-                        <h2 style={sectionTitle}>Observações</h2>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>
+                                CEP {buscandoCep && <Loader size={12} style={{ animation: 'spin 1s linear infinite', marginLeft: 4 }} />}
+                            </label>
+                            <input
+                                style={inputStyle}
+                                value={cep}
+                                onChange={(e) => setCep(e.target.value)}
+                                onBlur={buscarCep}
+                                placeholder="Digite e saia do campo"
+                            />
+                        </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>Número</label>
+                            <input style={inputStyle} value={numero} onChange={(e) => setNumero(e.target.value)} />
+                        </div>
+                        <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+                            <label style={labelStyle}>Endereço</label>
+                            <input style={inputStyle} value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+                        </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>Complemento</label>
+                            <input style={inputStyle} value={complemento} onChange={(e) => setComplemento(e.target.value)} />
+                        </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>Bairro</label>
+                            <input style={inputStyle} value={bairro} onChange={(e) => setBairro(e.target.value)} />
+                        </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>Município</label>
+                            <input style={inputStyle} value={municipio} onChange={(e) => setMunicipio(e.target.value)} />
+                        </div>
+                        <div style={fieldWrapStyle}>
+                            <label style={labelStyle}>UF</label>
+                            <input
+                                style={inputStyle}
+                                value={uf}
+                                onChange={(e) => setUf(e.target.value.toUpperCase())}
+                                maxLength={2}
+                            />
+                        </div>
+
+                        <div style={{ ...fieldWrapStyle, gridColumn: '1 / -1' }}>
+                            <label style={labelStyle}>Observações</label>
+                            <textarea
+                                style={{ ...inputStyle, minHeight: 60, fontFamily: 'inherit', resize: 'vertical' }}
+                                value={observacoes}
+                                onChange={(e) => setObservacoes(e.target.value)}
+                                placeholder="Anotações gerais sobre o cliente (opcional)…"
+                            />
+                        </div>
                     </div>
-                    <textarea
-                        value={observacoes}
-                        onChange={(e) => setObservacoes(e.target.value)}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        placeholder="Anotações gerais sobre o cliente (opcional)…"
-                        rows={4}
-                        style={{ ...fieldInput, minHeight: 96, resize: 'vertical' }}
-                    />
                 </div>
 
                 {/* ───── Ações ───── */}
@@ -460,7 +458,7 @@ export default function ClienteForm() {
                         disabled={saving}
                         style={{
                             padding: '10px 24px',
-                            background: saving ? 'var(--notion-text-muted)' : 'var(--notion-blue)',
+                            background: saving ? 'var(--notion-text-muted)' : 'var(--notion-green)',
                             border: 'none',
                             borderRadius: 8,
                             color: '#fff',
