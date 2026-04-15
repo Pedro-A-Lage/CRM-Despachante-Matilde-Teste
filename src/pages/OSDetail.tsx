@@ -1412,7 +1412,11 @@ export default function OSDetail() {
                                         : 'SEM PLACA';
 
                                     return (
-                                        <Link to={`/veiculos/${veiculo.id}/editar`} style={{ textDecoration: 'none', width: '100%', maxWidth: 200 }}>
+                                        <div
+                                            onClick={handleOpenFullEditVeiculo}
+                                            style={{ cursor: 'pointer', width: '100%', maxWidth: 200 }}
+                                            title="Clique para editar veículo"
+                                        >
                                             <div style={{
                                                 background: isAntiga ? '#c0c0c0' : '#fff',
                                                 borderRadius: 8, border: `3px solid ${isAntiga ? '#555' : '#1a1a2e'}`,
@@ -1433,7 +1437,7 @@ export default function OSDetail() {
                                                     {placaFormatada}
                                                 </div>
                                             </div>
-                                        </Link>
+                                        </div>
                                     );
                                 })()}
                                 {/* Marca/Modelo */}

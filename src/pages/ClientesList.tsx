@@ -6,6 +6,7 @@ import type { Cliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useConfirm } from '../components/ConfirmProvider';
 import { useToast } from '../components/Toast';
+import ClienteEditFullModal from '../components/ClienteEditFullModal';
 
 function formatCpfCnpj(value: string): string {
     if (!value) return '—';
@@ -27,6 +28,7 @@ export default function ClientesList() {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+    const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
 
     const loadClientes = async () => {
         setLoading(true);
@@ -449,23 +451,25 @@ export default function ClientesList() {
                                 >
                                     <Eye size={14} /> Ver
                                 </Link>
-                                <Link to={`/clientes/${c.id}/editar`} style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '6px',
-                                    padding: '8px 12px',
-                                    background: 'rgba(0,117,222,0.1)',
-                                    color: 'var(--notion-blue)',
-                                    border: '1px solid rgba(0,117,222,0.2)',
-                                    borderRadius: 8,
-                                    textDecoration: 'none',
-                                    fontWeight: 600,
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s',
-                                }}
+                                <button
+                                    onClick={() => setEditingCliente(c)}
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        padding: '8px 12px',
+                                        background: 'rgba(0,117,222,0.1)',
+                                        color: 'var(--notion-blue)',
+                                        border: '1px solid rgba(0,117,222,0.2)',
+                                        borderRadius: 8,
+                                        fontWeight: 600,
+                                        fontSize: '0.8rem',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.15s',
+                                        fontFamily: 'inherit',
+                                    }}
                                     onMouseEnter={e => {
                                         e.currentTarget.style.background = 'rgba(0,117,222,0.2)';
                                     }}
@@ -474,7 +478,7 @@ export default function ClientesList() {
                                     }}
                                 >
                                     <Pencil size={14} /> Editar
-                                </Link>
+                                </button>
                                 <button
                                     style={{
                                         padding: '8px 12px',
@@ -572,16 +576,19 @@ export default function ClientesList() {
                                                 >
                                                     <Eye size={14} />
                                                 </Link>
-                                                <Link to={`/clientes/${c.id}/editar`} style={{
-                                                    padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)',
-                                                    borderRadius: 6, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600,
-                                                    cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
-                                                }}
+                                                <button
+                                                    onClick={() => setEditingCliente(c)}
+                                                    style={{
+                                                        padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)',
+                                                        border: 'none', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600,
+                                                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
+                                                        fontFamily: 'inherit',
+                                                    }}
                                                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-blue)'; e.currentTarget.style.color = 'var(--notion-bg)'; }}
                                                     onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
                                                 >
                                                     <Pencil size={14} />
-                                                </Link>
+                                                </button>
                                                 <button
                                                     onClick={() => handleDelete(c)}
                                                     style={{
@@ -602,6 +609,15 @@ export default function ClientesList() {
                         </table>
                     </div>
                 </div>
+            )}
+
+            {editingCliente && (
+                <ClienteEditFullModal
+                    isOpen={!!editingCliente}
+                    cliente={editingCliente}
+                    onClose={() => setEditingCliente(null)}
+                    onSaved={() => { setEditingCliente(null); loadClientes(); }}
+                />
             )}
         </div>
     );

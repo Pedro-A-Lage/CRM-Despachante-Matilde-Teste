@@ -6,6 +6,7 @@ import type { Veiculo, Cliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useConfirm } from '../components/ConfirmProvider';
 import { useToast } from '../components/Toast';
+import VeiculoEditFullModal from '../components/VeiculoEditFullModal';
 
 export default function VeiculosList() {
     const confirm = useConfirm();
@@ -17,6 +18,7 @@ export default function VeiculosList() {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+    const [editingVeiculo, setEditingVeiculo] = useState<Veiculo | null>(null);
 
     const loadData = async () => {
         setLoading(true);
@@ -479,23 +481,25 @@ export default function VeiculosList() {
                                 position: 'relative',
                                 zIndex: 1,
                             }}>
-                                <Link to={`/veiculos/${v.id}/editar`} style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '6px',
-                                    padding: '8px 12px',
-                                    background: 'rgba(245,158,11,0.12)',
-                                    color: 'var(--notion-blue)',
-                                    border: 'none',
-                                    borderRadius: 8,
-                                    textDecoration: 'none',
-                                    fontWeight: 600,
-                                    fontSize: '0.8rem',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s',
-                                }}
+                                <button
+                                    onClick={() => setEditingVeiculo(v)}
+                                    style={{
+                                        flex: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        padding: '8px 12px',
+                                        background: 'rgba(245,158,11,0.12)',
+                                        color: 'var(--notion-blue)',
+                                        border: 'none',
+                                        borderRadius: 8,
+                                        fontWeight: 600,
+                                        fontSize: '0.8rem',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        fontFamily: 'inherit',
+                                    }}
                                     onMouseEnter={e => {
                                         e.currentTarget.style.background = 'var(--notion-blue)';
                                         e.currentTarget.style.color = 'var(--notion-bg)';
@@ -506,7 +510,7 @@ export default function VeiculosList() {
                                     }}
                                 >
                                     <Pencil size={14} /> Editar
-                                </Link>
+                                </button>
                                 <button
                                     style={{
                                         padding: '8px 12px',
@@ -604,16 +608,19 @@ export default function VeiculosList() {
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>
                                             <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                                                <Link to={`/veiculos/${v.id}/editar`} style={{
-                                                    padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)',
-                                                    borderRadius: 6, textDecoration: 'none', fontSize: '0.75rem', fontWeight: 600,
-                                                    cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
-                                                }}
+                                                <button
+                                                    onClick={() => setEditingVeiculo(v)}
+                                                    style={{
+                                                        padding: '6px 10px', background: 'rgba(245,158,11,0.12)', color: 'var(--notion-blue)',
+                                                        border: 'none', borderRadius: 6, fontSize: '0.75rem', fontWeight: 600,
+                                                        cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center',
+                                                        fontFamily: 'inherit',
+                                                    }}
                                                     onMouseEnter={e => { e.currentTarget.style.background = 'var(--notion-blue)'; e.currentTarget.style.color = 'var(--notion-bg)'; }}
                                                     onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,158,11,0.12)'; e.currentTarget.style.color = 'var(--notion-blue)'; }}
                                                 >
                                                     <Pencil size={14} />
-                                                </Link>
+                                                </button>
                                                 <button
                                                     onClick={() => handleDelete(v)}
                                                     style={{
@@ -634,6 +641,15 @@ export default function VeiculosList() {
                         </table>
                     </div>
                 </div>
+            )}
+
+            {editingVeiculo && (
+                <VeiculoEditFullModal
+                    isOpen={!!editingVeiculo}
+                    veiculo={editingVeiculo}
+                    onClose={() => setEditingVeiculo(null)}
+                    onSaved={() => { setEditingVeiculo(null); loadData(); }}
+                />
             )}
         </div>
     );
