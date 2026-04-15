@@ -3894,6 +3894,8 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
             const payload = event.data.payload;
             if (payload?.osId && payload.osId !== os.id) return;
 
+            // Limpa resultado anterior para permitir nova consulta
+            setValidacaoCrlv(null);
             setValidando(true);
             try {
                 if (payload?.dadosCrlv && Object.keys(payload.dadosCrlv).length > 0) {
@@ -3966,6 +3968,8 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
     }, [os.id, os.criadoEm, cliente, veiculo, isDocPronto]);
 
     const handleValidarManual = async (file: File) => {
+        // Limpa resultado anterior para permitir nova validação
+        setValidacaoCrlv(null);
         setValidando(true);
         try {
             const { extractVehicleData } = await import('../lib/pdfParser');
@@ -4247,16 +4251,34 @@ function DocProntoTab({ os, onRefresh, onOpenViewer, bloqueadoPorDebito = false,
 
                     {validacaoCrlv && (
                         <div style={{ background: 'var(--notion-bg)', borderRadius: 8, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: 'var(--notion-bg)', borderBottom: '1px solid var(--notion-border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: 'var(--notion-bg)', borderBottom: '1px solid var(--notion-border)', gap: 8 }}>
                                 <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Validação CRLV</span>
-                                <span style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 4,
-                                    background: validacaoCrlv.aprovado ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
-                                    color: validacaoCrlv.aprovado ? 'var(--notion-green)' : 'var(--notion-orange)',
-                                    fontSize: 10, fontWeight: 700,
-                                }}>
-                                    {validacaoCrlv.aprovado ? '✅ Aprovado' : '⚠️ Divergências'}
-                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <span style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 3, padding: '2px 8px', borderRadius: 4,
+                                        background: validacaoCrlv.aprovado ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                                        color: validacaoCrlv.aprovado ? 'var(--notion-green)' : 'var(--notion-orange)',
+                                        fontSize: 10, fontWeight: 700,
+                                    }}>
+                                        {validacaoCrlv.aprovado ? '✅ Aprovado' : '⚠️ Divergências'}
+                                    </span>
+                                    <button
+                                        onClick={() => setValidacaoCrlv(null)}
+                                        title="Limpar resultado e fazer nova consulta"
+                                        style={{
+                                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                            width: 20, height: 20, borderRadius: 4,
+                                            background: 'transparent',
+                                            color: 'var(--notion-text-secondary)',
+                                            border: '1px solid var(--notion-border)',
+                                            cursor: 'pointer',
+                                            fontFamily: 'inherit',
+                                            padding: 0,
+                                        }}
+                                    >
+                                        <X size={11} />
+                                    </button>
+                                </div>
                             </div>
                             <div style={{ padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {validacaoCrlv.itens.map((item, i) => (
