@@ -214,7 +214,7 @@ function PlacaTab({ os, veiculo, cliente, onRefresh }: { os: OrdemDeServico; vei
         return full || '—';
     })();
     const [mensagemCustomizada, setMensagemCustomizada] = useState(
-        `Ola,\n\nSegue em anexo a folha do DETRAN para solicitacao do boleto da placa do veiculo.\n\nDados do cliente:\nNome: ${cliente?.nome || '—'}\nCPF/CNPJ: ${cliente?.cpfCnpj || '—'}\nEndereco: ${enderecoCompleto}\n\nDados do veiculo:\nPlaca: ${veiculo?.placa || '—'}\nChassi: ${veiculo?.chassi || '—'}\nRenavam: ${veiculo?.renavam || '—'}\nOS: ${os.numero}\n\nPor favor, me envie o boleto para pagamento.\n\nAtenciosamente,\nDespachante Matilde`
+        `Ola,\nSegue em anexo a folha do DETRAN para solicitacao do boleto da placa do veiculo.\nDados do cliente:\nNome: ${cliente?.nome || '—'}\nCPF/CNPJ: ${cliente?.cpfCnpj || '—'}\nEndereco: ${enderecoCompleto}\nDados do veiculo:\nPlaca: ${veiculo?.placa || '—'}\nChassi: ${veiculo?.chassi || '—'}\nRenavam: ${veiculo?.renavam || '—'}\nOS: ${os.numero}\nPor favor, me envie o boleto para pagamento.\nAtenciosamente,\nDespachante Matilde`
     );
     const [sending, setSending] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
