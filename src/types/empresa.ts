@@ -1,5 +1,9 @@
 // src/types/empresa.ts
 
+import type { PaymentMetodo } from './finance';
+
+export type MetodoEnvioEmpresa = 'email' | 'portal';
+
 export interface EtapaDocumento {
     tipo: string;
     pronto: boolean;
@@ -20,6 +24,10 @@ export interface EtapaEnvioStatus {
     documentos: EtapaDocumento[];
     enviado: boolean;
     enviado_em: string | null;
+    /** Canal usado quando a etapa foi marcada como enviada. */
+    enviado_via?: MetodoEnvioEmpresa;
+    /** Link de referência (webLink do email enviado OU URL do portal acessado). */
+    envio_link?: string | null;
 }
 
 export interface EmpresaParceira {
@@ -35,6 +43,14 @@ export interface EmpresaParceira {
     documentosLabels?: Record<string, string>;
     emailAssuntoTemplate?: string;
     emailCorpoTemplate?: string;
+    /** Canal usado para envio dos documentos. Default = 'email'. */
+    metodoEnvio?: MetodoEnvioEmpresa;
+    /** URL do portal externo (usado quando metodoEnvio === 'portal'). */
+    portalUrl?: string;
+    /** Legenda do botão de portal externo. Ex.: "Portal Kuruma". */
+    portalLabel?: string;
+    /** Forma de pagamento padrão pré-selecionada ao registrar recebimento dessa empresa. */
+    formaPagamentoPadrao?: PaymentMetodo;
     createdAt: string;
     updatedAt: string;
 }

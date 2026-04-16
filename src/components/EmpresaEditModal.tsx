@@ -1,7 +1,9 @@
 // src/components/EmpresaEditModal.tsx
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info } from 'lucide-react';
-import type { EmpresaParceira, EtapaEnvioConfig } from '../types/empresa';
+import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard } from 'lucide-react';
+import type { EmpresaParceira, EtapaEnvioConfig, MetodoEnvioEmpresa } from '../types/empresa';
+import type { PaymentMetodo } from '../types/finance';
+import { PAYMENT_METODO_LABELS } from '../types/finance';
 import {
   Dialog, DialogContent, DialogTitle,
 } from './ui/dialog';
@@ -93,6 +95,10 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [novoDocInputs, setNovoDocInputs] = useState<Record<number, string>>({});
   const [docLabels, setDocLabels] = useState<Record<string, string>>(empresa.documentosLabels || {});
   const [expandedEtapa, setExpandedEtapa] = useState<number | null>(0);
+  const [metodoEnvio, setMetodoEnvio] = useState<MetodoEnvioEmpresa>(empresa.metodoEnvio || 'email');
+  const [portalUrl, setPortalUrl] = useState(empresa.portalUrl || '');
+  const [portalLabel, setPortalLabel] = useState(empresa.portalLabel || '');
+  const [formaPagamentoPadrao, setFormaPagamentoPadrao] = useState<PaymentMetodo | ''>(empresa.formaPagamentoPadrao || '');
 
   // Reset form ONLY when modal opens
   useEffect(() => {
@@ -109,6 +115,10 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     setNovoDocInputs({});
     setDocLabels(empresa.documentosLabels || {});
     setExpandedEtapa(0);
+    setMetodoEnvio(empresa.metodoEnvio || 'email');
+    setPortalUrl(empresa.portalUrl || '');
+    setPortalLabel(empresa.portalLabel || '');
+    setFormaPagamentoPadrao(empresa.formaPagamentoPadrao || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -156,6 +166,10 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
       documentosLabels: docLabels,
       emailAssuntoTemplate: emailAssunto.trim() || undefined,
       emailCorpoTemplate: emailCorpo.trim() || undefined,
+      metodoEnvio,
+      portalUrl: metodoEnvio === 'portal' ? (portalUrl.trim() || undefined) : undefined,
+      portalLabel: metodoEnvio === 'portal' ? (portalLabel.trim() || undefined) : undefined,
+      formaPagamentoPadrao: formaPagamentoPadrao || undefined,
     });
   };
 
@@ -349,6 +363,110 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                       {ativo ? 'Ativa' : 'Inativa'}
                     </span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Envio & Pagamento ── */}
+            <div style={sectionCard}>
+              <div style={sectionHeader}>
+                <ExternalLink size={16} style={{ color: 'var(--notion-blue)' }} />
+                <h3 style={sectionTitle}>Envio & Pagamento</h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label style={fieldLabel}>Como enviar os documentos</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => setMetodoEnvio('email')}
+                      style={{
+                        flex: 1, padding: '8px 12px', borderRadius: 8,
+                        border: '1px solid var(--notion-border)',
+                        background: metodoEnvio === 'email' ? 'var(--notion-blue)' : 'var(--notion-bg)',
+                        color: metodoEnvio === 'email' ? '#fff' : 'var(--notion-text)',
+                        fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      <Mail size={14} /> Email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMetodoEnvio('portal')}
+                      style={{
+                        flex: 1, padding: '8px 12px', borderRadius: 8,
+                        border: '1px solid var(--notion-border)',
+                        background: metodoEnvio === 'portal' ? 'var(--notion-blue)' : 'var(--notion-bg)',
+                        color: metodoEnvio === 'portal' ? '#fff' : 'var(--notion-text)',
+                        fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      <ExternalLink size={14} /> Portal externo
+                    </button>
+                  </div>
+                  <p style={{
+                    margin: '6px 0 0', fontSize: '0.75rem',
+                    color: 'var(--notion-text-secondary)',
+                  }}>
+                    {metodoEnvio === 'email'
+                      ? 'A etapa abre o cliente de email com os anexos (comportamento padrão).'
+                      : 'A etapa mostra um botão para abrir o portal externo da empresa em nova aba; o envio é marcado manualmente.'}
+                  </p>
+                </div>
+
+                {metodoEnvio === 'portal' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={fieldLabel}>
+                        URL do portal <span style={{ color: 'var(--notion-orange)' }}>*</span>
+                      </label>
+                      <input
+                        style={fieldInput}
+                        value={portalUrl}
+                        onChange={e => setPortalUrl(e.target.value)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        placeholder="https://portal.empresa.com.br"
+                        type="url"
+                      />
+                    </div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={fieldLabel}>Nome do portal (legenda do botão)</label>
+                      <input
+                        style={fieldInput}
+                        value={portalLabel}
+                        onChange={e => setPortalLabel(e.target.value)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        placeholder="Ex: Portal Kuruma"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label style={fieldLabel}>
+                    <CreditCard size={10} style={{ display: 'inline', marginRight: 4, verticalAlign: 'text-bottom' }} />
+                    Forma de pagamento padrão (recebimento da empresa)
+                  </label>
+                  <select
+                    style={{ ...fieldInput, cursor: 'pointer' }}
+                    value={formaPagamentoPadrao}
+                    onChange={e => setFormaPagamentoPadrao(e.target.value as PaymentMetodo | '')}
+                  >
+                    <option value="">— Sem padrão —</option>
+                    {(Object.keys(PAYMENT_METODO_LABELS) as PaymentMetodo[]).map((m) => (
+                      <option key={m} value={m}>{PAYMENT_METODO_LABELS[m]}</option>
+                    ))}
+                  </select>
+                  <p style={{
+                    margin: '6px 0 0', fontSize: '0.75rem',
+                    color: 'var(--notion-text-secondary)',
+                  }}>
+                    Pré-seleciona este método ao registrar recebimento das OS dessa empresa.
+                  </p>
                 </div>
               </div>
             </div>
