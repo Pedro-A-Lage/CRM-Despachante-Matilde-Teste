@@ -8,10 +8,10 @@ import type { FinanceCharge } from '../types/finance';
 import { getChargesByOS } from '../lib/financeService';
 import {
     buildReciboContext,
-    convertExcelToPdf,
     downloadBlob,
     fillExcelTemplate,
     porExtenso,
+    printFilledExcel,
     templateUrlFromPath,
     type ReciboContext,
 } from '../lib/reciboTemplate';
@@ -110,8 +110,9 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
             if (action === 'xlsx') {
                 downloadBlob(xlsx, `${baseName}.xlsx`);
             } else {
-                const pdf = await convertExcelToPdf(xlsx);
-                downloadBlob(pdf, `${baseName}.pdf`);
+                // Impressão client-side: abre janela com a planilha em HTML
+                // e dispara o "Salvar como PDF" do navegador.
+                await printFilledExcel(xlsx, baseName);
             }
         } catch (err: any) {
             setError(err?.message || String(err));
@@ -385,7 +386,7 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
                         }}
                     >
                         {busy === 'pdf' ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
-                        Baixar PDF
+                        Imprimir / Salvar PDF
                     </button>
                 </div>
             </DialogContent>

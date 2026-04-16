@@ -13,6 +13,7 @@
 
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import type { EmpresaParceira } from '../types/empresa';
 import type { FinanceCharge } from '../types/finance';
@@ -293,39 +294,60 @@ export function downloadBlob(blob: Blob, filename: string): void {
     saveAs(blob, filename);
 }
 
-export async function convertExcelToPdf(xlsx: Blob): Promise<Blob> {
-    const fd = new FormData();
-    fd.append('file', xlsx, 'recibo.xlsx');
-    const res = await fetch('/api/recibo/pdf', { method: 'POST', body: fd });
-    const contentType = res.headers.get('content-type') || '';
+/**
+ * Abre uma nova janela com o .xlsx renderizado em HTML (via SheetJS) e dispara
+ * o diálogo de impressão do navegador. O usuário escolhe "Salvar como PDF" —
+ * nenhum servidor é necessário, funciona em qualquer deploy estático.
+ */
+export async function printFilledExcel(xlsx: Blob, title = 'Recibo'): Promise<void> {
+    const buf = await xlsx.arrayBuffer();
+    const wb = XLSX.read(buf, { type: 'array', cellStyles: true });
+    const firstSheetName = wb.SheetNames[0];
+    if (!firstSheetName) throw new Error('A planilha não tem nenhuma aba.');
+    const ws = wb.Sheets[firstSheetName];
+    if (!ws) throw new Error('Aba não encontrada no arquivo.');
 
-    if (!res.ok) {
-        let detail = '';
-        try {
-            if (contentType.includes('application/json')) {
-                detail = (await res.json()).error || '';
-            } else {
-                detail = (await res.text()).slice(0, 300);
-            }
-        } catch {}
-        throw new Error(`Conversão para PDF falhou (HTTP ${res.status}). ${detail || 'Verifique se o servidor (node server.js) está rodando e se o LibreOffice está instalado.'}`);
-    }
+    // Gera <table> HTML preservando merges, valores e estilos básicos.
+    const tableHtml = XLSX.utils.sheet_to_html(ws, { editable: false });
 
-    // Às vezes o servidor responde 200 mas o corpo não é um PDF (ex.: HTML de
-    // erro do proxy, página do Vite quando o backend caiu). Detecta aqui.
-    if (!contentType.includes('application/pdf')) {
-        const text = await res.text();
-        throw new Error(
-            `Resposta inesperada do servidor (content-type: ${contentType || 'nenhum'}). ` +
-            `Conteúdo: ${text.slice(0, 200)}...`
-        );
-    }
+    const html = `<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>${title}</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { padding: 4px 8px; vertical-align: middle; }
+  /* SheetJS marca linhas escondidas — respeita isso no HTML */
+  tr[hidden], td[hidden], th[hidden] { display: none !important; }
+  .no-print { position: fixed; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 999; }
+  .no-print button {
+    background: #0075de; color: #fff; border: none; padding: 10px 18px;
+    border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .no-print button.secondary { background: #666; }
+  @media print { .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    <button class="secondary" onclick="window.close()">Fechar</button>
+  </div>
+  ${tableHtml}
+  <script>window.addEventListener('load', () => setTimeout(() => window.print(), 400));</script>
+</body>
+</html>`;
 
-    const blob = await res.blob();
-    if (blob.size < 100) {
-        throw new Error(`PDF recebido está vazio ou corrompido (${blob.size} bytes). Verifique o log do servidor.`);
-    }
-    return blob;
+    const win = window.open('', '_blank');
+    if (!win) throw new Error('O navegador bloqueou a janela de impressão. Libere pop-ups para este site.');
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
 }
 
 export function templateUrlFromPath(path: string): string {
