@@ -1,7 +1,7 @@
 // src/components/EmpresaEnviosSection.tsx
 import React, { useState, useRef } from 'react';
-import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X, RotateCcw, ExternalLink } from 'lucide-react';
-import type { EtapaEnvioStatus, EtapaDocumento } from '../types/empresa';
+import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X, RotateCcw, ExternalLink, MessageSquare } from 'lucide-react';
+import type { EtapaEnvioStatus, EtapaDocumento, MetodoEnvioEmpresa } from '../types/empresa';
 import type { EmpresaParceira } from '../types/empresa';
 import {
     marcarDocumentoPronto,
@@ -68,18 +68,17 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         onUpdate(marcarDocumentoPronto(enviosStatus, etapaIdx, tipoDoc, !atual));
     };
 
-    const isPortal = empresa.metodoEnvio === 'portal';
-
-    const handleMarcarEnviada = (etapaIdx: number) => {
-        const meta = isPortal
-            ? { via: 'portal' as const, link: empresa.portalUrl ?? null }
-            : { via: 'email' as const };
-        onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx, meta));
+    const handleMarcarEnviada = (
+        etapaIdx: number,
+        via: MetodoEnvioEmpresa = 'email',
+        link: string | null = null,
+    ) => {
+        onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx, { via, link }));
     };
 
-    const handleAbrirPortal = async (etapaIdx: number) => {
-        if (!empresa.portalUrl) {
-            showToast('URL do portal não configurada para esta empresa.', 'error');
+    const handleAbrirPortal = async (etapaIdx: number, url?: string, label?: string) => {
+        if (!url) {
+            showToast('URL do portal não configurada para esta etapa.', 'error');
             return;
         }
         // Apenas abre o portal numa nova aba; a marcação como enviado é manual.
@@ -87,12 +86,12 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             await addAuditEntry(
                 osId,
                 'Envio Empresa - Portal aberto',
-                `Portal "${empresa.portalLabel || empresa.nome}" aberto para a etapa ${etapaIdx + 1}.`
+                `Portal "${label || empresa.nome}" aberto para a etapa ${etapaIdx + 1}.`
             );
         } catch (err) {
             console.warn('Falha ao registrar abertura de portal no histórico:', err);
         }
-        window.open(empresa.portalUrl, '_blank', 'noopener,noreferrer');
+        window.open(url, '_blank', 'noopener,noreferrer');
     };
 
     const handleDesmarcarEnviada = async (etapaIdx: number) => {
@@ -337,6 +336,15 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                     const completa = etapaCompleta(etapa);
                     const enviado = etapa.enviado;
 
+                    // Resolve canal/URL/label efetivos: etapa override → empresa default → 'email'
+                    const etapaConfig = empresa.etapasEnvio?.find((c) => c.ordem === etapa.etapa);
+                    const metodoEfetivo: MetodoEnvioEmpresa =
+                        etapaConfig?.metodoEnvio ?? empresa.metodoEnvio ?? 'email';
+                    const portalUrlEfetivo = etapaConfig?.portalUrl ?? empresa.portalUrl;
+                    const portalLabelEfetivo = etapaConfig?.portalLabel ?? empresa.portalLabel;
+                    const isPortal = metodoEfetivo === 'portal';
+                    const isWhatsapp = metodoEfetivo === 'whatsapp';
+
                     const borderColor = enviado ? 'rgba(40,160,106,0.3)' : completa ? 'rgba(0,117,222,0.3)' : 'var(--notion-border)';
                     const bgColor = enviado ? 'rgba(40,160,106,0.06)' : completa ? 'rgba(0,117,222,0.06)' : 'var(--notion-bg-alt)';
 
@@ -506,9 +514,9 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
                             {/* Action buttons — sempre visíveis para permitir reenvio */}
                             <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--notion-border)', flexWrap: 'wrap' }}>
-                                {isPortal ? (
+                                {isPortal && (
                                     <button
-                                        onClick={() => completa && handleAbrirPortal(etapaIdx)}
+                                        onClick={() => completa && handleAbrirPortal(etapaIdx, portalUrlEfetivo, portalLabelEfetivo)}
                                         disabled={!completa}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '4px',
@@ -521,9 +529,29 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         }}
                                     >
                                         <ExternalLink size={12} />
-                                        Abrir {empresa.portalLabel || 'portal'}
+                                        Abrir {portalLabelEfetivo || 'portal'}
                                     </button>
-                                ) : (
+                                )}
+                                {isWhatsapp && (
+                                    <button
+                                        type="button"
+                                        disabled
+                                        title="Integração com a API oficial Meta em desenvolvimento. Marque manualmente como enviado por enquanto."
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '4px',
+                                            fontSize: '11px', fontWeight: 500,
+                                            color: 'var(--notion-text-secondary)',
+                                            background: 'var(--notion-bg-alt)',
+                                            border: '1px dashed var(--notion-border)',
+                                            borderRadius: '6px', padding: '5px 12px',
+                                            cursor: 'not-allowed', opacity: 0.7,
+                                        }}
+                                    >
+                                        <MessageSquare size={12} />
+                                        WhatsApp (em breve)
+                                    </button>
+                                )}
+                                {!isPortal && !isWhatsapp && (
                                     <button
                                         onClick={() => completa && handleGerarEmail(etapa, etapaIdx)}
                                         disabled={!completa || enviandoEmailIdx === etapaIdx}
@@ -543,7 +571,11 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                 )}
                                 {!enviado && completa && (
                                     <button
-                                        onClick={() => handleMarcarEnviada(etapaIdx)}
+                                        onClick={() => handleMarcarEnviada(
+                                            etapaIdx,
+                                            metodoEfetivo,
+                                            isPortal ? (portalUrlEfetivo ?? null) : null,
+                                        )}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '4px',
                                             fontSize: '11px', fontWeight: 500, color: '#28A06A',
@@ -569,10 +601,10 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         }}
                                     >
                                         <ExternalLink size={12} />
-                                        Abrir {empresa.portalLabel || 'portal'} novamente
+                                        Abrir {portalLabelEfetivo || 'portal'} novamente
                                     </a>
                                 )}
-                                {!isPortal && ultimoWebLink && ultimoWebLink.etapaIdx === etapaIdx && (
+                                {!isPortal && !isWhatsapp && ultimoWebLink && ultimoWebLink.etapaIdx === etapaIdx && (
                                     <a
                                         href={ultimoWebLink.url}
                                         target="_blank"

@@ -1,6 +1,6 @@
 // src/components/EmpresaEditModal.tsx
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard } from 'lucide-react';
+import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard, MessageSquare } from 'lucide-react';
 import type { EmpresaParceira, EtapaEnvioConfig, MetodoEnvioEmpresa } from '../types/empresa';
 import type { PaymentMetodo } from '../types/finance';
 import { PAYMENT_METODO_LABELS } from '../types/finance';
@@ -134,6 +134,10 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
 
   const handleEtapaNome = (idx: number, val: string) => {
     setEtapas(etapas.map((e, i) => (i === idx ? { ...e, nome: val } : e)));
+  };
+
+  const handleEtapaField = <K extends keyof EtapaEnvioConfig>(idx: number, key: K, val: EtapaEnvioConfig[K]) => {
+    setEtapas(etapas.map((e, i) => (i === idx ? { ...e, [key]: val } : e)));
   };
 
   const handleAddDoc = (etapaIdx: number) => {
@@ -375,7 +379,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label style={fieldLabel}>Como enviar os documentos</label>
+                  <label style={fieldLabel}>Canal padrão de envio</label>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button
                       type="button"
@@ -405,14 +409,35 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                     >
                       <ExternalLink size={14} /> Portal externo
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setMetodoEnvio('whatsapp')}
+                      style={{
+                        flex: 1, padding: '8px 12px', borderRadius: 8,
+                        border: '1px solid var(--notion-border)',
+                        background: metodoEnvio === 'whatsapp' ? 'var(--notion-blue)' : 'var(--notion-bg)',
+                        color: metodoEnvio === 'whatsapp' ? '#fff' : 'var(--notion-text)',
+                        fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      <MessageSquare size={14} /> WhatsApp
+                    </button>
                   </div>
                   <p style={{
                     margin: '6px 0 0', fontSize: '0.75rem',
                     color: 'var(--notion-text-secondary)',
                   }}>
-                    {metodoEnvio === 'email'
-                      ? 'A etapa abre o cliente de email com os anexos (comportamento padrão).'
-                      : 'A etapa mostra um botão para abrir o portal externo da empresa em nova aba; o envio é marcado manualmente.'}
+                    {metodoEnvio === 'email' && 'A etapa abre o cliente de email com os anexos (comportamento padrão).'}
+                    {metodoEnvio === 'portal' && 'A etapa mostra um botão para abrir o portal externo em nova aba; o envio é marcado manualmente.'}
+                    {metodoEnvio === 'whatsapp' && 'Integração com a API oficial Meta ainda não disponível — você ainda pode marcar manualmente como enviado.'}
+                  </p>
+                  <p style={{
+                    margin: '4px 0 0', fontSize: '0.7rem',
+                    color: 'var(--notion-text-muted)',
+                    fontStyle: 'italic',
+                  }}>
+                    Cada etapa abaixo pode sobrescrever este canal padrão.
                   </p>
                 </div>
 
@@ -618,9 +643,88 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                           </button>
                         </div>
 
-                        {/* Documentos (expandido) */}
+                        {/* Canal + Documentos (expandido) */}
                         {isExpanded && (
                           <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {/* Canal desta etapa */}
+                            <div style={{
+                              padding: 10,
+                              marginBottom: 4,
+                              background: 'var(--notion-bg-alt)',
+                              border: '1px solid var(--notion-border)',
+                              borderRadius: 8,
+                            }}>
+                              <label style={{ ...fieldLabel, marginBottom: 6 }}>Canal desta etapa</label>
+                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                {([
+                                  { val: undefined,  label: 'Herdar',   icon: null },
+                                  { val: 'email',    label: 'Email',    icon: <Mail size={12} /> },
+                                  { val: 'portal',   label: 'Portal',   icon: <ExternalLink size={12} /> },
+                                  { val: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare size={12} /> },
+                                ] as const).map((opt) => {
+                                  const selected = etapa.metodoEnvio === opt.val;
+                                  return (
+                                    <button
+                                      key={String(opt.val)}
+                                      type="button"
+                                      onClick={() => handleEtapaField(eIdx, 'metodoEnvio', opt.val as MetodoEnvioEmpresa | undefined)}
+                                      style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                                        padding: '5px 10px', borderRadius: 6,
+                                        fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                                        border: '1px solid var(--notion-border)',
+                                        background: selected ? 'var(--notion-blue)' : 'var(--notion-bg)',
+                                        color: selected ? '#fff' : 'var(--notion-text)',
+                                        fontFamily: 'inherit',
+                                      }}
+                                    >
+                                      {opt.icon}
+                                      {opt.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              {etapa.metodoEnvio === 'portal' && (
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+                                  <input
+                                    style={fieldInput}
+                                    placeholder={`URL (padrão: ${portalUrl || '—'})`}
+                                    value={etapa.portalUrl ?? ''}
+                                    onChange={(e) => handleEtapaField(eIdx, 'portalUrl', e.target.value || undefined)}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                    type="url"
+                                  />
+                                  <input
+                                    style={fieldInput}
+                                    placeholder={`Legenda (padrão: ${portalLabel || 'Portal'})`}
+                                    value={etapa.portalLabel ?? ''}
+                                    onChange={(e) => handleEtapaField(eIdx, 'portalLabel', e.target.value || undefined)}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                  />
+                                </div>
+                              )}
+
+                              {etapa.metodoEnvio === 'whatsapp' && (
+                                <input
+                                  style={{ ...fieldInput, marginTop: 8 }}
+                                  placeholder="Número (ex: +55 11 99999-9999) — em breve"
+                                  value={etapa.whatsappNumero ?? ''}
+                                  onChange={(e) => handleEtapaField(eIdx, 'whatsappNumero', e.target.value || undefined)}
+                                  onFocus={handleFocus}
+                                  onBlur={handleBlur}
+                                />
+                              )}
+
+                              {etapa.metodoEnvio === undefined && (
+                                <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: 'var(--notion-text-secondary)' }}>
+                                  Esta etapa usa o canal padrão da empresa ({metodoEnvio}).
+                                </p>
+                              )}
+                            </div>
+
                             {etapa.documentos.map((doc, dIdx) => (
                               <div
                                 key={dIdx}
