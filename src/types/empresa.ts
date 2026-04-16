@@ -59,6 +59,11 @@ export interface EmpresaParceira {
     portalLabel?: string;
     /** Forma de pagamento padrão pré-selecionada ao registrar recebimento dessa empresa. */
     formaPagamentoPadrao?: PaymentMetodo;
+    /**
+     * Caminho do template de recibo (.xlsx) servido a partir de `/public`.
+     * Ex.: `recibos/kuruma.xlsx`. Se ausente, o botão "Gerar Recibo" não aparece nas OS.
+     */
+    reciboTemplatePath?: string;
     createdAt: string;
     updatedAt: string;
 }
