@@ -1,9 +1,10 @@
 // src/components/EmpresaEditModal.tsx
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard, MessageSquare, Receipt } from 'lucide-react';
+import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard, MessageSquare, Receipt, Upload, Loader2 } from 'lucide-react';
 import type { EmpresaParceira, EtapaEnvioConfig, MetodoEnvioEmpresa } from '../types/empresa';
 import type { PaymentMetodo } from '../types/finance';
 import { PAYMENT_METODO_LABELS } from '../types/finance';
+import { uploadFileToSupabase } from '../lib/fileStorage';
 import {
   Dialog, DialogContent, DialogTitle,
 } from './ui/dialog';
@@ -100,6 +101,9 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [portalLabel, setPortalLabel] = useState(empresa.portalLabel || '');
   const [formaPagamentoPadrao, setFormaPagamentoPadrao] = useState<PaymentMetodo | ''>(empresa.formaPagamentoPadrao || '');
   const [reciboTemplatePath, setReciboTemplatePath] = useState(empresa.reciboTemplatePath || '');
+  const [reciboFileName, setReciboFileName] = useState<string>('');
+  const [reciboUploading, setReciboUploading] = useState(false);
+  const [reciboError, setReciboError] = useState<string | null>(null);
 
   // Reset form ONLY when modal opens
   useEffect(() => {
@@ -121,8 +125,38 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     setPortalLabel(empresa.portalLabel || '');
     setFormaPagamentoPadrao(empresa.formaPagamentoPadrao || '');
     setReciboTemplatePath(empresa.reciboTemplatePath || '');
+    setReciboFileName(empresa.reciboTemplatePath ? decodeURIComponent(empresa.reciboTemplatePath.split('/').pop() || '') : '');
+    setReciboError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'empresa';
+
+  const handleReciboUpload = async (file: File) => {
+    if (!/\.xlsx$/i.test(file.name)) {
+      setReciboError('O template precisa ser um arquivo .xlsx');
+      return;
+    }
+    setReciboError(null);
+    setReciboUploading(true);
+    try {
+      const key = empresa.id || slugify(nome || 'empresa');
+      const path = `${key}/recibo-template-${Date.now()}.xlsx`;
+      const url = await uploadFileToSupabase(file, path, 'documentos');
+      setReciboTemplatePath(url);
+      setReciboFileName(file.name);
+    } catch (e: any) {
+      setReciboError(e?.message || 'Falha no upload');
+    } finally {
+      setReciboUploading(false);
+    }
+  };
+
+  const handleReciboRemove = () => {
+    setReciboTemplatePath('');
+    setReciboFileName('');
+    setReciboError(null);
+  };
 
   const handleAddEtapa = () => {
     const novaOrdem = etapas.length + 1;
@@ -923,22 +957,124 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
               }}>
                 <Info size={14} style={{ color: 'var(--notion-blue)', flexShrink: 0, marginTop: 2 }} />
                 <div>
-                  Coloque o template <strong>.xlsx</strong> em <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>/public/recibos/</code> e informe o caminho relativo abaixo (ex.: <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>recibos/kuruma.xlsx</code>).
-                  <br />
-                  Use placeholders <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{placa}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorPlacaFmt}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorVistoriaFmt}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorTotalFmt}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{clienteNome}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{numeroOS}}'}</code> etc., e blocos <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{#temPlaca}}…{{/temPlaca}}'}</code> para mostrar/ocultar linhas.
-                  <br />
-                  Se vazio, o botão "Gerar Recibo" não aparece nas OS desta empresa.
+                  Anexe um template <strong>.xlsx</strong> com placeholders. Onde quiser que apareça um valor da OS, escreva entre chaves duplas:
+                  <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 10px', marginTop: 6, fontSize: '0.75rem' }}>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{modelo}}'}</code><span>Marca/modelo do veículo</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{placa}}'}</code><span>Placa</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{chassi}}'}</code><span>Chassi</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{dataEmissao}}'}</code><span>Data de hoje (dd/mm/aaaa)</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorVistoria}}'}</code><span>Valor da vistoria (número — use também {'{{valorVistoriaFmt}}'} para "R$ 123,45")</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorPlaca}}'}</code><span>Valor do par de placas (0 se não houver)</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorTotal}}'}</code><span>Somatório — ou use fórmula do Excel tipo <code>=E18+E19</code></span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{clienteNome}}'}</code><span>Nome do cliente da OS</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{numeroOS}}'}</code><span>Número da OS</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorPorExtenso}}'}</code><span>Total por extenso</span>
+                  </div>
+                  <div style={{ marginTop: 6 }}>
+                    Sem template, o botão "Gerar Recibo" não aparece nas OS desta empresa.
+                  </div>
                 </div>
               </div>
-              <label style={fieldLabel}>Caminho do template (.xlsx)</label>
+
               <input
-                style={fieldInput}
-                value={reciboTemplatePath}
-                onChange={e => setReciboTemplatePath(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                placeholder="recibos/kuruma.xlsx"
+                id="recibo-template-file-input"
+                type="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleReciboUpload(f);
+                  e.target.value = '';
+                }}
               />
+
+              {reciboTemplatePath ? (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px',
+                  background: 'var(--notion-bg)',
+                  border: '1px solid var(--notion-border)',
+                  borderRadius: 8,
+                }}>
+                  <FileText size={18} style={{ color: 'var(--notion-blue)', flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--notion-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {reciboFileName || 'Template anexado'}
+                    </div>
+                    <a
+                      href={reciboTemplatePath}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontSize: '0.72rem', color: 'var(--notion-blue)', textDecoration: 'none' }}
+                    >
+                      Baixar para conferir →
+                    </a>
+                  </div>
+                  <label
+                    htmlFor="recibo-template-file-input"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                      padding: '6px 12px', borderRadius: 6,
+                      border: '1px solid var(--notion-border)',
+                      background: 'var(--notion-surface)',
+                      color: 'var(--notion-text)', cursor: reciboUploading ? 'not-allowed' : 'pointer',
+                      fontSize: '0.78rem', fontWeight: 600,
+                      opacity: reciboUploading ? 0.6 : 1,
+                    }}
+                  >
+                    {reciboUploading ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                    Substituir
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleReciboRemove}
+                    disabled={reciboUploading}
+                    style={{
+                      width: 30, height: 30,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'transparent', border: '1px solid var(--notion-border)',
+                      borderRadius: 6, color: 'var(--notion-text-secondary)',
+                      cursor: reciboUploading ? 'not-allowed' : 'pointer',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(220,38,38,0.1)'; e.currentTarget.style.color = '#dc2626'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--notion-text-secondary)'; }}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ) : (
+                <label
+                  htmlFor="recibo-template-file-input"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '14px 16px',
+                    background: 'var(--notion-bg)',
+                    border: '1px dashed var(--notion-border)',
+                    borderRadius: 8,
+                    color: 'var(--notion-text)',
+                    cursor: reciboUploading ? 'not-allowed' : 'pointer',
+                    fontSize: '0.85rem', fontWeight: 600,
+                    opacity: reciboUploading ? 0.6 : 1,
+                  }}
+                >
+                  {reciboUploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                  {reciboUploading ? 'Enviando...' : 'Anexar template (.xlsx)'}
+                </label>
+              )}
+
+              {reciboError && (
+                <div style={{
+                  marginTop: 8,
+                  padding: '8px 12px',
+                  background: 'rgba(220,38,38,0.08)',
+                  border: '1px solid rgba(220,38,38,0.25)',
+                  borderRadius: 8,
+                  color: '#dc2626',
+                  fontSize: '0.78rem',
+                }}>
+                  {reciboError}
+                </div>
+              )}
             </div>
 
           </div>
