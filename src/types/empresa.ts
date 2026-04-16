@@ -2,7 +2,7 @@
 
 import type { PaymentMetodo } from './finance';
 
-export type MetodoEnvioEmpresa = 'email' | 'portal';
+export type MetodoEnvioEmpresa = 'email' | 'portal' | 'whatsapp';
 
 export interface EtapaDocumento {
     tipo: string;
@@ -16,6 +16,14 @@ export interface EtapaEnvioConfig {
     ordem: number;
     nome: string;
     documentos: string[];
+    /** Canal de envio desta etapa. Se ausente, herda o canal padrão da empresa. */
+    metodoEnvio?: MetodoEnvioEmpresa;
+    /** URL do portal externo desta etapa (usado quando metodoEnvio === 'portal'). */
+    portalUrl?: string;
+    /** Legenda do botão de portal desta etapa (ex.: "Portal Detran"). */
+    portalLabel?: string;
+    /** Número do WhatsApp para envio (placeholder até integração com Meta API). */
+    whatsappNumero?: string;
 }
 
 export interface EtapaEnvioStatus {
@@ -43,11 +51,11 @@ export interface EmpresaParceira {
     documentosLabels?: Record<string, string>;
     emailAssuntoTemplate?: string;
     emailCorpoTemplate?: string;
-    /** Canal usado para envio dos documentos. Default = 'email'. */
+    /** Canal padrão para envio dos documentos. Cada etapa pode sobrescrever. Default = 'email'. */
     metodoEnvio?: MetodoEnvioEmpresa;
-    /** URL do portal externo (usado quando metodoEnvio === 'portal'). */
+    /** URL do portal externo padrão da empresa (fallback quando a etapa não setar). */
     portalUrl?: string;
-    /** Legenda do botão de portal externo. Ex.: "Portal Kuruma". */
+    /** Legenda do botão de portal externo padrão. Ex.: "Portal Kuruma". */
     portalLabel?: string;
     /** Forma de pagamento padrão pré-selecionada ao registrar recebimento dessa empresa. */
     formaPagamentoPadrao?: PaymentMetodo;
