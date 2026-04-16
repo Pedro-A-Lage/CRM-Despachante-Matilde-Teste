@@ -259,6 +259,8 @@ export async function convertExcelToPdf(xlsx: Blob): Promise<Blob> {
 }
 
 export function templateUrlFromPath(path: string): string {
-    // Caminhos em /public são servidos a partir da raiz.
+    // URLs absolutas (Supabase Storage público etc.) voltam como estão.
+    if (/^https?:\/\//i.test(path)) return path;
+    // Caminhos relativos em /public são servidos a partir da raiz.
     return path.startsWith('/') ? path : `/${path}`;
 }
