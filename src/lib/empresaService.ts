@@ -1,6 +1,6 @@
 // src/lib/empresaService.ts
 import { supabase } from './supabaseClient';
-import type { EmpresaParceira, EtapaEnvioConfig, EtapaEnvioStatus } from '../types/empresa';
+import type { EmpresaParceira, EtapaEnvioConfig, EtapaEnvioStatus, MetodoEnvioEmpresa } from '../types/empresa';
 
 // ── Mapper ────────────────────────────────────────────────────────────────────
 
@@ -17,6 +17,10 @@ function dbToEmpresa(row: any): EmpresaParceira {
         documentosLabels: row.documentos_labels ?? undefined,
         emailAssuntoTemplate: row.email_assunto_template ?? undefined,
         emailCorpoTemplate: row.email_corpo_template ?? undefined,
+        metodoEnvio: (row.metodo_envio as MetodoEnvioEmpresa | null) ?? 'email',
+        portalUrl: row.portal_url ?? undefined,
+        portalLabel: row.portal_label ?? undefined,
+        formaPagamentoPadrao: row.forma_pagamento_padrao ?? undefined,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -34,6 +38,10 @@ function empresaToDb(e: Partial<EmpresaParceira>): Record<string, any> {
     if (e.documentosLabels !== undefined) map.documentos_labels = e.documentosLabels;
     if (e.emailAssuntoTemplate !== undefined) map.email_assunto_template = e.emailAssuntoTemplate;
     if (e.emailCorpoTemplate !== undefined) map.email_corpo_template = e.emailCorpoTemplate;
+    if (e.metodoEnvio !== undefined) map.metodo_envio = e.metodoEnvio;
+    if (e.portalUrl !== undefined) map.portal_url = e.portalUrl || null;
+    if (e.portalLabel !== undefined) map.portal_label = e.portalLabel || null;
+    if (e.formaPagamentoPadrao !== undefined) map.forma_pagamento_padrao = e.formaPagamentoPadrao || null;
     map.updated_at = new Date().toISOString();
     return map;
 }
@@ -147,10 +155,20 @@ export function marcarDocumentoPronto(
     });
 }
 
-export function marcarEtapaEnviada(envios: EtapaEnvioStatus[], etapaIndex: number): EtapaEnvioStatus[] {
+export function marcarEtapaEnviada(
+    envios: EtapaEnvioStatus[],
+    etapaIndex: number,
+    meta?: { via?: MetodoEnvioEmpresa; link?: string | null }
+): EtapaEnvioStatus[] {
     return envios.map((etapa, i) => {
         if (i !== etapaIndex) return etapa;
-        return { ...etapa, enviado: true, enviado_em: new Date().toISOString() };
+        return {
+            ...etapa,
+            enviado: true,
+            enviado_em: new Date().toISOString(),
+            enviado_via: meta?.via ?? 'email',
+            envio_link: meta?.link ?? null,
+        };
     });
 }
 

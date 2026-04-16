@@ -25,6 +25,8 @@ interface Props {
   onClose: () => void;
   onSaved: () => void;
   editPayment?: Payment;
+  /** Método pré-selecionado em novos recebimentos (ex.: forma padrão da empresa parceira). */
+  formaPagamentoPadrao?: PaymentMetodo;
 }
 
 const labelStyle: React.CSSProperties = {
@@ -60,7 +62,7 @@ const METODOS_ICONS: Record<PaymentMetodo, string> = {
   outro: '📋',
 };
 
-export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved, editPayment }: Props) {
+export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved, editPayment, formaPagamentoPadrao }: Props) {
   const { usuario } = useAuth();
   const isEdit = !!editPayment;
 
@@ -73,7 +75,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
     isEdit ? editPayment.data_pagamento : new Date().toISOString().slice(0, 10)
   );
   const [metodo, setMetodo] = useState<PaymentMetodo>(
-    isEdit ? editPayment.metodo : 'pix'
+    isEdit ? editPayment.metodo : (formaPagamentoPadrao ?? 'pix')
   );
   const [observacao, setObservacao] = useState(
     isEdit ? (editPayment.observacao ?? '') : ''

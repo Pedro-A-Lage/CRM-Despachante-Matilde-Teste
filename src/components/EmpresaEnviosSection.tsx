@@ -1,6 +1,6 @@
 // src/components/EmpresaEnviosSection.tsx
 import React, { useState, useRef } from 'react';
-import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X, RotateCcw } from 'lucide-react';
+import { Building2, Mail, Check, Plus, Trash2, Edit2, CheckCircle2, Circle, Upload, FileText, Image, X, RotateCcw, ExternalLink } from 'lucide-react';
 import type { EtapaEnvioStatus, EtapaDocumento } from '../types/empresa';
 import type { EmpresaParceira } from '../types/empresa';
 import {
@@ -68,8 +68,31 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
         onUpdate(marcarDocumentoPronto(enviosStatus, etapaIdx, tipoDoc, !atual));
     };
 
+    const isPortal = empresa.metodoEnvio === 'portal';
+
     const handleMarcarEnviada = (etapaIdx: number) => {
-        onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
+        const meta = isPortal
+            ? { via: 'portal' as const, link: empresa.portalUrl ?? null }
+            : { via: 'email' as const };
+        onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx, meta));
+    };
+
+    const handleAbrirPortal = async (etapaIdx: number) => {
+        if (!empresa.portalUrl) {
+            showToast('URL do portal não configurada para esta empresa.', 'error');
+            return;
+        }
+        // Apenas abre o portal numa nova aba; a marcação como enviado é manual.
+        try {
+            await addAuditEntry(
+                osId,
+                'Envio Empresa - Portal aberto',
+                `Portal "${empresa.portalLabel || empresa.nome}" aberto para a etapa ${etapaIdx + 1}.`
+            );
+        } catch (err) {
+            console.warn('Falha ao registrar abertura de portal no histórico:', err);
+        }
+        window.open(empresa.portalUrl, '_blank', 'noopener,noreferrer');
     };
 
     const handleDesmarcarEnviada = async (etapaIdx: number) => {
@@ -151,7 +174,7 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
             showToast(`Email enviado para ${numDest} destinatário(s) com ${numAnexos} anexo(s)`, 'success');
 
             // Marca a etapa como enviada automaticamente
-            onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx));
+            onUpdate(marcarEtapaEnviada(enviosStatus, etapaIdx, { via: 'email', link: data?.webLink ?? null }));
 
             // Guarda o link do email enviado pra exibir botão "Ver email enviado"
             if (data?.webLink) {
@@ -483,22 +506,41 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
 
                             {/* Action buttons — sempre visíveis para permitir reenvio */}
                             <div style={{ display: 'flex', gap: '6px', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid var(--notion-border)', flexWrap: 'wrap' }}>
-                                <button
-                                    onClick={() => completa && handleGerarEmail(etapa, etapaIdx)}
-                                    disabled={!completa || enviandoEmailIdx === etapaIdx}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', gap: '4px',
-                                        fontSize: '11px', fontWeight: 500,
-                                        color: completa ? '#0075de' : 'var(--notion-text-secondary)',
-                                        background: completa ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg-alt)',
-                                        border: `1px solid ${completa ? 'rgba(0,117,222,0.2)' : 'var(--notion-border)'}`,
-                                        borderRadius: '6px', padding: '5px 12px',
-                                        cursor: completa && enviandoEmailIdx !== etapaIdx ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
-                                    }}
-                                >
-                                    <Mail size={12} />
-                                    {enviandoEmailIdx === etapaIdx ? 'Enviando...' : enviado ? 'Reenviar Email' : 'Enviar Email'}
-                                </button>
+                                {isPortal ? (
+                                    <button
+                                        onClick={() => completa && handleAbrirPortal(etapaIdx)}
+                                        disabled={!completa}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '4px',
+                                            fontSize: '11px', fontWeight: 500,
+                                            color: completa ? '#0075de' : 'var(--notion-text-secondary)',
+                                            background: completa ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg-alt)',
+                                            border: `1px solid ${completa ? 'rgba(0,117,222,0.2)' : 'var(--notion-border)'}`,
+                                            borderRadius: '6px', padding: '5px 12px',
+                                            cursor: completa ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
+                                        }}
+                                    >
+                                        <ExternalLink size={12} />
+                                        Abrir {empresa.portalLabel || 'portal'}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => completa && handleGerarEmail(etapa, etapaIdx)}
+                                        disabled={!completa || enviandoEmailIdx === etapaIdx}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '4px',
+                                            fontSize: '11px', fontWeight: 500,
+                                            color: completa ? '#0075de' : 'var(--notion-text-secondary)',
+                                            background: completa ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg-alt)',
+                                            border: `1px solid ${completa ? 'rgba(0,117,222,0.2)' : 'var(--notion-border)'}`,
+                                            borderRadius: '6px', padding: '5px 12px',
+                                            cursor: completa && enviandoEmailIdx !== etapaIdx ? 'pointer' : 'not-allowed', opacity: completa ? 1 : 0.5,
+                                        }}
+                                    >
+                                        <Mail size={12} />
+                                        {enviandoEmailIdx === etapaIdx ? 'Enviando...' : enviado ? 'Reenviar Email' : 'Enviar Email'}
+                                    </button>
+                                )}
                                 {!enviado && completa && (
                                     <button
                                         onClick={() => handleMarcarEnviada(etapaIdx)}
@@ -513,7 +555,24 @@ export function EmpresaEnviosSection({ empresa, enviosStatus, osNumero, osId, pl
                                         Marcar enviado
                                     </button>
                                 )}
-                                {ultimoWebLink && ultimoWebLink.etapaIdx === etapaIdx && (
+                                {isPortal && enviado && etapa.envio_link && (
+                                    <a
+                                        href={etapa.envio_link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: '4px',
+                                            fontSize: '11px', fontWeight: 500, color: '#3b82f6',
+                                            background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.25)',
+                                            borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
+                                            textDecoration: 'none',
+                                        }}
+                                    >
+                                        <ExternalLink size={12} />
+                                        Abrir {empresa.portalLabel || 'portal'} novamente
+                                    </a>
+                                )}
+                                {!isPortal && ultimoWebLink && ultimoWebLink.etapaIdx === etapaIdx && (
                                     <a
                                         href={ultimoWebLink.url}
                                         target="_blank"

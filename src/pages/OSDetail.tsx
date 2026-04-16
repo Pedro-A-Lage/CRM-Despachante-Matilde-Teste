@@ -1269,6 +1269,7 @@ export default function OSDetail() {
                                 readOnly={!podeReceberPagamento}
                                 ocultarCustos={!podeVerCustos}
                                 ocultarHonorarios={!podeVerHonorarios}
+                                formaPagamentoPadraoEmpresa={empresa?.formaPagamentoPadrao}
                                 onValorServicoChange={podeVerValorServico ? async (novoValor) => {
                                     await saveOrdem({ id: os.id, clienteId: os.clienteId, veiculoId: os.veiculoId, tipoServico: os.tipoServico, valorServico: novoValor });
                                     setOs({ ...os, valorServico: novoValor });

@@ -16,7 +16,7 @@ import {
   saveDescontoOS,
 } from '../../lib/financeService';
 import { supabase } from '../../lib/supabaseClient';
-import type { FinanceCharge, Payment, FinanceResumo, TipoVeiculo } from '../../types/finance';
+import type { FinanceCharge, Payment, FinanceResumo, TipoVeiculo, PaymentMetodo } from '../../types/finance';
 import { PAYMENT_METODO_LABELS } from '../../types/finance';
 import RecebimentoModal from './RecebimentoModal';
 import CustoAdicionalModal from './CustoAdicionalModal';
@@ -34,6 +34,8 @@ interface Props {
   readOnly?: boolean;
   ocultarCustos?: boolean;
   ocultarHonorarios?: boolean;
+  /** Forma de pagamento padrão pré-selecionada ao registrar recebimento (vinda da empresa parceira). */
+  formaPagamentoPadraoEmpresa?: PaymentMetodo;
 }
 
 const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -169,6 +171,7 @@ export default function FinancePainel({
   readOnly = false,
   ocultarCustos = false,
   ocultarHonorarios = false,
+  formaPagamentoPadraoEmpresa,
 }: Props) {
   const confirm = useConfirm();
   const { usuario } = useAuth();
@@ -971,6 +974,7 @@ export default function FinancePainel({
           osId={osId}
           saldoRestante={resumo.faltaReceber}
           editPayment={editandoPagamento ?? undefined}
+          formaPagamentoPadrao={formaPagamentoPadraoEmpresa}
           onClose={() => { setShowRecebimento(false); setEditandoPagamento(null); }}
           onSaved={async () => { await carregar(); onPaymentChange?.(); }}
         />
