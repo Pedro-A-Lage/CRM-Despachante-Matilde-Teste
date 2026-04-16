@@ -15,6 +15,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import type { EmpresaParceira } from '../types/empresa';
+import type { FinanceCharge } from '../types/finance';
 
 export interface ReciboContext {
     numeroOS: string;
@@ -76,7 +77,7 @@ function porExtensoSub1000(n: number): string {
     return partes.join(' e ');
 }
 
-function porExtenso(valor: number): string {
+export function porExtenso(valor: number): string {
     const reais = Math.floor(valor);
     const centavos = Math.round((valor - reais) * 100);
 
@@ -114,15 +115,38 @@ export function buildReciboContext(
     veiculo: Veiculo | null,
     cliente: Cliente | null,
     empresa: EmpresaParceira,
+    charges: FinanceCharge[] = [],
+    overrides?: { temPlaca?: boolean; temVistoria?: boolean },
 ): ReciboContext {
-    const valorPlaca = (os.vistoria?.placaValor && os.vistoria.placaValor > 0)
-        ? os.vistoria.placaValor
-        : (os.trocaPlaca ? (empresa.valorPlaca ?? 0) : 0);
-    const valorVistoria = os.vistoria?.taxaValor ?? 0;
-    const valorTotal = valorPlaca + valorVistoria;
+    // Soma cobranças ativas por categoria (ignora canceladas).
+    const sumByCategoria = (cat: 'placa' | 'vistoria') =>
+        charges
+            .filter(c => c.categoria === cat && c.status !== 'cancelado')
+            .reduce((acc, c) => acc + (c.valor_pago || c.valor_previsto || 0), 0);
 
-    const temPlaca = valorPlaca > 0;
-    const temVistoria = valorVistoria > 0 || !!os.vistoria?.local;
+    const chargeVistoria = sumByCategoria('vistoria');
+    const chargePlaca = sumByCategoria('placa');
+
+    // Vistoria: primeiro das cobranças, senão campo em vistoria.taxaValor.
+    const valorVistoriaBase = chargeVistoria > 0 ? chargeVistoria : (os.vistoria?.taxaValor ?? 0);
+    // Placa: primeiro das cobranças, senão vistoria.placaValor, senão empresa.valorPlaca.
+    const valorPlacaBase = chargePlaca > 0
+        ? chargePlaca
+        : (os.vistoria?.placaValor && os.vistoria.placaValor > 0)
+            ? os.vistoria.placaValor
+            : (os.trocaPlaca ? (empresa.valorPlaca ?? 0) : 0);
+
+    // "Tem X" padrão = há valor > 0 OU há indicação no cadastro.
+    // Usuário pode sobrescrever via checkbox no modal.
+    const temPlacaDefault = valorPlacaBase > 0 || os.trocaPlaca;
+    const temVistoriaDefault = valorVistoriaBase > 0 || !!os.vistoria?.local;
+    const temPlaca = overrides?.temPlaca ?? temPlacaDefault;
+    const temVistoria = overrides?.temVistoria ?? temVistoriaDefault;
+
+    // Zera o valor se a categoria foi desmarcada.
+    const valorPlaca = temPlaca ? valorPlacaBase : 0;
+    const valorVistoria = temVistoria ? valorVistoriaBase : 0;
+    const valorTotal = valorPlaca + valorVistoria;
 
     return {
         numeroOS: String(os.numero ?? ''),
@@ -164,13 +188,18 @@ function replaceVars(text: string, ctx: Record<string, unknown>): string {
 
 /**
  * Processa as linhas de uma worksheet aplicando blocos {{#cond}}...{{/cond}}
- * (deletando linhas entre as tags se cond for falsa) e substituindo {{var}}
- * em todas as células de texto.
+ * e substituindo {{var}} em todas as células.
+ *
+ * Em vez de DELETAR linhas (o que quebra células mescladas em `spliceRows`
+ * do exceljs), marcamos as linhas escondidas com `row.hidden = true`.
+ * O Excel e o LibreOffice ignoram linhas ocultas na renderização/PDF.
+ * Os marcadores `{{#cond}}` e `{{/cond}}` ficam sempre escondidos; as
+ * linhas de conteúdo entre eles ficam escondidas somente se cond for falsa.
  */
 function processWorksheet(ws: ExcelJS.Worksheet, ctx: Record<string, unknown>): void {
     type BlockState = { startRow: number; cond: string; condValue: boolean };
     const stack: BlockState[] = [];
-    const rowsToDelete = new Set<number>();
+    const rowsToHide = new Set<number>();
 
     const lastRow = ws.actualRowCount;
 
@@ -192,24 +221,41 @@ function processWorksheet(ws: ExcelJS.Worksheet, ctx: Record<string, unknown>): 
             const cond = openMatch[1]!;
             const condValue = isTrue(ctx[cond]);
             stack.push({ startRow: r, cond, condValue });
-            rowsToDelete.add(r);
+            rowsToHide.add(r);
+            // Limpa as células do marker pra não aparecer "{{#temPlaca}}" se o
+            // Excel renderizar linhas ocultas em algum contexto.
+            row.eachCell({ includeEmpty: false }, (cell) => {
+                if (typeof cell.value === 'string' && cell.value.includes('{{')) cell.value = '';
+            });
             continue;
         }
 
         if (closeMatch) {
             const block = stack.pop();
-            if (block) rowsToDelete.add(r);
-            if (block && !block.condValue) {
-                for (let i = block.startRow + 1; i < r; i++) rowsToDelete.add(i);
+            if (block) {
+                rowsToHide.add(r);
+                row.eachCell({ includeEmpty: false }, (cell) => {
+                    if (typeof cell.value === 'string' && cell.value.includes('{{')) cell.value = '';
+                });
+                if (!block.condValue) {
+                    for (let i = block.startRow + 1; i < r; i++) rowsToHide.add(i);
+                }
             }
             continue;
         }
 
-        // Substituições normais
+        // Substituições normais nas células.
         row.eachCell({ includeEmpty: false }, (cell) => {
             const v = cell.value;
             if (typeof v === 'string') {
-                if (v.includes('{{')) cell.value = replaceVars(v, ctx);
+                if (v.includes('{{')) {
+                    const replaced = replaceVars(v, ctx);
+                    // Se a string inteira é um placeholder numérico, coloca como número
+                    // (mantém a formatação R$ da célula funcionando).
+                    const isSingleNum = /^\s*\{\{\s*[\w.]+\s*\}\}\s*$/.test(v);
+                    const asNum = Number(replaced);
+                    cell.value = isSingleNum && !isNaN(asNum) && replaced !== '' ? asNum : replaced;
+                }
             } else if (v && typeof v === 'object' && 'richText' in v) {
                 const rich = v as ExcelJS.CellRichTextValue;
                 const replaced = rich.richText.map(p => ({ ...p, text: replaceVars(p.text, ctx) }));
@@ -218,9 +264,10 @@ function processWorksheet(ws: ExcelJS.Worksheet, ctx: Record<string, unknown>): 
         });
     }
 
-    // Deletar de baixo para cima para preservar índices
-    const ordered = Array.from(rowsToDelete).sort((a, b) => b - a);
-    for (const r of ordered) ws.spliceRows(r, 1);
+    // Marca linhas como ocultas (preserva merges / layout).
+    for (const r of rowsToHide) {
+        ws.getRow(r).hidden = true;
+    }
 }
 
 export async function fillExcelTemplate(templateUrl: string, ctx: ReciboContext): Promise<Blob> {
@@ -250,12 +297,35 @@ export async function convertExcelToPdf(xlsx: Blob): Promise<Blob> {
     const fd = new FormData();
     fd.append('file', xlsx, 'recibo.xlsx');
     const res = await fetch('/api/recibo/pdf', { method: 'POST', body: fd });
+    const contentType = res.headers.get('content-type') || '';
+
     if (!res.ok) {
         let detail = '';
-        try { detail = (await res.json()).error || ''; } catch {}
-        throw new Error(`Conversão para PDF falhou (${res.status}). ${detail}`);
+        try {
+            if (contentType.includes('application/json')) {
+                detail = (await res.json()).error || '';
+            } else {
+                detail = (await res.text()).slice(0, 300);
+            }
+        } catch {}
+        throw new Error(`Conversão para PDF falhou (HTTP ${res.status}). ${detail || 'Verifique se o servidor (node server.js) está rodando e se o LibreOffice está instalado.'}`);
     }
-    return await res.blob();
+
+    // Às vezes o servidor responde 200 mas o corpo não é um PDF (ex.: HTML de
+    // erro do proxy, página do Vite quando o backend caiu). Detecta aqui.
+    if (!contentType.includes('application/pdf')) {
+        const text = await res.text();
+        throw new Error(
+            `Resposta inesperada do servidor (content-type: ${contentType || 'nenhum'}). ` +
+            `Conteúdo: ${text.slice(0, 200)}...`
+        );
+    }
+
+    const blob = await res.blob();
+    if (blob.size < 100) {
+        throw new Error(`PDF recebido está vazio ou corrompido (${blob.size} bytes). Verifique o log do servidor.`);
+    }
+    return blob;
 }
 
 export function templateUrlFromPath(path: string): string {

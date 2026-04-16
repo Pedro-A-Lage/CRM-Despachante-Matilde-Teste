@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
-import { writeFile, readFile, unlink } from 'fs/promises';
+import { writeFile, readFile, unlink, access } from 'fs/promises';
 import { randomBytes } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 const upload = multer({ limits: { fileSize: 25 * 1024 * 1024 } });
 const LIBREOFFICE_BIN = process.env.LIBREOFFICE_BIN || 'libreoffice';
+const LIBREOFFICE_PROFILE = process.env.LIBREOFFICE_PROFILE_DIR || join(tmpdir(), 'lo-profile');
 
 // Converte planilha (.xlsx) para PDF usando LibreOffice headless.
 app.post('/api/recibo/pdf', upload.single('file'), async (req, res) => {
@@ -26,21 +27,33 @@ app.post('/api/recibo/pdf', upload.single('file'), async (req, res) => {
     try {
         await writeFile(inPath, req.file.buffer);
 
-        await new Promise((resolve, reject) => {
+        const { stdout, stderr, code } = await new Promise((resolve, reject) => {
             const proc = spawn(LIBREOFFICE_BIN, [
-                '--headless', '--norestore', '--nolockcheck',
+                '--headless', '--norestore', '--nolockcheck', '--nofirststartwizard',
+                `-env:UserInstallation=file://${LIBREOFFICE_PROFILE}`,
                 '--convert-to', 'pdf', '--outdir', dir, inPath,
             ]);
-            let stderr = '';
-            proc.stderr.on('data', (d) => { stderr += d.toString(); });
+            let out = '', err = '';
+            proc.stdout.on('data', (d) => { out += d.toString(); });
+            proc.stderr.on('data', (d) => { err += d.toString(); });
             proc.on('error', reject);
-            proc.on('exit', (code) => {
-                if (code === 0) resolve(undefined);
-                else reject(new Error(`libreoffice exit ${code}: ${stderr}`));
-            });
+            proc.on('exit', (c) => resolve({ stdout: out, stderr: err, code: c }));
         });
 
+        // LibreOffice às vezes sai com código 0 e mesmo assim não gera o PDF.
+        // Checa explicitamente se o arquivo existe.
+        try {
+            await access(outPath);
+        } catch {
+            const msg = `LibreOffice não produziu o PDF (exit ${code}). stdout=${stdout.trim()} stderr=${stderr.trim()}`;
+            throw new Error(msg);
+        }
+
         const pdf = await readFile(outPath);
+        if (pdf.length < 100 || !pdf.slice(0, 4).equals(Buffer.from('%PDF'))) {
+            throw new Error(`Arquivo de saída não é um PDF válido (${pdf.length} bytes).`);
+        }
+
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename="recibo.pdf"');
         res.send(pdf);
@@ -56,8 +69,9 @@ app.post('/api/recibo/pdf', upload.single('file'), async (req, res) => {
 // Serve static files from dist
 app.use(express.static(join(__dirname, 'dist')));
 
-// SPA fallback - all routes serve index.html
-app.get('*', (req, res) => {
+// SPA fallback - all routes serve index.html.
+// Usa regex porque Express 5 não aceita mais 'app.get("*", ...)'.
+app.get(/.*/, (req, res) => {
     res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 

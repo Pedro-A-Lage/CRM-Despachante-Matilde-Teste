@@ -4,11 +4,14 @@ import { FileSpreadsheet, FileText, Receipt, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import type { EmpresaParceira } from '../types/empresa';
+import type { FinanceCharge } from '../types/finance';
+import { getChargesByOS } from '../lib/financeService';
 import {
     buildReciboContext,
     convertExcelToPdf,
     downloadBlob,
     fillExcelTemplate,
+    porExtenso,
     templateUrlFromPath,
     type ReciboContext,
 } from '../lib/reciboTemplate';
@@ -46,9 +49,24 @@ interface Props {
 }
 
 export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empresa }: Props) {
+    const [charges, setCharges] = useState<FinanceCharge[]>([]);
+    const [loadingCharges, setLoadingCharges] = useState(false);
+
+    // Carrega cobranças da OS (valores de placa e vistoria vêm daqui).
+    useEffect(() => {
+        if (!open) return;
+        let cancelled = false;
+        setLoadingCharges(true);
+        getChargesByOS(os.id)
+            .then((cs) => { if (!cancelled) setCharges(cs); })
+            .catch(() => { if (!cancelled) setCharges([]); })
+            .finally(() => { if (!cancelled) setLoadingCharges(false); });
+        return () => { cancelled = true; };
+    }, [open, os.id]);
+
     const initialCtx = useMemo(
-        () => buildReciboContext(os, veiculo, cliente, empresa),
-        [os, veiculo, cliente, empresa],
+        () => buildReciboContext(os, veiculo, cliente, empresa, charges),
+        [os, veiculo, cliente, empresa, charges],
     );
     const [ctx, setCtx] = useState<ReciboContext>(initialCtx);
     const [busy, setBusy] = useState<null | 'xlsx' | 'pdf'>(null);
@@ -64,17 +82,16 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
     const update = <K extends keyof ReciboContext>(key: K, value: ReciboContext[K]) => {
         setCtx((prev) => {
             const next = { ...prev, [key]: value };
-            if (key === 'valorPlaca' || key === 'valorVistoria') {
-                const total = (next.valorPlaca || 0) + (next.valorVistoria || 0);
-                next.valorTotal = total;
-            }
-            // Recalcular formatadas
+            // Zera valores quando desmarca o "tem".
+            if (key === 'temPlaca' && value === false) next.valorPlaca = 0;
+            if (key === 'temVistoria' && value === false) next.valorVistoria = 0;
+            // Total e formatações.
+            next.valorTotal = (next.valorPlaca || 0) + (next.valorVistoria || 0);
             const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             next.valorPlacaFmt = fmt(next.valorPlaca || 0);
             next.valorVistoriaFmt = fmt(next.valorVistoria || 0);
             next.valorTotalFmt = fmt(next.valorTotal || 0);
-            next.temPlaca = (next.valorPlaca || 0) > 0;
-            next.temVistoria = (next.valorVistoria || 0) > 0 || !!next.vistoriaLocal;
+            next.valorPorExtenso = porExtenso(next.valorTotal || 0);
             return next;
         });
     };
@@ -214,58 +231,95 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
                         </div>
 
                         <div style={sectionCard}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                                <div>
-                                    <label style={fieldLabel}>Valor Placa (R$)</label>
+                            {/* Linha Vistoria */}
+                            <div style={{
+                                display: 'grid', gridTemplateColumns: 'auto 1fr 120px',
+                                gap: 10, alignItems: 'center', marginBottom: 10,
+                            }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
                                     <input
-                                        style={fieldInput}
-                                        type="number"
-                                        step="0.01"
-                                        value={ctx.valorPlaca || ''}
-                                        onChange={(e) => update('valorPlaca', parseFloat(e.target.value) || 0)}
-                                        placeholder="0,00"
+                                        type="checkbox"
+                                        checked={ctx.temVistoria}
+                                        onChange={(e) => update('temVistoria', e.target.checked)}
+                                        style={{ width: 16, height: 16, cursor: 'pointer' }}
                                     />
-                                </div>
-                                <div>
-                                    <label style={fieldLabel}>Valor Vistoria (R$)</label>
-                                    <input
-                                        style={fieldInput}
-                                        type="number"
-                                        step="0.01"
-                                        value={ctx.valorVistoria || ''}
-                                        onChange={(e) => update('valorVistoria', parseFloat(e.target.value) || 0)}
-                                        placeholder="0,00"
-                                    />
-                                </div>
-                                <div>
-                                    <label style={fieldLabel}>Total</label>
-                                    <input
-                                        style={{ ...fieldInput, background: 'var(--notion-bg-alt)', fontWeight: 700, color: '#0075de' }}
-                                        readOnly
-                                        value={ctx.valorTotalFmt}
-                                    />
-                                </div>
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <label style={fieldLabel}>Local da vistoria</label>
-                                    <input
-                                        style={fieldInput}
-                                        value={ctx.vistoriaLocal}
-                                        onChange={(e) => update('vistoriaLocal', e.target.value)}
-                                    />
-                                </div>
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <label style={fieldLabel}>Observação</label>
-                                    <input
-                                        style={fieldInput}
-                                        value={ctx.observacao}
-                                        onChange={(e) => update('observacao', e.target.value)}
-                                        placeholder="Opcional"
-                                    />
-                                </div>
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>Vistoria</span>
+                                </label>
+                                <input
+                                    style={{ ...fieldInput, opacity: ctx.temVistoria ? 1 : 0.4 }}
+                                    placeholder="Local da vistoria"
+                                    value={ctx.vistoriaLocal}
+                                    disabled={!ctx.temVistoria}
+                                    onChange={(e) => update('vistoriaLocal', e.target.value)}
+                                />
+                                <input
+                                    style={{ ...fieldInput, textAlign: 'right', opacity: ctx.temVistoria ? 1 : 0.4 }}
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0,00"
+                                    disabled={!ctx.temVistoria}
+                                    value={ctx.valorVistoria || ''}
+                                    onChange={(e) => update('valorVistoria', parseFloat(e.target.value) || 0)}
+                                />
                             </div>
+
+                            {/* Linha Placa */}
+                            <div style={{
+                                display: 'grid', gridTemplateColumns: 'auto 1fr 120px',
+                                gap: 10, alignItems: 'center', marginBottom: 12,
+                            }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={ctx.temPlaca}
+                                        onChange={(e) => update('temPlaca', e.target.checked)}
+                                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                                    />
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--notion-text)' }}>Par de Placas</span>
+                                </label>
+                                <div style={{ fontSize: 12, color: 'var(--notion-text-secondary)' }}>
+                                    {ctx.temPlaca ? 'Valor da placa será incluído no recibo' : 'Linha da placa ocultada no recibo'}
+                                </div>
+                                <input
+                                    style={{ ...fieldInput, textAlign: 'right', opacity: ctx.temPlaca ? 1 : 0.4 }}
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0,00"
+                                    disabled={!ctx.temPlaca}
+                                    value={ctx.valorPlaca || ''}
+                                    onChange={(e) => update('valorPlaca', parseFloat(e.target.value) || 0)}
+                                />
+                            </div>
+
+                            {/* Total */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                padding: '10px 12px', borderTop: '1px solid var(--notion-border)',
+                                marginTop: 6,
+                            }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--notion-text)' }}>TOTAL</span>
+                                <span style={{ fontSize: 16, fontWeight: 800, color: '#0075de' }}>{ctx.valorTotalFmt}</span>
+                            </div>
+
+                            <div style={{ marginTop: 10 }}>
+                                <label style={fieldLabel}>Observação</label>
+                                <input
+                                    style={fieldInput}
+                                    value={ctx.observacao}
+                                    onChange={(e) => update('observacao', e.target.value)}
+                                    placeholder="Opcional"
+                                />
+                            </div>
+
                             <p style={{ margin: '10px 0 0', fontSize: '0.72rem', color: 'var(--notion-text-secondary)' }}>
                                 Total por extenso: <em>{ctx.valorPorExtenso || '—'}</em>
                             </p>
+
+                            {loadingCharges && (
+                                <p style={{ margin: '6px 0 0', fontSize: '0.72rem', color: 'var(--notion-text-muted)' }}>
+                                    Carregando valores da OS...
+                                </p>
+                            )}
                         </div>
 
                         {error && (
