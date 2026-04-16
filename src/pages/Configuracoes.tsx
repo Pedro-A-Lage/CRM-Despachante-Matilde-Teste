@@ -525,9 +525,14 @@ export default function Configuracoes() {
         open={!!editingEmpresa}
         empresa={editingEmpresa || {}}
         onSave={async (emp) => {
-          await saveEmpresa(emp);
-          setEditingEmpresa(null);
-          carregar();
+          try {
+            await saveEmpresa(emp);
+            setEditingEmpresa(null);
+            carregar();
+          } catch (err: any) {
+            console.error('Erro ao salvar empresa:', err);
+            alert(`Não foi possível salvar a empresa:\n\n${err?.message || err}`);
+          }
         }}
         onClose={() => setEditingEmpresa(null)}
       />
