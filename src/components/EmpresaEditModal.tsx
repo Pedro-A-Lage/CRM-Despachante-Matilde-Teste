@@ -1,6 +1,6 @@
 // src/components/EmpresaEditModal.tsx
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard, MessageSquare } from 'lucide-react';
+import { Plus, Trash2, FileText, Building2, Mail, DollarSign, Palette, Layers, Info, ExternalLink, CreditCard, MessageSquare, Receipt } from 'lucide-react';
 import type { EmpresaParceira, EtapaEnvioConfig, MetodoEnvioEmpresa } from '../types/empresa';
 import type { PaymentMetodo } from '../types/finance';
 import { PAYMENT_METODO_LABELS } from '../types/finance';
@@ -99,6 +99,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [portalUrl, setPortalUrl] = useState(empresa.portalUrl || '');
   const [portalLabel, setPortalLabel] = useState(empresa.portalLabel || '');
   const [formaPagamentoPadrao, setFormaPagamentoPadrao] = useState<PaymentMetodo | ''>(empresa.formaPagamentoPadrao || '');
+  const [reciboTemplatePath, setReciboTemplatePath] = useState(empresa.reciboTemplatePath || '');
 
   // Reset form ONLY when modal opens
   useEffect(() => {
@@ -119,6 +120,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     setPortalUrl(empresa.portalUrl || '');
     setPortalLabel(empresa.portalLabel || '');
     setFormaPagamentoPadrao(empresa.formaPagamentoPadrao || '');
+    setReciboTemplatePath(empresa.reciboTemplatePath || '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -174,6 +176,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
       portalUrl: metodoEnvio === 'portal' ? (portalUrl.trim() || undefined) : undefined,
       portalLabel: metodoEnvio === 'portal' ? (portalLabel.trim() || undefined) : undefined,
       formaPagamentoPadrao: formaPagamentoPadrao || undefined,
+      reciboTemplatePath: reciboTemplatePath.trim() || undefined,
     });
   };
 
@@ -898,6 +901,44 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* ── Recibo de Reembolso ── */}
+            <div style={sectionCard}>
+              <div style={sectionHeader}>
+                <Receipt size={16} style={{ color: 'var(--notion-blue)' }} />
+                <h3 style={sectionTitle}>Recibo de reembolso</h3>
+              </div>
+              <div style={{
+                padding: '8px 12px',
+                marginBottom: 12,
+                background: 'rgba(0,117,222,0.06)',
+                border: '1px solid rgba(0,117,222,0.2)',
+                borderRadius: 8,
+                fontSize: '0.78rem',
+                color: 'var(--notion-text-secondary)',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 8,
+              }}>
+                <Info size={14} style={{ color: 'var(--notion-blue)', flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  Coloque o template <strong>.xlsx</strong> em <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>/public/recibos/</code> e informe o caminho relativo abaixo (ex.: <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>recibos/kuruma.xlsx</code>).
+                  <br />
+                  Use placeholders <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{placa}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorPlacaFmt}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorVistoriaFmt}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorTotalFmt}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{clienteNome}}'}</code>, <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{numeroOS}}'}</code> etc., e blocos <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{#temPlaca}}…{{/temPlaca}}'}</code> para mostrar/ocultar linhas.
+                  <br />
+                  Se vazio, o botão "Gerar Recibo" não aparece nas OS desta empresa.
+                </div>
+              </div>
+              <label style={fieldLabel}>Caminho do template (.xlsx)</label>
+              <input
+                style={fieldInput}
+                value={reciboTemplatePath}
+                onChange={e => setReciboTemplatePath(e.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                placeholder="recibos/kuruma.xlsx"
+              />
             </div>
 
           </div>

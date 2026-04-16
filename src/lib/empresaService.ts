@@ -21,6 +21,7 @@ function dbToEmpresa(row: any): EmpresaParceira {
         portalUrl: row.portal_url ?? undefined,
         portalLabel: row.portal_label ?? undefined,
         formaPagamentoPadrao: row.forma_pagamento_padrao ?? undefined,
+        reciboTemplatePath: row.recibo_template_path ?? undefined,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };
@@ -42,6 +43,7 @@ function empresaToDb(e: Partial<EmpresaParceira>): Record<string, any> {
     if (e.portalUrl !== undefined) map.portal_url = e.portalUrl || null;
     if (e.portalLabel !== undefined) map.portal_label = e.portalLabel || null;
     if (e.formaPagamentoPadrao !== undefined) map.forma_pagamento_padrao = e.formaPagamentoPadrao || null;
+    if (e.reciboTemplatePath !== undefined) map.recibo_template_path = e.reciboTemplatePath || null;
     map.updated_at = new Date().toISOString();
     return map;
 }

@@ -40,7 +40,8 @@ import {
     Car,
     FileSearch,
     Phone,
-    Mail
+    Mail,
+    Receipt
 } from 'lucide-react';
 import { validarCrlv, ResultadoValidacao, DadosCrlv } from '../lib/documentValidator';
 import {
@@ -90,6 +91,7 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import FinancePainel from '../components/finance/FinancePainel';
 import { getChargesByOS, getPaymentsByOS, marcarCustoPago, cancelarCobrancasDaOS, getPriceByCodigo, updateCharge } from '../lib/financeService';
 import { EmpresaEnviosSection } from '../components/EmpresaEnviosSection';
+import { ReciboReembolsoModal } from '../components/ReciboReembolsoModal';
 import ClienteEditFullModal from '../components/ClienteEditFullModal';
 import VeiculoEditFullModal from '../components/VeiculoEditFullModal';
 import {
@@ -552,6 +554,7 @@ export default function OSDetail() {
     const [veiculo, setVeiculo] = useState<any>(null);
     const [empresa, setEmpresa] = useState<EmpresaParceira | null>(null);
     const [empresasAtivas, setEmpresasAtivas] = useState<EmpresaParceira[]>([]);
+    const [reciboModalOpen, setReciboModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabId>('checklist');
     const [pageDirty, setPageDirty] = useState(false);
@@ -959,6 +962,18 @@ export default function OSDetail() {
                 />
             )}
 
+            {/* Modal de Recibo de Reembolso */}
+            {empresa && os && empresa.reciboTemplatePath && (
+                <ReciboReembolsoModal
+                    open={reciboModalOpen}
+                    onClose={() => setReciboModalOpen(false)}
+                    os={os}
+                    cliente={cliente}
+                    veiculo={veiculo}
+                    empresa={empresa}
+                />
+            )}
+
             {/* ===== TOP BAR (compact) ===== */}
             <div style={{
                 background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
@@ -1243,6 +1258,22 @@ export default function OSDetail() {
                                                 }}
                                             />
                                         </div>
+                                        {empresa.reciboTemplatePath && (
+                                            <button
+                                                onClick={() => setReciboModalOpen(true)}
+                                                title="Gerar recibo de reembolso a partir do template da empresa"
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                                    fontSize: 11, fontWeight: 600,
+                                                    color: 'var(--notion-blue)',
+                                                    background: 'rgba(0,117,222,0.1)',
+                                                    border: '1px solid rgba(0,117,222,0.25)',
+                                                    borderRadius: 6, padding: '4px 10px', cursor: 'pointer',
+                                                }}
+                                            >
+                                                <Receipt size={12} /> Gerar Recibo
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 <EmpresaEnviosSection
