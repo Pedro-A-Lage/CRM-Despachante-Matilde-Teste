@@ -1,6 +1,6 @@
 // src/components/ReciboReembolsoModal.tsx
 import { useEffect, useMemo, useState } from 'react';
-import { FileSpreadsheet, FileText, Receipt, Loader2 } from 'lucide-react';
+import { FileSpreadsheet, Receipt, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from './ui/dialog';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import type { EmpresaParceira } from '../types/empresa';
@@ -11,7 +11,6 @@ import {
     downloadBlob,
     fillExcelTemplate,
     porExtenso,
-    printFilledExcel,
     templateUrlFromPath,
     type ReciboContext,
 } from '../lib/reciboTemplate';
@@ -69,7 +68,7 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
         [os, veiculo, cliente, empresa, charges],
     );
     const [ctx, setCtx] = useState<ReciboContext>(initialCtx);
-    const [busy, setBusy] = useState<null | 'xlsx' | 'pdf'>(null);
+    const [busy, setBusy] = useState<null | 'xlsx'>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -96,7 +95,7 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
         });
     };
 
-    const handleAction = async (action: 'xlsx' | 'pdf') => {
+    const handleAction = async (action: 'xlsx') => {
         if (!empresa.reciboTemplatePath) {
             setError('Template de recibo não configurado para esta empresa.');
             return;
@@ -107,13 +106,7 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
             const url = templateUrlFromPath(empresa.reciboTemplatePath);
             const xlsx = await fillExcelTemplate(url, ctx);
             const baseName = `recibo-${empresa.nome.toLowerCase().replace(/\s+/g, '-')}-os${ctx.numeroOS}`;
-            if (action === 'xlsx') {
-                downloadBlob(xlsx, `${baseName}.xlsx`);
-            } else {
-                // Impressão client-side: abre janela com a planilha em HTML
-                // e dispara o "Salvar como PDF" do navegador.
-                await printFilledExcel(xlsx, baseName);
-            }
+            downloadBlob(xlsx, `${baseName}.xlsx`);
         } catch (err: any) {
             setError(err?.message || String(err));
         } finally {
@@ -360,33 +353,17 @@ export function ReciboReembolsoModal({ open, onClose, os, cliente, veiculo, empr
                         onClick={() => handleAction('xlsx')}
                         disabled={busy !== null}
                         style={{
-                            padding: '9px 16px',
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            background: 'var(--notion-surface)', border: '1px solid var(--notion-border)',
-                            borderRadius: 8, color: 'var(--notion-text)',
-                            cursor: busy ? 'not-allowed' : 'pointer',
-                            fontWeight: 600, fontSize: '0.85rem', fontFamily: 'inherit',
-                            opacity: busy && busy !== 'xlsx' ? 0.5 : 1,
-                        }}
-                    >
-                        {busy === 'xlsx' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
-                        Baixar Excel
-                    </button>
-                    <button
-                        onClick={() => handleAction('pdf')}
-                        disabled={busy !== null}
-                        style={{
                             padding: '9px 22px',
                             display: 'inline-flex', alignItems: 'center', gap: 6,
                             background: '#0075de', border: 'none',
                             borderRadius: 8, color: '#fff',
                             cursor: busy ? 'not-allowed' : 'pointer',
                             fontWeight: 700, fontSize: '0.85rem', fontFamily: 'inherit',
-                            opacity: busy && busy !== 'pdf' ? 0.5 : 1,
+                            opacity: busy ? 0.6 : 1,
                         }}
                     >
-                        {busy === 'pdf' ? <Loader2 size={14} className="animate-spin" /> : <FileText size={14} />}
-                        Imprimir / Salvar PDF
+                        {busy === 'xlsx' ? <Loader2 size={14} className="animate-spin" /> : <FileSpreadsheet size={14} />}
+                        Baixar Excel
                     </button>
                 </div>
             </DialogContent>
