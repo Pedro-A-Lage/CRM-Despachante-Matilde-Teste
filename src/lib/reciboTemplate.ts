@@ -13,7 +13,6 @@
 
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import * as XLSX from 'xlsx';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import type { EmpresaParceira } from '../types/empresa';
 import type { FinanceCharge } from '../types/finance';
@@ -295,34 +294,32 @@ export function downloadBlob(blob: Blob, filename: string): void {
 }
 
 /**
- * Abre uma nova janela com o .xlsx renderizado em HTML (via SheetJS) e dispara
- * o diálogo de impressão do navegador. O usuário escolhe "Salvar como PDF" —
- * nenhum servidor é necessário, funciona em qualquer deploy estático.
+ * Abre uma nova janela com o .xlsx renderizado em HTML e dispara o diálogo
+ * de impressão do navegador. O usuário escolhe "Salvar como PDF" — nenhum
+ * servidor é necessário, funciona em qualquer deploy estático.
+ *
+ * Usa um renderizador próprio (exceljs → HTML) que preserva cores de fundo,
+ * bordas, merges, fontes, alinhamento e oculta linhas com `row.hidden`.
  */
 export async function printFilledExcel(xlsx: Blob, title = 'Recibo'): Promise<void> {
-    const buf = await xlsx.arrayBuffer();
-    const wb = XLSX.read(buf, { type: 'array', cellStyles: true });
-    const firstSheetName = wb.SheetNames[0];
-    if (!firstSheetName) throw new Error('A planilha não tem nenhuma aba.');
-    const ws = wb.Sheets[firstSheetName];
-    if (!ws) throw new Error('Aba não encontrada no arquivo.');
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(await xlsx.arrayBuffer());
+    const ws = wb.worksheets[0];
+    if (!ws) throw new Error('A planilha não tem nenhuma aba.');
 
-    // Gera <table> HTML preservando merges, valores e estilos básicos.
-    const tableHtml = XLSX.utils.sheet_to_html(ws, { editable: false });
+    const tableHtml = worksheetToHtml(ws);
 
     const html = `<!doctype html>
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>${title}</title>
+<title>${escapeHtml(title)}</title>
 <style>
   @page { size: A4; margin: 12mm; }
   * { box-sizing: border-box; }
-  body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; }
-  table { border-collapse: collapse; width: 100%; }
-  td, th { padding: 4px 8px; vertical-align: middle; }
-  /* SheetJS marca linhas escondidas — respeita isso no HTML */
-  tr[hidden], td[hidden], th[hidden] { display: none !important; }
+  body { margin: 0; padding: 16px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; }
+  table { border-collapse: collapse; table-layout: fixed; }
+  td { padding: 3px 6px; overflow: hidden; word-wrap: break-word; }
   .no-print { position: fixed; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 999; }
   .no-print button {
     background: #0075de; color: #fff; border: none; padding: 10px 18px;
@@ -330,7 +327,7 @@ export async function printFilledExcel(xlsx: Blob, title = 'Recibo'): Promise<vo
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   .no-print button.secondary { background: #666; }
-  @media print { .no-print { display: none !important; } }
+  @media print { .no-print { display: none !important; } body { padding: 0; } }
 </style>
 </head>
 <body>
@@ -348,6 +345,184 @@ export async function printFilledExcel(xlsx: Blob, title = 'Recibo'): Promise<vo
     win.document.open();
     win.document.write(html);
     win.document.close();
+}
+
+// ── Renderizador exceljs → HTML ──────────────────────────────────────────────
+
+function escapeHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+}
+
+function parseCellRef(ref: string): { row: number; col: number } {
+    const m = ref.match(/^([A-Z]+)(\d+)$/);
+    if (!m) throw new Error(`Cell ref inválida: ${ref}`);
+    const letters = m[1]!;
+    let col = 0;
+    for (const c of letters) col = col * 26 + (c.charCodeAt(0) - 64);
+    return { row: parseInt(m[2]!, 10), col };
+}
+
+function argbToHex(argb?: string): string | null {
+    if (!argb) return null;
+    const rgb = argb.length === 8 ? argb.slice(2) : argb;
+    return `#${rgb}`;
+}
+
+function formatCellValue(cell: ExcelJS.Cell): string {
+    const v = cell.value;
+    if (v === null || v === undefined || v === '') return '';
+
+    const numFmt = (cell.numFmt || '').toLowerCase();
+    const formatNumber = (n: number): string => {
+        if (numFmt.includes('r$') || numFmt.includes('[$r$')) {
+            return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+        if (numFmt.includes('0.00') || numFmt.includes('0,00') || numFmt.includes('#,##0.00')) {
+            return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+        if (numFmt.includes('0%')) return (n * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + '%';
+        if (numFmt.includes('dd/mm')) {
+            // Excel serial date → JS Date
+            const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+            return d.toLocaleDateString('pt-BR');
+        }
+        return Number.isInteger(n) ? String(n) : n.toLocaleString('pt-BR', { maximumFractionDigits: 6 });
+    };
+
+    if (typeof v === 'number') return formatNumber(v);
+    if (typeof v === 'string') return v;
+    if (v instanceof Date) return v.toLocaleDateString('pt-BR');
+    if (typeof v === 'object') {
+        if ('richText' in v) return (v as ExcelJS.CellRichTextValue).richText.map(p => p.text).join('');
+        if ('formula' in v) {
+            const result = (v as ExcelJS.CellFormulaValue).result;
+            if (typeof result === 'number') return formatNumber(result);
+            if (result === undefined || result === null) return '';
+            return String(result);
+        }
+        if ('hyperlink' in v) return (v as ExcelJS.CellHyperlinkValue).text || (v as ExcelJS.CellHyperlinkValue).hyperlink;
+        if ('text' in v) return String((v as any).text ?? '');
+    }
+    return String(v);
+}
+
+function cellStyle(cell: ExcelJS.Cell): string {
+    const styles: string[] = ['padding:3px 6px', 'overflow:hidden'];
+
+    // Fill (fundo)
+    const fill: any = cell.fill;
+    if (fill && fill.type === 'pattern' && fill.pattern === 'solid') {
+        const bg = argbToHex(fill.fgColor?.argb) || argbToHex(fill.bgColor?.argb);
+        if (bg) styles.push(`background-color:${bg}`);
+    }
+
+    // Font
+    const font: any = cell.font;
+    if (font) {
+        if (font.bold) styles.push('font-weight:700');
+        if (font.italic) styles.push('font-style:italic');
+        if (font.underline) styles.push('text-decoration:underline');
+        if (font.size) styles.push(`font-size:${font.size}pt`);
+        if (font.name) styles.push(`font-family:"${font.name}",Arial,sans-serif`);
+        const c = argbToHex(font.color?.argb);
+        if (c) styles.push(`color:${c}`);
+    }
+
+    // Bordas
+    const borders: any = cell.border;
+    if (borders) {
+        for (const side of ['top', 'right', 'bottom', 'left'] as const) {
+            const b = borders[side];
+            if (b?.style) {
+                const color = argbToHex(b.color?.argb) || '#000';
+                const width = b.style === 'thick' ? '2px' : b.style === 'medium' ? '1.5px' : '1px';
+                styles.push(`border-${side}:${width} solid ${color}`);
+            }
+        }
+    }
+
+    // Alinhamento
+    const al: any = cell.alignment;
+    if (al) {
+        if (al.horizontal) styles.push(`text-align:${al.horizontal === 'centerContinuous' ? 'center' : al.horizontal}`);
+        const vMap: Record<string, string> = { top: 'top', middle: 'middle', bottom: 'bottom', center: 'middle' };
+        if (al.vertical && vMap[al.vertical]) styles.push(`vertical-align:${vMap[al.vertical]}`);
+        if (al.wrapText) styles.push('white-space:normal; word-wrap:break-word');
+        else styles.push('white-space:nowrap');
+    } else {
+        styles.push('vertical-align:middle');
+    }
+
+    return styles.join(';');
+}
+
+function worksheetToHtml(ws: ExcelJS.Worksheet): string {
+    // Construir mapa de merges: posição → master/slave
+    const merges = new Map<string, { colspan: number; rowspan: number; isMaster: boolean }>();
+    const rawMerges: string[] = (ws as any).model?.merges || [];
+    for (const range of rawMerges) {
+        const [tl, br] = range.split(':');
+        if (!tl || !br) continue;
+        const start = parseCellRef(tl);
+        const end = parseCellRef(br);
+        const colspan = end.col - start.col + 1;
+        const rowspan = end.row - start.row + 1;
+        merges.set(`${start.row}-${start.col}`, { colspan, rowspan, isMaster: true });
+        for (let r = start.row; r <= end.row; r++) {
+            for (let c = start.col; c <= end.col; c++) {
+                const k = `${r}-${c}`;
+                if (r === start.row && c === start.col) continue;
+                merges.set(k, { colspan: 0, rowspan: 0, isMaster: false });
+            }
+        }
+    }
+
+    const lastCol = ws.actualColumnCount || ws.columnCount || 10;
+    const lastRow = ws.actualRowCount || ws.rowCount || 1;
+
+    let html = '<table style="border-collapse:collapse;table-layout:fixed;font-family:Arial,Helvetica,sans-serif;font-size:11pt;margin:0 auto;">';
+
+    // <colgroup> com larguras
+    html += '<colgroup>';
+    for (let c = 1; c <= lastCol; c++) {
+        const col = ws.getColumn(c);
+        // Excel width unit ≈ char width; conversão aproximada para px
+        const pxWidth = col.width ? Math.round(col.width * 7.5 + 5) : 90;
+        html += `<col style="width:${pxWidth}px">`;
+    }
+    html += '</colgroup>';
+
+    for (let r = 1; r <= lastRow; r++) {
+        const row = ws.getRow(r);
+        if (row.hidden) continue;
+
+        const rowStyles: string[] = [];
+        if (row.height) rowStyles.push(`height:${Math.round(row.height * 1.33)}px`);
+
+        html += `<tr style="${rowStyles.join(';')}">`;
+        for (let c = 1; c <= lastCol; c++) {
+            const key = `${r}-${c}`;
+            const merge = merges.get(key);
+            if (merge && !merge.isMaster) continue;
+
+            const cell = row.getCell(c);
+            const text = formatCellValue(cell);
+            const style = cellStyle(cell);
+            const colspan = merge?.colspan || 1;
+            const rowspan = merge?.rowspan || 1;
+            const attrs = [
+                colspan > 1 ? `colspan="${colspan}"` : '',
+                rowspan > 1 ? `rowspan="${rowspan}"` : '',
+                `style="${style}"`,
+            ].filter(Boolean).join(' ');
+
+            html += `<td ${attrs}>${escapeHtml(text)}</td>`;
+        }
+        html += '</tr>';
+    }
+
+    html += '</table>';
+    return html;
 }
 
 export function templateUrlFromPath(path: string): string {
