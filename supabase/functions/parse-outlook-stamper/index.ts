@@ -65,7 +65,7 @@ serve(async (req) => {
     if (!authHeader) throw new Error('Autenticação requerida (Authorization header).');
 
     const body = await req.json().catch(() => ({}));
-    const folderName: string = body.folderName || 'Placa';
+    const folderName: string = body.folderName || 'Placas';
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

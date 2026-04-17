@@ -215,7 +215,7 @@ export default function Emails() {
     const orderedFolders = useMemo(() => {
         const priority: Record<string, number> = {
             'inbox': 0, 'caixa de entrada': 0,
-            'placa': 1,
+            'placa': 1, 'placas': 1,
             'sent items': 90, 'itens enviados': 90, 'enviados': 90,
             'drafts': 95, 'rascunhos': 95,
             'deleted items': 98, 'itens excluídos': 98, 'lixo eletrônico': 99, 'junk email': 99,
@@ -228,7 +228,7 @@ export default function Emails() {
         });
     }, [folders]);
 
-    const showRobotButton = selectedFolder.toLowerCase() === 'placa';
+    const showRobotButton = ['placa', 'placas'].includes(selectedFolder.toLowerCase());
     const empresaEmailAtiva = selectedEmpresaEmail || empresaDaPasta?.email || '';
 
     return (
