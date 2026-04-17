@@ -76,50 +76,38 @@ serve(async (req) => {
     const textBody = mensagemCustomizada || `Ola,\n\nSegue em anexo a folha do DETRAN para solicitacao do boleto da placa do veiculo:\n\nPlaca: ${veiculoPlaca || '—'}\nChassi: ${veiculoChassi || '—'}\nOS: ${osNumero}\n\nPor favor, me envie o boleto para pagamento.\n\nAtenciosamente,\nDespachante Matilde`;
     const fileName = `Folha_Detran_${veiculoPlaca || osNumero}.pdf`;
 
-    // 4. Criar rascunho via Microsoft Graph
-    const draftPayload = {
-      subject,
-      body: {
-        contentType: 'Text',
-        content: textBody,
-      },
-      toRecipients: listaEmails.map((email) => ({
-        emailAddress: { address: email },
-      })),
-      attachments: [
-        {
-          '@odata.type': '#microsoft.graph.fileAttachment',
-          name: fileName,
-          contentType: 'application/pdf',
-          contentBytes: pdfBase64,
+    // 4. Enviar via Microsoft Graph — endpoint /me/sendMail (só precisa de Mail.Send)
+    //    https://learn.microsoft.com/en-us/graph/api/user-sendmail
+    const sendMailPayload = {
+      message: {
+        subject,
+        body: {
+          contentType: 'Text',
+          content: textBody,
         },
-      ],
+        toRecipients: listaEmails.map((email) => ({
+          emailAddress: { address: email },
+        })),
+        attachments: [
+          {
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            name: fileName,
+            contentType: 'application/pdf',
+            contentBytes: pdfBase64,
+          },
+        ],
+      },
+      saveToSentItems: true,
     };
 
-    console.log(`Criando rascunho para ${listaEmails.join(', ')}...`);
-    const draftResponse = await fetch('https://graph.microsoft.com/v1.0/me/messages', {
+    console.log(`Enviando e-mail para ${listaEmails.join(', ')} via /me/sendMail...`);
+    const sendResponse = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(draftPayload),
-    });
-
-    if (!draftResponse.ok) {
-      const errText = await draftResponse.text();
-      throw new Error(`Erro ao criar rascunho (${draftResponse.status}): ${errText}`);
-    }
-
-    const draft = await draftResponse.json();
-    const messageId = draft.id;
-    const webLink = draft.webLink;
-
-    // 5. Enviar o rascunho
-    console.log(`Enviando rascunho ${messageId}...`);
-    const sendResponse = await fetch(`https://graph.microsoft.com/v1.0/me/messages/${messageId}/send`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${accessToken}` },
+      body: JSON.stringify(sendMailPayload),
     });
 
     if (!sendResponse.ok) {
@@ -127,12 +115,10 @@ serve(async (req) => {
       throw new Error(`Erro ao enviar (${sendResponse.status}): ${errText}`);
     }
 
-    console.log(`E-mail enviado via Outlook! webLink: ${webLink}`);
+    console.log(`E-mail enviado via Outlook!`);
     return new Response(
       JSON.stringify({
         success: true,
-        messageId,
-        webLink,
         destinatarios: listaEmails.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
