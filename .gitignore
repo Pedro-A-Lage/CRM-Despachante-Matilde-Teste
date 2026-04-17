@@ -1,9 +1,11 @@
 node_modules
+dist/
 
 *.zip
 ts_errors.*
 *.tsbuildinfo
 .env*
+!.env.example
 chrome-extension.zip
 *.png
 .claude/
