@@ -29,7 +29,10 @@ const TENANT_ID = 'consumers';
 
 const PORT = 3000;
 const REDIRECT_URI = `http://localhost:${PORT}`;
-const SCOPE = 'offline_access Mail.Send Mail.Read';
+// Mail.ReadWrite é necessário para o Robô Alocador marcar emails como lidos
+// após processar os PDFs (PATCH /me/messages/{id} com isRead=true).
+// Inclui implicitamente Mail.Read.
+const SCOPE = 'offline_access Mail.Send Mail.ReadWrite';
 
 if (CLIENT_ID.startsWith('COLE_') || CLIENT_SECRET.startsWith('COLE_') || TENANT_ID.startsWith('COLE_')) {
     console.error('❌ Preencha CLIENT_ID, CLIENT_SECRET e TENANT_ID no topo do arquivo.');

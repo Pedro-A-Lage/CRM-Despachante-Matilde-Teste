@@ -1,8 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, RefreshCw, AlertTriangle, X, Paperclip, Download, Bot, CheckCircle } from 'lucide-react';
+import { Mail, RefreshCw, AlertTriangle, X, Paperclip, Download, Bot, CheckCircle, ArrowDownLeft, ArrowUpRight, FolderOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getEmpresasAtivas } from '../lib/empresaService';
+import type { EmpresaParceira } from '../types/empresa';
+
+interface OutlookFolder {
+    id: string;
+    displayName: string;
+    parentFolderId?: string;
+    childFolderCount?: number;
+    unreadItemCount?: number;
+    totalItemCount?: number;
+}
 
 interface Email {
     id: string;
@@ -11,6 +22,9 @@ interface Email {
     from: string;
     date: string;
     snippet: string;
+    direction: 'in' | 'out';
+    isRead: boolean;
+    hasAttachments: boolean;
 }
 
 interface Attachment {
@@ -30,9 +44,17 @@ interface EmailDetails {
     attachments: Attachment[];
 }
 
+const DEFAULT_FOLDER = 'Inbox';
+
 export default function Emails() {
+    const [folders, setFolders] = useState<OutlookFolder[]>([]);
+    const [selectedFolder, setSelectedFolder] = useState<string>(DEFAULT_FOLDER);
+    const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
+    const [selectedEmpresaEmail, setSelectedEmpresaEmail] = useState<string>('');
+
     const [emails, setEmails] = useState<Email[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadingFolders, setLoadingFolders] = useState(true);
     const [error, setError] = useState('');
 
     const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
@@ -40,41 +62,71 @@ export default function Emails() {
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
 
-    const loadEmails = async () => {
+    const [syncingBot, setSyncingBot] = useState(false);
+    const [botMessage, setBotMessage] = useState<string | null>(null);
+
+    // Empresa cuja pasta coincide (case-insensitive) com a pasta selecionada.
+    const empresaDaPasta = useMemo(() => {
+        const key = selectedFolder.trim().toLowerCase();
+        return empresas.find(e => e.nome.trim().toLowerCase() === key) || null;
+    }, [empresas, selectedFolder]);
+
+    const loadFolders = async () => {
+        setLoadingFolders(true);
+        try {
+            const { data, error: invokeError } = await supabase.functions.invoke('get-outlook-folders');
+            if (invokeError) throw invokeError;
+            if (data?.error) throw new Error(data.error);
+            setFolders(data?.folders || []);
+        } catch (err: any) {
+            console.error('Erro ao carregar pastas:', err);
+            setError(err.message || 'Falha ao listar pastas Outlook');
+        } finally {
+            setLoadingFolders(false);
+        }
+    };
+
+    const loadEmpresas = async () => {
+        try {
+            const list = await getEmpresasAtivas();
+            setEmpresas(list);
+        } catch (err) {
+            console.error('Erro ao carregar empresas:', err);
+        }
+    };
+
+    const loadEmails = async (folderName: string, empresaEmail?: string) => {
         setLoading(true);
         setError('');
         try {
-            const { data, error: invokeError } = await supabase.functions.invoke('get-emails');
-            
+            const { data, error: invokeError } = await supabase.functions.invoke('get-outlook-emails', {
+                body: { folderName, empresaEmail: empresaEmail || undefined, limit: 50 },
+            });
             if (invokeError) throw invokeError;
             if (data?.error) throw new Error(data.error);
-
-            if (data?.emails) {
-                setEmails(data.emails);
-            }
+            setEmails(data?.emails || []);
         } catch (err: any) {
             console.error('Erro ao carregar e-mails:', err);
             setError(err.message || 'Falha ao buscar e-mails');
+            setEmails([]);
         } finally {
             setLoading(false);
         }
     };
-
-    const [syncingBot, setSyncingBot] = useState(false);
-    const [botMessage, setBotMessage] = useState<string | null>(null);
 
     const handleBotSync = async () => {
         setSyncingBot(true);
         setBotMessage(null);
         setError('');
         try {
-            const { data, error: invokeError } = await supabase.functions.invoke('parse-stamper-emails');
+            const { data, error: invokeError } = await supabase.functions.invoke('parse-outlook-stamper', {
+                body: { folderName: selectedFolder },
+            });
             if (invokeError) throw invokeError;
             if (data?.error) throw new Error(data.error);
 
             setBotMessage(`Robô sincronizou ${data?.processed || 0} e-mails não lidos.`);
-            // Recarrega a lista
-            loadEmails();
+            loadEmails(selectedFolder, selectedEmpresaEmail || empresaDaPasta?.email);
         } catch (err: any) {
             console.error('Erro ao sincronizar robô:', err);
             setError('Falha ao rodar automação: ' + err.message);
@@ -84,8 +136,17 @@ export default function Emails() {
     };
 
     useEffect(() => {
-        loadEmails();
+        loadFolders();
+        loadEmpresas();
     }, []);
+
+    useEffect(() => {
+        // Quando pasta muda, tenta pre-selecionar o email da empresa correspondente
+        const emailSugerido = empresaDaPasta?.email || '';
+        setSelectedEmpresaEmail(emailSugerido);
+        loadEmails(selectedFolder, emailSugerido);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedFolder, empresaDaPasta]);
 
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
@@ -104,13 +165,11 @@ export default function Emails() {
         setError('');
 
         try {
-            const { data, error } = await supabase.functions.invoke('get-email-details', {
-                body: { id: email.id }
+            const { data, error } = await supabase.functions.invoke('get-outlook-email-details', {
+                body: { id: email.id },
             });
-
             if (error) throw error;
             if (data?.error) throw new Error(data.error);
-
             setEmailDetails(data);
         } catch (err: any) {
             console.error('Erro ao carregar detalhes do e-mail:', err);
@@ -124,22 +183,19 @@ export default function Emails() {
     const handleDownloadAttachment = async (messageId: string, attachment: Attachment) => {
         setDownloadingUrl(attachment.attachmentId);
         try {
-            const { data, error } = await supabase.functions.invoke('get-email-attachment', {
-                body: { messageId, attachmentId: attachment.attachmentId }
+            const { data, error } = await supabase.functions.invoke('get-outlook-email-attachment', {
+                body: { messageId, attachmentId: attachment.attachmentId },
             });
-            
             if (error) throw error;
             if (data?.error) throw new Error(data.error);
 
-            const b64 = data.data.replace(/-/g, '+').replace(/_/g, '/');
+            const b64 = (data.data || '').replace(/-/g, '+').replace(/_/g, '/');
             const byteCharacters = atob(b64);
             const byteNumbers = new Array(byteCharacters.length);
-            for (let i = 0; i < byteCharacters.length; i++) {
-                byteNumbers[i] = byteCharacters.charCodeAt(i);
-            }
+            for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
             const byteArray = new Uint8Array(byteNumbers);
             const blob = new Blob([byteArray], { type: attachment.mimeType });
-            
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -156,35 +212,93 @@ export default function Emails() {
         }
     };
 
+    const orderedFolders = useMemo(() => {
+        const priority: Record<string, number> = {
+            'inbox': 0, 'caixa de entrada': 0,
+            'placa': 1,
+            'sent items': 90, 'itens enviados': 90, 'enviados': 90,
+            'drafts': 95, 'rascunhos': 95,
+            'deleted items': 98, 'itens excluídos': 98, 'lixo eletrônico': 99, 'junk email': 99,
+        };
+        return [...folders].sort((a, b) => {
+            const pa = priority[a.displayName.toLowerCase()] ?? 50;
+            const pb = priority[b.displayName.toLowerCase()] ?? 50;
+            if (pa !== pb) return pa - pb;
+            return a.displayName.localeCompare(b.displayName, 'pt-BR');
+        });
+    }, [folders]);
+
+    const showRobotButton = selectedFolder.toLowerCase() === 'placa';
+    const empresaEmailAtiva = selectedEmpresaEmail || empresaDaPasta?.email || '';
+
     return (
         <div className="card">
             <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                 <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Mail size={20} />
-                    Caixa de E-mails da Estampadora
+                    Caixa de E-mails {empresaDaPasta ? `— ${empresaDaPasta.nome}` : `(Outlook)`}
                 </h2>
-                <div style={{ display: 'flex', gap: 8 }}>
-                    <button 
-                        onClick={handleBotSync} 
-                        className="btn btn-primary"
-                        disabled={syncingBot}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg, var(--notion-purple, #9065B0), var(--notion-blue-hover))', border: 'none', boxShadow: '0 2px 8px rgba(139,92,246,0.3)' }}
-                        title="Extrair PDFs não lidos e associar às Ordens de Serviço"
-                    >
-                        <Bot size={16} className={syncingBot ? 'pulse' : ''} />
-                        {syncingBot ? 'Processando...' : 'Robô Alocador de PDFs'}
-                    </button>
-                    <button 
-                        onClick={loadEmails} 
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {showRobotButton && (
+                        <button
+                            onClick={handleBotSync}
+                            className="btn btn-primary"
+                            disabled={syncingBot}
+                            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg, var(--notion-purple, #9065B0), var(--notion-blue-hover))', border: 'none', boxShadow: '0 2px 8px rgba(139,92,246,0.3)' }}
+                            title="Extrair PDFs não lidos da pasta Placa e associar às Ordens de Serviço"
+                        >
+                            <Bot size={16} className={syncingBot ? 'pulse' : ''} />
+                            {syncingBot ? 'Processando...' : 'Robô Alocador de PDFs'}
+                        </button>
+                    )}
+                    <button
+                        onClick={() => loadEmails(selectedFolder, empresaEmailAtiva)}
                         className="btn btn-secondary"
                         disabled={loading}
                     >
                         <RefreshCw size={16} className={loading ? 'spin' : ''} />
-                        Atualizar Caixa
+                        Atualizar
                     </button>
                 </div>
             </div>
-            
+
+            {/* Filtros: pasta + empresa */}
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center', background: 'var(--notion-bg-alt)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <FolderOpen size={16} style={{ color: 'var(--notion-text-secondary)' }} />
+                    <label style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', fontWeight: 500 }}>Pasta:</label>
+                    <select
+                        value={selectedFolder}
+                        onChange={(e) => setSelectedFolder(e.target.value)}
+                        disabled={loadingFolders}
+                        className="input"
+                        style={{ minWidth: 200 }}
+                    >
+                        {loadingFolders && <option>Carregando...</option>}
+                        {!loadingFolders && orderedFolders.map((f) => (
+                            <option key={f.id} value={f.displayName}>
+                                {f.displayName}{f.unreadItemCount ? ` (${f.unreadItemCount})` : ''}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {empresaDaPasta ? (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{
+                            width: 10, height: 10, borderRadius: '50%',
+                            background: empresaDaPasta.cor || '#3B82F6', display: 'inline-block',
+                        }} />
+                        Pasta vinculada à empresa <strong style={{ color: 'var(--text-color)' }}>{empresaDaPasta.nome}</strong>
+                        {empresaEmailAtiva && <> — mostrando recebidos + enviados para <code style={{ fontSize: '0.8rem' }}>{empresaEmailAtiva}</code></>}
+                    </div>
+                ) : (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
+                        Nenhuma empresa vinculada. Crie uma pasta no Outlook com o mesmo nome de uma empresa parceira para agrupar automaticamente.
+                    </div>
+                )}
+            </div>
+
             <div className="card-body" style={{ padding: 0 }}>
                 {botMessage && (
                     <div style={{ margin: '16px', padding: '12px', background: 'var(--notion-green)', color: 'var(--notion-green)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
@@ -202,21 +316,21 @@ export default function Emails() {
                 {loading ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                         <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
-                        <p>Sincronizando com o Gmail (Marcador: Estampadora)...</p>
+                        <p>Sincronizando com Outlook (pasta: {selectedFolder})...</p>
                     </div>
                 ) : emails.length === 0 ? (
                     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                         <Mail size={32} style={{ margin: '0 auto 12px', opacity: 0.5 }} />
-                        <p>Nenhuma mensagem encontrada neste marcador.</p>
+                        <p>Nenhuma mensagem encontrada nesta pasta.</p>
                     </div>
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                         {emails.map((email) => (
-                            <div 
-                                key={email.id} 
+                            <div
+                                key={`${email.direction}-${email.id}`}
                                 onClick={() => handleOpenEmail(email)}
-                                style={{ 
-                                    padding: '16px', 
+                                style={{
+                                    padding: '16px',
                                     borderBottom: '1px solid var(--notion-border)',
                                     display: 'flex',
                                     flexDirection: 'column',
@@ -224,13 +338,29 @@ export default function Emails() {
                                     cursor: 'pointer',
                                     transition: 'background-color 0.2s',
                                     background: 'var(--notion-bg-alt)',
+                                    borderLeft: email.direction === 'out'
+                                        ? '3px solid var(--notion-green, #15803d)'
+                                        : '3px solid transparent',
+                                    opacity: email.isRead ? 0.85 : 1,
                                 }}
                                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--notion-bg)'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--notion-bg-alt)'}
                             >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <div style={{ fontWeight: 600, color: 'var(--notion-blue)', fontSize: '0.95rem' }}>
-                                        {email.from.replace(/<.*>/, '').trim()}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                                        {email.direction === 'in'
+                                            ? <ArrowDownLeft size={14} style={{ color: 'var(--notion-blue)' }} aria-label="Recebido" />
+                                            : <ArrowUpRight size={14} style={{ color: 'var(--notion-green, #15803d)' }} aria-label="Enviado" />}
+                                        <div style={{ fontWeight: 600, color: email.direction === 'in' ? 'var(--notion-blue)' : 'var(--notion-green, #15803d)', fontSize: '0.95rem' }}>
+                                            {email.from.replace(/<.*>/, '').trim()}
+                                        </div>
+                                        {email.hasAttachments && <Paperclip size={12} style={{ color: 'var(--notion-text-secondary)' }} />}
+                                        {!email.isRead && email.direction === 'in' && (
+                                            <span style={{
+                                                fontSize: '0.65rem', fontWeight: 700, padding: '2px 6px', borderRadius: 8,
+                                                background: 'var(--notion-blue)', color: '#fff', textTransform: 'uppercase',
+                                            }}>NOVO</span>
+                                        )}
                                     </div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--notion-text-secondary)' }}>
                                         {formatDate(email.date)}
@@ -258,12 +388,19 @@ export default function Emails() {
                             </h3>
                             <button className="btn btn-ghost" onClick={() => setSelectedEmail(null)}><X size={20} /></button>
                         </div>
-                        
+
                         <div className="modal-body" style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid var(--notion-border)' }}>
                                 <div>
-                                    <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-color)' }}>{selectedEmail.from.replace(/<.*>/, '').trim()}</div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', marginTop: '4px' }}>{selectedEmail.from.match(/<([^>]+)>/)?.[1] || selectedEmail.from}</div>
+                                    <div style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        {selectedEmail.direction === 'in'
+                                            ? <ArrowDownLeft size={16} style={{ color: 'var(--notion-blue)' }} />
+                                            : <ArrowUpRight size={16} style={{ color: 'var(--notion-green, #15803d)' }} />}
+                                        {selectedEmail.from.replace(/<.*>/, '').trim()}
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)', marginTop: '4px' }}>
+                                        {selectedEmail.from.match(/<([^>]+)>/)?.[1] || selectedEmail.from}
+                                    </div>
                                 </div>
                                 <div style={{ fontSize: '0.85rem', color: 'var(--notion-text-secondary)' }}>
                                     {formatDate(selectedEmail.date)}
@@ -273,17 +410,17 @@ export default function Emails() {
                             {loadingDetails ? (
                                 <div style={{ padding: '40px', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                                     <RefreshCw size={24} className="spin" style={{ margin: '0 auto 12px' }} />
-                                    <p>Baixando mensagem do Google...</p>
+                                    <p>Baixando mensagem do Outlook...</p>
                                 </div>
                             ) : emailDetails ? (
                                 <>
-                                    <div style={{ 
+                                    <div style={{
                                         color: 'var(--text-color)',
-                                        whiteSpace: 'pre-wrap', 
+                                        whiteSpace: 'pre-wrap',
                                         fontFamily: 'inherit',
                                         fontSize: '0.95rem',
                                         lineHeight: '1.6',
-                                        marginBottom: '32px'
+                                        marginBottom: '32px',
                                     }}>
                                         {emailDetails.body}
                                     </div>
@@ -293,24 +430,24 @@ export default function Emails() {
                                             <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--notion-text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <Paperclip size={16} /> Anexos ({emailDetails.attachments.length})
                                             </h4>
-                                            
+
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                                                 {emailDetails.attachments.map((att) => (
-                                                    <div key={att.attachmentId} style={{ 
-                                                        display: 'flex', alignItems: 'center', gap: '12px', 
-                                                        padding: '12px 16px', 
-                                                        background: 'var(--notion-bg-alt)', 
+                                                    <div key={att.attachmentId} style={{
+                                                        display: 'flex', alignItems: 'center', gap: '12px',
+                                                        padding: '12px 16px',
+                                                        background: 'var(--notion-bg-alt)',
                                                         border: '1px solid var(--notion-border)',
                                                         borderRadius: '8px',
                                                         minWidth: '250px',
-                                                        flex: '1 1 auto'
+                                                        flex: '1 1 auto',
                                                     }}>
-                                                        <div style={{ 
-                                                            width: '40px', height: '40px', 
-                                                            background: 'rgba(56, 189, 248, 0.1)', 
+                                                        <div style={{
+                                                            width: '40px', height: '40px',
+                                                            background: 'rgba(56, 189, 248, 0.1)',
                                                             color: 'var(--notion-blue)',
                                                             borderRadius: '8px',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                         }}>
                                                             <FileIcon mimeType={att.mimeType} />
                                                         </div>
@@ -318,8 +455,8 @@ export default function Emails() {
                                                             <div style={{ fontWeight: 600, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={att.filename}>{att.filename}</div>
                                                             <div style={{ fontSize: '0.75rem', color: 'var(--notion-text-secondary)' }}>{(att.size / 1024).toFixed(1)} KB</div>
                                                         </div>
-                                                        <button 
-                                                            className="btn btn-primary" 
+                                                        <button
+                                                            className="btn btn-primary"
                                                             style={{ padding: '8px 12px' }}
                                                             onClick={() => handleDownloadAttachment(selectedEmail.id, att)}
                                                             disabled={downloadingUrl === att.attachmentId}
@@ -341,7 +478,7 @@ export default function Emails() {
                     </div>
                 </div>
             )}
-            
+
             <style>{`
                 .spin { animation: spin 1s linear infinite; }
                 .pulse { animation: pulse 1.5s ease-in-out infinite; }
