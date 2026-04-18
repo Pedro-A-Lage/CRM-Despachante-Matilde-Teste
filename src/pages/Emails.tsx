@@ -68,9 +68,13 @@ export default function Emails() {
     const [botMessage, setBotMessage] = useState<string | null>(null);
 
     // Empresa cuja pasta coincide (case-insensitive) com a pasta selecionada.
+    // Prioriza o campo configurável `pastaOutlook`; se vazio, cai para `nome`.
     const empresaDaPasta = useMemo(() => {
         const key = selectedFolder.trim().toLowerCase();
-        return empresas.find(e => e.nome.trim().toLowerCase() === key) || null;
+        return empresas.find(e => {
+            const pasta = (e.pastaOutlook || e.nome).trim().toLowerCase();
+            return pasta === key;
+        }) || null;
     }, [empresas, selectedFolder]);
 
     const loadFolders = async () => {

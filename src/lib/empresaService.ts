@@ -8,6 +8,7 @@ function dbToEmpresa(row: any): EmpresaParceira {
     return {
         id: row.id,
         nome: row.nome,
+        pastaOutlook: row.pasta_outlook ?? undefined,
         email: row.email ?? undefined,
         cor: row.cor ?? '#3B82F6',
         ativo: row.ativo,
@@ -30,6 +31,7 @@ function dbToEmpresa(row: any): EmpresaParceira {
 function empresaToDb(e: Partial<EmpresaParceira>): Record<string, any> {
     const map: Record<string, any> = {};
     if (e.nome !== undefined) map.nome = e.nome;
+    if (e.pastaOutlook !== undefined) map.pasta_outlook = e.pastaOutlook || null;
     if (e.email !== undefined) map.email = e.email || null;
     if (e.cor !== undefined) map.cor = e.cor;
     if (e.ativo !== undefined) map.ativo = e.ativo;

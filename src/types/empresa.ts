@@ -41,6 +41,9 @@ export interface EtapaEnvioStatus {
 export interface EmpresaParceira {
     id: string;
     nome: string;
+    /** Nome exato da pasta no Outlook onde esta empresa recebe emails.
+     *  Se vazio, usa-se `nome` como fallback. */
+    pastaOutlook?: string;
     email?: string;
     cor: string;
     ativo: boolean;
