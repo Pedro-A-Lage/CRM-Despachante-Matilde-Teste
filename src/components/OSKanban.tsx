@@ -8,6 +8,7 @@ import { STATUS_OS_LABELS, type StatusOS, type OrdemDeServico, type Cliente, typ
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import { getEmpresas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
+import { isValidStatusTransition } from '../lib/database';
 
 interface OSKanbanProps {
     ordens: OrdemDeServico[];
@@ -102,9 +103,21 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
         if (el) el.style.opacity = '1';
     };
 
+    // Status da OS sendo arrastada, para validar destino em tempo real.
+    const draggedStatus = useMemo<StatusOS | null>(() => {
+        if (!draggedId) return null;
+        return ordens.find(o => o.id === draggedId)?.status ?? null;
+    }, [draggedId, ordens]);
+
+    const canDropOn = (columnId: StatusOS): boolean => {
+        if (!draggedStatus) return true;
+        return isValidStatusTransition(draggedStatus, columnId);
+    };
+
     const handleDragOver = (e: React.DragEvent, columnId: StatusOS) => {
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
+        const allowed = canDropOn(columnId);
+        e.dataTransfer.dropEffect = allowed ? 'move' : 'none';
         setDragOverColumn(columnId);
     };
 
@@ -115,11 +128,13 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
     const handleDrop = (e: React.DragEvent, columnId: StatusOS) => {
         e.preventDefault();
         const osId = e.dataTransfer.getData('os_id');
-        if (osId) {
-            onStatusChange(osId, columnId);
-        }
         setDraggedId(null);
         setDragOverColumn(null);
+        if (!osId) return;
+        // Delegamos a validação para onStatusChange (OSList), que dispara toast
+        // em caso de transição inválida. Aqui só evitamos round-trip quando já
+        // sabemos que é no-op (mesma coluna) ou quando a UI sinalizou bloqueado.
+        onStatusChange(osId, columnId);
     };
 
     // Unique responsáveis (exclui "Legado (CSV)")
@@ -485,6 +500,8 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                 {KANBAN_COLUMNS.filter(col => visibleColumns[col.id] !== false).map((column) => {
                     const columnOrdens = filteredOrdens.filter(o => o.status === column.id).sort(sortByPriority);
                     const isDragTarget = dragOverColumn === column.id;
+                    const isInvalidTarget = isDragTarget && draggedStatus !== null && draggedStatus !== column.id && !canDropOn(column.id);
+                    const outlineColor = isInvalidTarget ? 'var(--notion-orange, #dd5b00)' : column.color;
                     const totalValue = columnOrdens.reduce((sum, o) => sum + (o.valorServico ?? 0), 0);
 
                     return (
@@ -493,9 +510,10 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                             className="kanban-column"
                             style={{
                                 minWidth: window.innerWidth <= 768 ? '85vw' : '290px',
-                                outline: isDragTarget ? `2px solid ${column.color}` : undefined,
+                                outline: isDragTarget ? `2px solid ${outlineColor}` : undefined,
                                 outlineOffset: isDragTarget ? '-2px' : undefined,
-                                background: isDragTarget ? `color-mix(in srgb, ${column.color} 5%, var(--bg-surface))` : undefined,
+                                background: isDragTarget ? `color-mix(in srgb, ${outlineColor} 5%, var(--bg-surface))` : undefined,
+                                cursor: isInvalidTarget ? 'not-allowed' : undefined,
                                 transition: 'outline 0.1s, background 0.1s',
                             }}
                             onDragOver={(e) => handleDragOver(e, column.id)}

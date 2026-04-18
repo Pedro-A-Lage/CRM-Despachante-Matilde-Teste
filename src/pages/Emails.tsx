@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getEmpresasAtivas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
+import { useToast } from '../components/Toast';
 
 interface OutlookFolder {
     id: string;
@@ -47,6 +48,7 @@ interface EmailDetails {
 const DEFAULT_FOLDER = 'Inbox';
 
 export default function Emails() {
+    const { showToast } = useToast();
     const [folders, setFolders] = useState<OutlookFolder[]>([]);
     const [selectedFolder, setSelectedFolder] = useState<string>(DEFAULT_FOLDER);
     const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
@@ -206,7 +208,7 @@ export default function Emails() {
             URL.revokeObjectURL(url);
         } catch (err: any) {
             console.error('Erro ao baixar anexo:', err);
-            alert('Falha ao baixar anexo: ' + err.message);
+            showToast('Falha ao baixar anexo: ' + err.message, 'error');
         } finally {
             setDownloadingUrl(null);
         }

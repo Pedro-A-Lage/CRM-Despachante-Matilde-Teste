@@ -14,6 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useConfirm } from '../components/ConfirmProvider';
+import { useToast } from '../components/Toast';
 import {
   getFabricas,
   getFabricasAtivas,
@@ -565,6 +566,7 @@ function PedidoModal({ pedido, fabrica, saldo, empresas, onClose, onSaved }: Ped
 export default function ControlePlacas() {
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const { showToast } = useToast();
 
   const [fabricas, setFabricas] = useState<FabricaPlacas[]>([]);
   const [fabricasAtivas, setFabricasAtivas] = useState<FabricaPlacas[]>([]);
@@ -646,7 +648,7 @@ export default function ControlePlacas() {
       await deletePedido(pedido.id);
       await loadPedidos(selectedFabricaId);
     } catch (e: any) {
-      alert('Erro ao excluir: ' + e.message);
+      showToast('Erro ao excluir: ' + e.message, 'error');
     }
   }
 

@@ -1,15 +1,10 @@
 // ============================================
 // Ficha de Cadastro AI - Extração via Google Gemini
-// Analisa o PDF da Ficha de Cadastro/DAE que volta do Detran
+// Analisa o PDF da Ficha de Cadastro/DAE que volta do Detran.
+// Chama a API via edge function gemini-proxy (chave não vai pro bundle).
 // ============================================
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
-    generationConfig: { maxOutputTokens: 4096, responseMimeType: 'application/json' },
-});
+import { callGemini } from './geminiClient';
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer);
@@ -217,29 +212,6 @@ REGRAS GERAIS
 - NÃO inclua R$, pontos de milhar nem vírgula no valorRecibo.
 - Devolva APENAS o JSON, nada mais.`;
 
-async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt: string, maxTentativas = 3): Promise<string> {
-    for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
-        try {
-            const result = await model.generateContent([
-                { inlineData: { data: dataBase64, mimeType } },
-                { text: prompt },
-            ]);
-            return result.response.text();
-        } catch (err: any) {
-            const msg = err?.message || '';
-            if ((msg.includes('429') || msg.includes('503')) && tentativa < maxTentativas) {
-                const delayMatch = msg.match(/retry in (\d+)/i);
-                const delaySec = delayMatch ? Math.min(parseInt(delayMatch[1], 10) + 2, 60) : 20;
-                console.log(`[Matilde] Gemini rate limit, tentativa ${tentativa}/${maxTentativas}. Aguardando ${delaySec}s...`);
-                await new Promise(r => setTimeout(r, delaySec * 1000));
-                continue;
-            }
-            throw err;
-        }
-    }
-    throw new Error('Gemini: máximo de tentativas excedido');
-}
-
 /**
  * Extrai dados da Ficha/Decalque do Detran.
  * - PDF (application/pdf): usa pdfParser (regex, muito mais rápido).
@@ -271,7 +243,7 @@ async function extrairViaGemini(file: File, _mimeType: string): Promise<DadosFic
     // Comprimir foto antes de enviar (reduz ~80% do payload, evita erros 413/timeout)
     const { base64: b64, mimeType: compressedMime } = await comprimirImagem(file);
     const promptCompleto = PROMPT_FOTO_PREFIXO + PROMPT_FICHA_CADASTRO;
-    const raw = await chamarGeminiComRetry(b64, compressedMime, promptCompleto, 4);
+    const raw = await callGemini(b64, compressedMime, promptCompleto, { maxRetries: 4 });
 
     let parsed: any;
     try {

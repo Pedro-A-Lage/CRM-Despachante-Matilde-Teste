@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Search, FileText, Eye, LayoutGrid, List, AlertTriangle, Flame, X, ExternalLink, Filter, Inbox, Building2, CheckCircle } from 'lucide-react';
-import { getOrdens, getClientes, getVeiculos, updateOrdem, addAuditEntry } from '../lib/database';
+import { getOrdens, getClientes, getVeiculos, updateOrdem, addAuditEntry, isValidStatusTransition } from '../lib/database';
 import { getPaymentsTotalByOSIds } from '../lib/financeService';
 import { getEmpresas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
@@ -11,6 +11,7 @@ import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import OSKanban from '../components/OSKanban';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useNovaOSModal } from '../hooks/useNovaOSModal';
+import { useToast } from '../components/Toast';
 
 function getStatusBadge(status: string) {
     const map: Record<string, string> = {
@@ -109,6 +110,7 @@ export default function OSList() {
     const navigate = useNavigate();
     const location = useLocation();
     const serviceLabels = useServiceLabels();
+    const { showToast } = useToast();
     const saved = loadFiltros();
     const [search, setSearch] = useState(saved.search || '');
     const [statusFilter, setStatusFilter] = useState<StatusOS | ''>(saved.statusFilter || '');
@@ -391,13 +393,26 @@ export default function OSList() {
 
     const handleStatusChange = async (osId: string, newStatus: StatusOS) => {
         const os = ordens.find(o => o.id === osId);
-        if (os && os.status !== newStatus) {
-            // Atualização otimista local para evitar delay visual (opcional, mas recomendado)
-            setOrdens(prev => prev.map(o => o.id === osId ? { ...o, status: newStatus } : o));
+        if (!os || os.status === newStatus) return;
 
+        if (!isValidStatusTransition(os.status, newStatus)) {
+            showToast(
+                `Transição inválida: ${STATUS_OS_LABELS[os.status]} → ${STATUS_OS_LABELS[newStatus]}`,
+                'error'
+            );
+            return;
+        }
+
+        // Atualização otimista local para evitar delay visual
+        setOrdens(prev => prev.map(o => o.id === osId ? { ...o, status: newStatus } : o));
+        try {
             await updateOrdem(osId, { status: newStatus });
             await addAuditEntry(osId, 'Status alterado', `Status → ${STATUS_OS_LABELS[newStatus]} (via Kanban)`);
-            loadData(true); // Chamada silenciosa para não piscar a tela
+            loadData(true);
+        } catch (err: any) {
+            // Reverte otimismo em caso de falha
+            setOrdens(prev => prev.map(o => o.id === osId ? { ...o, status: os.status } : o));
+            showToast(`Falha ao atualizar status: ${err?.message || err}`, 'error');
         }
     };
 

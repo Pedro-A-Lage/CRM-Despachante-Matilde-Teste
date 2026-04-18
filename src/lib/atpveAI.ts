@@ -1,16 +1,10 @@
 // ============================================
 // ATPVE AI - Extração via Google Gemini
-// Envia o PDF diretamente para Gemini (sem renderização de imagens)
+// Envia o PDF diretamente para Gemini via edge function gemini-proxy.
 // ============================================
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { DadosExtraidos, DadosPessoa } from './pdfParser';
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
-    generationConfig: { maxOutputTokens: 4096, responseMimeType: 'application/json' },
-});
+import { callGemini } from './geminiClient';
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
     const bytes = new Uint8Array(buffer);
@@ -406,31 +400,6 @@ export async function extrairDecalqueChassi(file: File): Promise<DadosDecalque> 
     } satisfies DadosDecalque;
 }
 
-async function chamarGeminiComRetry(dataBase64: string, mimeType: string, prompt: string, maxTentativas = 3): Promise<string> {
-    for (let tentativa = 1; tentativa <= maxTentativas; tentativa++) {
-        try {
-            const result = await model.generateContent([
-                { inlineData: { data: dataBase64, mimeType } },
-                { text: prompt },
-            ]);
-            return result.response.text();
-        } catch (err: any) {
-            const msg = err?.message || '';
-            // Retry em caso de 429 (rate limit) ou 503 (overloaded)
-            if ((msg.includes('429') || msg.includes('503')) && tentativa < maxTentativas) {
-                // Extrai delay sugerido ou usa 20s
-                const delayMatch = msg.match(/retry in (\d+)/i);
-                const delaySec = delayMatch ? Math.min(parseInt(delayMatch[1], 10) + 2, 60) : 20;
-                console.log(`[Matilde] Gemini rate limit, tentativa ${tentativa}/${maxTentativas}. Aguardando ${delaySec}s...`);
-                await new Promise(r => setTimeout(r, delaySec * 1000));
-                continue;
-            }
-            throw err;
-        }
-    }
-    throw new Error('Gemini: máximo de tentativas excedido');
-}
-
 const MAX_GEMINI_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export async function extrairDadosATPVeComIA(file: File): Promise<DadosExtraidos> {
@@ -441,7 +410,7 @@ export async function extrairDadosATPVeComIA(file: File): Promise<DadosExtraidos
     const dataBase64 = arrayBufferToBase64(arrayBuffer);
     const mimeType = detectarMimeType(file);
 
-    const textoResposta = await chamarGeminiComRetry(dataBase64, mimeType, PROMPT_ATPVE);
+    const textoResposta = await callGemini(dataBase64, mimeType, PROMPT_ATPVE);
 
     // Parse do JSON retornado
     let parsed: any;

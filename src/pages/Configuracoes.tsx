@@ -12,6 +12,7 @@ import { ServiceEditModal } from '../components/ServiceEditModal';
 import { getEmpresas, saveEmpresa } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { EmpresaEditModal } from '../components/EmpresaEditModal';
+import { useToast } from '../components/Toast';
 
 // ── Label helpers ─────────────────────────────────────────────────────────────
 const daeLabel = (v: string | null) =>
@@ -149,6 +150,7 @@ type TabKey = 'servicos' | 'custos' | 'empresas';
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Configuracoes() {
+  const { showToast } = useToast();
   const [configs, setConfigs] = useState<ServiceConfig[]>([]);
   const [custos, setCustos] = useState<PriceTableItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -531,7 +533,7 @@ export default function Configuracoes() {
             carregar();
           } catch (err: any) {
             console.error('Erro ao salvar empresa:', err);
-            alert(`Não foi possível salvar a empresa:\n\n${err?.message || err}`);
+            showToast(`Não foi possível salvar a empresa: ${err?.message || err}`, 'error');
           }
         }}
         onClose={() => setEditingEmpresa(null)}
