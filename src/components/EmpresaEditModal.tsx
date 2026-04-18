@@ -85,6 +85,7 @@ interface Props {
 
 export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   const [nome, setNome] = useState(empresa.nome || '');
+  const [pastaOutlook, setPastaOutlook] = useState(empresa.pastaOutlook || '');
   const [email, setEmail] = useState(empresa.email || '');
   const [cor, setCor] = useState(empresa.cor || '#3B82F6');
   const [ativo, setAtivo] = useState(empresa.ativo ?? true);
@@ -109,6 +110,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     setNome(empresa.nome || '');
+    setPastaOutlook(empresa.pastaOutlook || '');
     setEmail(empresa.email || '');
     setCor(empresa.cor || '#3B82F6');
     setAtivo(empresa.ativo ?? true);
@@ -197,6 +199,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
     onSave({
       ...empresa,
       nome: nome.trim(),
+      pastaOutlook: pastaOutlook.trim() || undefined,
       email: email.trim() || undefined,
       cor,
       ativo,
@@ -301,6 +304,23 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                     placeholder="Ex: Guiauto"
                     autoFocus
                   />
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <label style={fieldLabel}>
+                    Pasta no Outlook
+                  </label>
+                  <input
+                    style={fieldInput}
+                    value={pastaOutlook}
+                    onChange={e => setPastaOutlook(e.target.value)}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    placeholder={nome || 'Nome exato da pasta (ex: Kuruma)'}
+                  />
+                  <div style={{ fontSize: '0.72rem', color: 'var(--notion-text-muted)', marginTop: 4 }}>
+                    Nome exato da pasta no seu Outlook onde os emails desta empresa chegam.
+                    Deixe em branco para usar o nome da empresa.
+                  </div>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
                   <label style={fieldLabel}>
