@@ -45,7 +45,11 @@ interface EmailDetails {
     attachments: Attachment[];
 }
 
-const DEFAULT_FOLDER = 'Inbox';
+// System folders sempre exibidas, mesmo sem empresa parceira associada.
+// "Placas" é o destino do robô stamper (extrai dados de PDFs de placa).
+const SYSTEM_FOLDERS = ['placas', 'placa'];
+
+const DEFAULT_FOLDER = '';
 
 export default function Emails() {
     const { showToast } = useToast();
@@ -219,20 +223,37 @@ export default function Emails() {
     };
 
     const orderedFolders = useMemo(() => {
+        // Só exibe pastas vinculadas a uma empresa parceira (via pastaOutlook
+        // ou nome) + as system folders (Placas, usada pelo robô). Esconde
+        // tudo mais (Inbox, Drafts, Sent Items, etc).
+        const empresaNames = empresas.map(e =>
+            (e.pastaOutlook || e.nome).trim().toLowerCase()
+        );
+        const allowed = new Set<string>([...SYSTEM_FOLDERS, ...empresaNames]);
+
         const priority: Record<string, number> = {
-            'inbox': 0, 'caixa de entrada': 0,
             'placa': 1, 'placas': 1,
-            'sent items': 90, 'itens enviados': 90, 'enviados': 90,
-            'drafts': 95, 'rascunhos': 95,
-            'deleted items': 98, 'itens excluídos': 98, 'lixo eletrônico': 99, 'junk email': 99,
         };
-        return [...folders].sort((a, b) => {
-            const pa = priority[a.displayName.toLowerCase()] ?? 50;
-            const pb = priority[b.displayName.toLowerCase()] ?? 50;
-            if (pa !== pb) return pa - pb;
-            return a.displayName.localeCompare(b.displayName, 'pt-BR');
-        });
-    }, [folders]);
+        return folders
+            .filter(f => allowed.has((f.displayName || '').trim().toLowerCase()))
+            .sort((a, b) => {
+                const pa = priority[a.displayName.toLowerCase()] ?? 50;
+                const pb = priority[b.displayName.toLowerCase()] ?? 50;
+                if (pa !== pb) return pa - pb;
+                return a.displayName.localeCompare(b.displayName, 'pt-BR');
+            });
+    }, [folders, empresas]);
+
+    // Auto-seleciona a primeira pasta visível quando ainda não há seleção
+    // (ou quando a seleção atual foi filtrada pra fora, ex.: 'Inbox').
+    useEffect(() => {
+        if (orderedFolders.length === 0) return;
+        const current = selectedFolder.trim().toLowerCase();
+        const visible = orderedFolders.some(f =>
+            f.displayName.trim().toLowerCase() === current
+        );
+        if (!visible) setSelectedFolder(orderedFolders[0].displayName);
+    }, [orderedFolders, selectedFolder]);
 
     const showRobotButton = ['placa', 'placas'].includes(selectedFolder.toLowerCase());
     const empresaEmailAtiva = selectedEmpresaEmail || empresaDaPasta?.email || '';
