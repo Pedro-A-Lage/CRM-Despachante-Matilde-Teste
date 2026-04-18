@@ -18,9 +18,11 @@ async function getAccessToken(): Promise<string> {
     client_id: clientId,
     refresh_token: refreshToken,
     grant_type: 'refresh_token',
-    // Mail.ReadWrite é necessário para marcar o email como lido (PATCH isRead)
-    // após abrir no leitor. Mail.ReadWrite inclui implicitamente Mail.Read.
-    scope: 'offline_access Mail.Send Mail.ReadWrite',
+    // Mantém só Mail.Read: refresh tokens antigos foram emitidos sem
+    // Mail.ReadWrite. Pra reativar mark-as-read, regere o token via
+    // scripts/get-outlook-refresh-token.mjs (que hoje pede ReadWrite) e
+    // amplie este scope de volta.
+    scope: 'offline_access Mail.Send Mail.Read',
   });
 
   const resp = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
@@ -84,20 +86,8 @@ serve(async (req) => {
         size: a.size || 0,
       }));
 
-    // Marca o email como lido (best-effort — não bloqueia a resposta se falhar).
-    // Graph PATCH /me/messages/{id} com { isRead: true } é idempotente.
-    try {
-      await fetch(`https://graph.microsoft.com/v1.0/me/messages/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isRead: true }),
-      });
-    } catch (e) {
-      console.error('Falha ao marcar email como lido (ignorado):', e);
-    }
+    // Mark-as-read removido temporariamente — precisa de Mail.ReadWrite, que o
+    // refresh token atual não possui. Pra reativar, regere o token.
 
     return new Response(
       JSON.stringify({

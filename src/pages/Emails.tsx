@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Mail, RefreshCw, AlertTriangle, X, Paperclip, Download, ArrowDownLeft, ArrowUpRight, FolderOpen } from 'lucide-react';
 import { format } from 'date-fns';
@@ -157,11 +158,6 @@ export default function Emails() {
             if (error) throw error;
             if (data?.error) throw new Error(data.error);
             setEmailDetails(data);
-            // Edge Function já mandou PATCH isRead=true no Graph.
-            // Reflete na UI pro badge "NOVO" sumir sem precisar recarregar.
-            setEmails(prev => prev.map(e =>
-                e.id === email.id ? { ...e, isRead: true } : e
-            ));
         } catch (err: any) {
             console.error('Erro ao carregar detalhes do e-mail:', err);
             setError('Falha ao abrir e-mail: ' + err.message);
@@ -368,17 +364,16 @@ export default function Emails() {
                 )}
             </div>
 
-            {/* Email View Modal */}
-            {selectedEmail && (
+            {/* Email View Modal — renderizado via Portal no document.body pra
+                escapar do containing block criado por .main-body > * (que tem
+                transform na animação page-fade-in). Sem isso, position: fixed
+                não funciona relativo ao viewport. */}
+            {selectedEmail && createPortal((
                 <div
                     className="modal-overlay"
-                    style={{
-                        zIndex: 9999,
-                        alignItems: 'flex-start',
-                        paddingTop: '32px',
-                    }}
+                    style={{ zIndex: 9999 }}
                 >
-                    <div className="modal" style={{ maxWidth: '800px', width: '90%', maxHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+                    <div className="modal" style={{ maxWidth: '800px', width: '90%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
                         <div className="modal-header">
                             <h3 className="modal-title" style={{ fontSize: '1.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {selectedEmail.subject}
@@ -474,7 +469,7 @@ export default function Emails() {
                         </div>
                     </div>
                 </div>
-            )}
+            ), document.body)}
 
             <style>{`
                 .spin { animation: spin 1s linear infinite; }
