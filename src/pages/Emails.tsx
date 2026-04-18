@@ -365,8 +365,15 @@ export default function Emails() {
 
             {/* Email View Modal */}
             {selectedEmail && (
-                <div className="modal-overlay" style={{ zIndex: 9999 }}>
-                    <div className="modal" style={{ maxWidth: '800px', width: '90%', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+                <div
+                    className="modal-overlay"
+                    style={{
+                        zIndex: 9999,
+                        alignItems: 'flex-start',
+                        paddingTop: '32px',
+                    }}
+                >
+                    <div className="modal" style={{ maxWidth: '800px', width: '90%', maxHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
                         <div className="modal-header">
                             <h3 className="modal-title" style={{ fontSize: '1.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {selectedEmail.subject}
