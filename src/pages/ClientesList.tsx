@@ -129,7 +129,7 @@ export default function ClientesList() {
                 marginBottom: 'var(--space-8)',
             }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--notion-text)', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 500, color: 'var(--notion-text)', letterSpacing: '-0.015em' }}>
                         Clientes
                     </h1>
                     <p style={{ margin: '8px 0 0', color: 'var(--notion-text-secondary)', fontSize: '0.95rem' }}>

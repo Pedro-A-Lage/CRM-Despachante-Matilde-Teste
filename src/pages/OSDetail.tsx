@@ -990,7 +990,7 @@ export default function OSDetail() {
                     }}>
                         <ArrowLeft size={16} />
                     </button>
-                    <h1 style={{ margin: 0, fontSize: 18, fontWeight: 850, color: 'var(--notion-blue)', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontFamily: 'var(--font-mono)', fontSize: 17, fontWeight: 600, color: 'var(--notion-blue)', letterSpacing: '0.02em' }}>
                         OS #{os.numero}
                     </h1>
                     <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--notion-text-secondary)' }}>

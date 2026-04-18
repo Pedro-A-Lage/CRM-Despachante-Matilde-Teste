@@ -244,10 +244,11 @@ export default function Configuracoes() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{
             margin: 0,
-            fontSize: '1.4rem',
-            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
+            fontSize: '1.5rem',
+            fontWeight: 500,
             color: 'var(--notion-text)',
-            letterSpacing: '-0.02em',
+            letterSpacing: '-0.015em',
           }}>
             Configurações
           </h1>

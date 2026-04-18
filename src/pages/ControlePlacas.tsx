@@ -710,7 +710,7 @@ export default function ControlePlacas() {
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--notion-text)' }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 500, letterSpacing: '-0.015em', color: 'var(--notion-text)' }}>
           Controle de Placas
         </h1>
         <div style={{ display: 'flex', gap: 10 }}>
