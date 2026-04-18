@@ -4,8 +4,10 @@ Esta pasta é a **fonte única da verdade** para tudo que envolve aparência e
 comportamento visual do CRM. Toda mudança de UI (humana ou via AI) deve seguir
 estas referências antes de ser feita.
 
-> Design system inspirado no Notion: limpo, mínimo, baseado em tokens.
-> Sem gradientes, sem glassmorphism, sem decoração desnecessária.
+> **Claude Design v1.0** — warm neutrals (creme) + accent âmbar `#c26a12` +
+> Fraunces (display) / Inter (body) / IBM Plex Mono (dados). Sério como
+> cartório, moderno como Linear. Referência visual completa em
+> [`assets/claude-design/design-system.html`](./assets/claude-design/design-system.html).
 
 ---
 
@@ -40,10 +42,16 @@ estas referências antes de ser feita.
 
 ## Regras de ouro (resumo)
 
-1. **Notion-style minimalista.** Sem gradientes, sem glass, sem sombras
+1. **Warm neutral minimalismo.** Sem gradientes, sem glass, sem sombras
    pesadas fora dos tokens `--shadow-card` / `--shadow-deep`.
-2. **Cores semânticas, não literais.** Use `var(--notion-blue)`, não `#0075de`.
-3. **Inter como única família tipográfica.** 400 / 500 / 600 / 700.
+2. **Cores semânticas, não literais.** Use `var(--notion-blue)` (âmbar),
+   `var(--status-danger)`, etc. — nunca `#c26a12` ou `#ef4444` no código.
+3. **3 famílias tipográficas, cada uma com papel claro.**
+   - **Inter** (body) — toda UI, h1/h2/h3, formulários, tabelas.
+   - **Fraunces** (display) — hero, capas, títulos especiais. Via
+     `var(--font-display)` ou classe `.font-display`.
+   - **IBM Plex Mono** (mono) — placas, IDs de OS, valores R$. Via
+     `var(--font-mono)` ou classe `.font-mono`.
 4. **Border radius do design system.** `4px`, `8px`, `12px`, `16px` ou `9999px`.
    Nada de `border-radius: 10px` solto.
 5. **Light + Dark obrigatórios.** Toda nova UI tem que funcionar nos dois temas

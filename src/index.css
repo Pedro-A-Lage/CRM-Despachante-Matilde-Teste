@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,56 +6,104 @@
 
 @layer base {
   :root {
-    --notion-bg: #ffffff;
-    --notion-bg-alt: #f6f5f4;
+    /* ==========================================================
+       CLAUDE DESIGN — Warm neutrals + amber accent (v1.0)
+       Legacy --notion-* names preserved, values swapped.
+       Reference: design/assets/claude-design/
+       ========================================================== */
+
+    /* Surfaces & backgrounds — warm cream */
+    --notion-bg: #fbf9f6;
+    --notion-bg-alt: #f4f1ec;
     --notion-surface: #ffffff;
-    --notion-text: rgba(0, 0, 0, 0.95);
-    --notion-text-secondary: #615d59;
-    --notion-text-muted: #a39e98;
-    --notion-border: rgba(0, 0, 0, 0.1);
-    --notion-blue: #0075de;
-    --notion-blue-hover: #005bab;
-    --notion-blue-focus: #097fe8;
-    --notion-badge-bg: #f2f9ff;
-    --notion-badge-text: #097fe8;
-    --notion-teal: #2a9d99;
-    --notion-green: #1aae39;
-    --notion-orange: #dd5b00;
+    --notion-text: #1b1a17;
+    --notion-text-secondary: #4a4640;
+    --notion-text-muted: #7a7368;
+    --notion-border: #e8e3da;
+
+    /* Primary action = amber (was blue) */
+    --notion-blue: #c26a12;
+    --notion-blue-hover: #a9580a;
+    --notion-blue-focus: #c26a12;
+    --notion-badge-bg: #fde9c9;
+    --notion-badge-text: #8a4606;
+
+    /* Semantic palette (warmer redesign) */
+    --notion-teal: #1f5a8a;   /* info */
+    --notion-green: #2f7a3d;  /* success */
+    --notion-orange: #a66a00; /* warn */
     --notion-pink: #ff64c8;
     --notion-purple: #391c57;
     --notion-brown: #523410;
-    --shadow-card:
-      rgba(0,0,0,0.04) 0px 4px 18px,
-      rgba(0,0,0,0.027) 0px 2.025px 7.84688px,
-      rgba(0,0,0,0.02) 0px 0.8px 2.925px,
-      rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
-    --shadow-deep:
-      rgba(0,0,0,0.01) 0px 1px 3px,
-      rgba(0,0,0,0.02) 0px 3px 7px,
-      rgba(0,0,0,0.02) 0px 7px 15px,
-      rgba(0,0,0,0.04) 0px 14px 28px,
-      rgba(0,0,0,0.05) 0px 23px 52px;
 
-    /* shadcn compat tokens */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 5%;
+    /* ===== Canonical Claude Design tokens ===== */
+    /* NOTE: `--accent` (bare) is reserved for shadcn (HSL). Use --notion-blue
+       for the amber base color or the variants below. */
+    --accent-hover: #a9580a;
+    --accent-soft: #fde9c9;
+    --accent-softer: #fdf4e4;
+    --accent-strong: #8a4606;
+    --accent-ink: #3a1d03;
+
+    --warm-bg: #fbf9f6;
+    --warm-bg-2: #f4f1ec;
+    --warm-bg-3: #ece7df;
+    --warm-border: #e8e3da;
+    --warm-border-strong: #d4ccbe;
+    --warm-divider: #efeae1;
+
+    --text-1: #1b1a17;
+    --text-2: #4a4640;
+    --text-3: #7a7368;
+    --text-muted-warm: #a39b8e;
+
+    --status-success: #2f7a3d;
+    --status-success-soft: #e2f1db;
+    --status-warn: #a66a00;
+    --status-warn-soft: #fbecc8;
+    --status-danger: #b1361d;
+    --status-danger-soft: #fbdbce;
+    --status-info: #1f5a8a;
+    --status-info-soft: #dce9f3;
+
+    /* Font families — Fraunces (display) + Inter (body) + Plex Mono (data) */
+    --font-display: 'Fraunces', 'Inter', Georgia, serif;
+    --font-body: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'Menlo', monospace;
+
+    /* Warmer shadows (brownish alpha instead of pure black) */
+    --shadow-card:
+      rgba(40,30,14,0.04) 0px 4px 18px,
+      rgba(40,30,14,0.03) 0px 2.025px 7.84688px,
+      rgba(40,30,14,0.02) 0px 0.8px 2.925px,
+      rgba(40,30,14,0.01) 0px 0.175px 1.04062px;
+    --shadow-deep:
+      rgba(40,30,14,0.02) 0px 1px 3px,
+      rgba(40,30,14,0.03) 0px 3px 7px,
+      rgba(40,30,14,0.03) 0px 7px 15px,
+      rgba(40,30,14,0.05) 0px 14px 28px,
+      rgba(40,30,14,0.08) 0px 23px 52px;
+
+    /* shadcn compat tokens — remapped to warm + amber */
+    --background: 40 29% 97%;        /* #fbf9f6 */
+    --foreground: 34 9% 9%;          /* #1b1a17 */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
+    --card-foreground: 34 9% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
-    --primary: 209 100% 44%;
+    --popover-foreground: 34 9% 9%;
+    --primary: 30 83% 41%;           /* #c26a12 amber */
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 7% 96%;
-    --secondary-foreground: 0 0% 5%;
-    --muted: 40 7% 96%;
-    --muted-foreground: 30 5% 45%;
-    --accent: 40 7% 96%;
-    --accent-foreground: 0 0% 5%;
-    --destructive: 22 100% 43%;
+    --secondary: 36 24% 94%;         /* #f4f1ec */
+    --secondary-foreground: 34 9% 9%;
+    --muted: 36 24% 94%;
+    --muted-foreground: 30 8% 45%;   /* #7a7368 */
+    --accent: 36 24% 94%;            /* shadcn neutral accent */
+    --accent-foreground: 34 9% 9%;
+    --destructive: 10 71% 40%;       /* #b1361d */
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 0% / 0.1;
-    --input: 0 0% 0% / 0.1;
-    --ring: 209 100% 44%;
+    --border: 34 26% 88%;            /* #e8e3da */
+    --input: 34 26% 88%;
+    --ring: 30 83% 41%;
     --radius: 0.5rem;
 
     /* ===== Legacy var aliases → Notion tokens ===== */
@@ -74,13 +122,13 @@
     --color-text-tertiary: var(--notion-text-muted);
     /* brand / semantic */
     --color-primary: var(--notion-blue);
-    --color-primary-50: rgba(0,117,222,0.12);
+    --color-primary-50: rgba(194, 106, 18, 0.12);
     --color-yellow-primary: var(--notion-blue);
     --color-yellow-dark: var(--notion-blue-hover);
     --color-success: var(--notion-green);
-    --color-error: var(--notion-orange);
-    --color-danger: var(--notion-orange);
-    --color-warning: #d97706;
+    --color-error: var(--status-danger);
+    --color-danger: var(--status-danger);
+    --color-warning: var(--notion-orange);
     --color-info: var(--notion-teal);
     /* border */
     --border-color: var(--notion-border);
@@ -92,10 +140,9 @@
     --space-5: 20px;
     --space-6: 24px;
     --space-8: 32px;
-    /* typography */
-    --font-family: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
-    --font-display: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
-    --font-body: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+    /* typography (legacy aliases — canonical vars --font-display/--font-body
+       defined above take precedence; keep --font-family for backwards compat) */
+    --font-family: var(--font-body);
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
     --text-base: 1rem;
@@ -123,21 +170,58 @@
   }
 
   .dark {
-    --notion-bg: #1a1a19;
-    --notion-bg-alt: #252522;
-    --notion-surface: #2a2927;
-    --notion-text: rgba(255, 255, 255, 0.95);
-    --notion-text-secondary: #a39e98;
-    --notion-text-muted: #615d59;
-    --notion-border: rgba(255, 255, 255, 0.1);
-    --notion-blue: #2b8fe8;
-    --notion-blue-hover: #0075de;
-    --notion-blue-focus: #62aef0;
-    --notion-badge-bg: rgba(43, 143, 232, 0.15);
-    --notion-badge-text: #62aef0;
+    /* Claude Design — dark warm palette */
+    --notion-bg: #1b1a17;
+    --notion-bg-alt: #25231f;
+    --notion-surface: #2a2724;
+    --notion-text: #fdf4e4;
+    --notion-text-secondary: #c8beaf;
+    --notion-text-muted: #8a8275;
+    --notion-border: rgba(253, 244, 228, 0.12);
+
+    /* Amber brighter for dark contrast */
+    --notion-blue: #e08340;
+    --notion-blue-hover: #c26a12;
+    --notion-blue-focus: #f0a56b;
+    --notion-badge-bg: rgba(224, 131, 64, 0.18);
+    --notion-badge-text: #f9c68a;
+
+    /* Semantic (brighter for dark) */
+    --notion-teal: #5aa3d8;
+    --notion-green: #6fc77f;
+    --notion-orange: #e0a040;
+
+    /* Canonical Claude Design (dark) */
+    --accent-hover: #c26a12;
+    --accent-soft: rgba(224, 131, 64, 0.22);
+    --accent-softer: rgba(224, 131, 64, 0.1);
+    --accent-strong: #f9c68a;
+    --accent-ink: #fdf4e4;
+
+    --warm-bg: #1b1a17;
+    --warm-bg-2: #25231f;
+    --warm-bg-3: #2f2c28;
+    --warm-border: rgba(253, 244, 228, 0.12);
+    --warm-border-strong: rgba(253, 244, 228, 0.2);
+    --warm-divider: rgba(253, 244, 228, 0.08);
+
+    --text-1: #fdf4e4;
+    --text-2: #c8beaf;
+    --text-3: #8a8275;
+    --text-muted-warm: #6b6357;
+
+    --status-success: #6fc77f;
+    --status-success-soft: rgba(111, 199, 127, 0.15);
+    --status-warn: #e0a040;
+    --status-warn-soft: rgba(224, 160, 64, 0.15);
+    --status-danger: #e27560;
+    --status-danger-soft: rgba(226, 117, 96, 0.15);
+    --status-info: #5aa3d8;
+    --status-info-soft: rgba(90, 163, 216, 0.15);
+
     --shadow-card:
-      rgba(0,0,0,0.3) 0px 4px 18px,
-      rgba(0,0,0,0.2) 0px 2px 8px,
+      rgba(0,0,0,0.35) 0px 4px 18px,
+      rgba(0,0,0,0.25) 0px 2px 8px,
       rgba(0,0,0,0.15) 0px 1px 3px;
     --shadow-deep:
       rgba(0,0,0,0.5) 0px 23px 52px,
@@ -145,49 +229,29 @@
       rgba(0,0,0,0.3) 0px 7px 15px,
       rgba(0,0,0,0.2) 0px 3px 7px;
 
-    /* shadcn compat for dark */
-    --background: 60 4% 10%;
-    --foreground: 60 4% 95%;
-    --card: 60 3% 16%;
-    --card-foreground: 60 4% 95%;
-    --popover: 60 3% 16%;
-    --popover-foreground: 60 4% 95%;
-    --primary: 209 78% 54%;
-    --primary-foreground: 60 4% 10%;
-    --secondary: 60 3% 16%;
-    --secondary-foreground: 60 4% 95%;
-    --muted: 60 3% 16%;
-    --muted-foreground: 30 6% 63%;
-    --accent: 60 3% 16%;
-    --accent-foreground: 60 4% 95%;
-    --destructive: 22 100% 43%;
+    /* shadcn compat for dark (warm) */
+    --background: 34 8% 10%;         /* #1b1a17 */
+    --foreground: 36 82% 94%;        /* #fdf4e4 */
+    --card: 34 8% 15%;               /* #2a2724 */
+    --card-foreground: 36 82% 94%;
+    --popover: 34 8% 15%;
+    --popover-foreground: 36 82% 94%;
+    --primary: 25 72% 56%;           /* #e08340 */
+    --primary-foreground: 34 8% 10%;
+    --secondary: 34 8% 14%;
+    --secondary-foreground: 36 82% 94%;
+    --muted: 34 8% 14%;
+    --muted-foreground: 34 13% 50%;
+    --accent: 34 8% 14%;
+    --accent-foreground: 36 82% 94%;
+    --destructive: 10 67% 63%;       /* #e27560 */
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 100% / 0.1;
-    --input: 0 0% 100% / 0.1;
-    --ring: 209 78% 54%;
+    --border: 36 82% 94% / 0.12;
+    --input: 36 82% 94% / 0.12;
+    --ring: 25 72% 56%;
 
-    /* ===== Legacy var aliases (dark) ===== */
-    --bg-body: var(--notion-bg);
-    --bg-surface: var(--notion-surface);
-    --bg-secondary: var(--notion-bg-alt);
-    --bg-primary: var(--notion-blue);
-    --bg-card: var(--notion-surface);
-    --bg-tertiary: var(--notion-bg-alt);
-    --color-black-primary: var(--notion-bg);
-    --text-color: var(--notion-text);
-    --color-text-primary: var(--notion-text);
-    --color-text-secondary: var(--notion-text-secondary);
-    --color-text-tertiary: var(--notion-text-muted);
-    --color-primary: var(--notion-blue);
-    --color-primary-50: rgba(43,143,232,0.15);
-    --color-yellow-primary: var(--notion-blue);
-    --color-yellow-dark: var(--notion-blue-hover);
-    --color-success: var(--notion-green);
-    --color-error: var(--notion-orange);
-    --color-danger: var(--notion-orange);
-    --color-warning: #d97706;
-    --color-info: var(--notion-teal);
-    --border-color: var(--notion-border);
+    /* Legacy aliases (inherit from --notion-* which already switched) */
+    --color-primary-50: rgba(224, 131, 64, 0.15);
   }
 
   html {
@@ -209,8 +273,9 @@
 }
 
 /* =============================================================
-   NOTION DESIGN SYSTEM — CRM Despachante Matilde
-   Minimal, clean, token-based. No gradients, no glassmorphism.
+   CLAUDE DESIGN — CRM Despachante Matilde
+   Warm neutrals + amber accent. Token-based.
+   Reference: design/assets/claude-design/
    ============================================================= */
 
 /* --- Layout -------------------------------------------------- */
@@ -290,7 +355,7 @@
 }
 
 .sidebar-link.active {
-  background: rgba(0, 117, 222, 0.08);
+  background: var(--accent-softer);
   color: var(--notion-blue);
   font-weight: 600;
 }
@@ -473,12 +538,12 @@
 }
 
 .btn-danger {
-  background: #ef4444;
+  background: var(--status-danger);
   color: #fff;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: #dc2626;
+  background: #8a2614;
 }
 
 .btn-outline-warning {
@@ -488,17 +553,17 @@
 }
 
 .btn-outline-warning:hover:not(:disabled) {
-  background: rgba(221, 91, 0, 0.06);
+  background: var(--status-warn-soft);
 }
 
 .btn-outline-danger {
   background: transparent;
-  color: #ef4444;
-  border: 1px solid #ef4444;
+  color: var(--status-danger);
+  border: 1px solid var(--status-danger);
 }
 
 .btn-outline-danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.06);
+  background: var(--status-danger-soft);
 }
 
 .btn-group {
@@ -589,11 +654,11 @@
   font-size: 1rem;
 }
 
-.stat-card-icon.primary  { color: var(--notion-blue);   background: rgba(0, 117, 222, 0.1); }
-.stat-card-icon.success  { color: var(--notion-green);  background: rgba(26, 174, 57, 0.1); }
-.stat-card-icon.warning  { color: var(--notion-orange); background: rgba(221, 91, 0, 0.1); }
-.stat-card-icon.danger   { color: #ef4444;              background: rgba(239, 68, 68, 0.1); }
-.stat-card-icon.info     { color: var(--notion-teal);   background: rgba(42, 157, 153, 0.1); }
+.stat-card-icon.primary  { color: var(--notion-blue);    background: var(--accent-soft); }
+.stat-card-icon.success  { color: var(--status-success); background: var(--status-success-soft); }
+.stat-card-icon.warning  { color: var(--status-warn);    background: var(--status-warn-soft); }
+.stat-card-icon.danger   { color: var(--status-danger);  background: var(--status-danger-soft); }
+.stat-card-icon.info     { color: var(--status-info);    background: var(--status-info-soft); }
 
 /* --- Forms --------------------------------------------------- */
 
@@ -732,18 +797,18 @@ textarea:focus {
 }
 
 .badge-success {
-  background: rgba(26, 174, 57, 0.1);
-  color: var(--notion-green);
+  background: var(--status-success-soft);
+  color: var(--status-success);
 }
 
 .badge-warning {
-  background: rgba(221, 91, 0, 0.1);
-  color: var(--notion-orange);
+  background: var(--status-warn-soft);
+  color: var(--status-warn);
 }
 
 .badge-danger {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: var(--status-danger-soft);
+  color: var(--status-danger);
 }
 
 .badge-muted {
@@ -779,21 +844,21 @@ textarea:focus {
 }
 
 .alert-info {
-  background: rgba(0, 117, 222, 0.06);
-  border-color: rgba(0, 117, 222, 0.2);
-  color: var(--notion-blue);
+  background: var(--status-info-soft);
+  border-color: var(--status-info-soft);
+  color: var(--status-info);
 }
 
 .alert-warning {
-  background: rgba(221, 91, 0, 0.06);
-  border-color: rgba(221, 91, 0, 0.2);
-  color: var(--notion-orange);
+  background: var(--status-warn-soft);
+  border-color: var(--status-warn-soft);
+  color: var(--status-warn);
 }
 
 .alert-danger {
-  background: rgba(239, 68, 68, 0.06);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
+  background: var(--status-danger-soft);
+  border-color: var(--status-danger-soft);
+  color: var(--status-danger);
 }
 
 /* --- Toasts -------------------------------------------------- */
@@ -813,9 +878,9 @@ textarea:focus {
   max-width: 360px;
 }
 
-.toast-success { border-left: 3px solid var(--notion-green); }
-.toast-warning { border-left: 3px solid var(--notion-orange); }
-.toast-error   { border-left: 3px solid #ef4444; }
+.toast-success { border-left: 3px solid var(--status-success); }
+.toast-warning { border-left: 3px solid var(--status-warn); }
+.toast-error   { border-left: 3px solid var(--status-danger); }
 .toast-info    { border-left: 3px solid var(--notion-blue); }
 
 /* --- Tabs ---------------------------------------------------- */
@@ -882,16 +947,21 @@ textarea:focus {
   font-weight: 600;
 }
 
-.metric-delta.positive { color: var(--notion-green); }
-.metric-delta.negative { color: #ef4444; }
+.metric-delta.positive { color: var(--status-success); }
+.metric-delta.negative { color: var(--status-danger); }
 
 /* --- Utilities ----------------------------------------------- */
 
-.text-danger   { color: #ef4444; }
-.text-success  { color: var(--notion-green); }
-.text-warning  { color: var(--notion-orange); }
+.text-danger   { color: var(--status-danger); }
+.text-success  { color: var(--status-success); }
+.text-warning  { color: var(--status-warn); }
 .text-info     { color: var(--notion-blue); }
 .text-muted    { color: var(--notion-text-muted); }
+
+/* Claude Design typography helpers */
+.font-display  { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.02em; }
+.font-mono     { font-family: var(--font-mono); font-feature-settings: "tnum"; }
+.font-body     { font-family: var(--font-body); }
 
 /* --- Scrollbars --------------------------------------------- */
 
@@ -1185,12 +1255,12 @@ textarea:focus {
 }
 
 .sidebar-link.active {
-  background: rgba(0, 117, 222, 0.1);
+  background: var(--accent-softer);
   font-weight: 600;
 }
 
 .dark .sidebar-link.active {
-  background: rgba(43, 143, 232, 0.15);
+  background: var(--accent-soft);
 }
 
 /* --- Table improvements ------------------------------------- */
@@ -1288,7 +1358,7 @@ textarea:focus {
 .form-select:focus,
 .form-textarea:focus {
   border-color: var(--notion-blue-focus);
-  box-shadow: 0 0 0 2px rgba(0,117,222,0.15);
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 .form-textarea {
   min-height: 80px;
@@ -1328,7 +1398,7 @@ select option {
 }
 .input:focus {
   border-color: var(--notion-blue-focus);
-  box-shadow: 0 0 0 2px rgba(0,117,222,0.15);
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 /* --- Cards & Info --- */

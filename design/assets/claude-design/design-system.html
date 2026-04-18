@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<title>Design System — CRM Matilde</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fbf9f6; --bg-2: #f4f1ec; --bg-3: #ece7df;
+  --surface: #fff; --surface-2: #fbf9f6;
+  --border: #e8e3da; --border-strong: #d4ccbe; --divider: #efeae1;
+  --text: #1b1a17; --text-2: #4a4640; --text-3: #7a7368; --text-muted: #a39b8e;
+  --accent: #c26a12; --accent-hover: #a9580a; --accent-soft: #fde9c9; --accent-softer: #fdf4e4; --accent-strong: #8a4606;
+  --success: #2f7a3d; --success-soft: #e2f1db;
+  --warn: #a66a00; --warn-soft: #fbecc8;
+  --danger: #b1361d; --danger-soft: #fbdbce;
+  --info: #1f5a8a; --info-soft: #dce9f3;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+.page { max-width: 1240px; margin: 0 auto; padding: 64px 48px 120px; }
+.header { padding-bottom: 48px; border-bottom: 1px solid var(--border); margin-bottom: 64px; }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+h1 { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 14px; line-height: 1; }
+.lede { font-size: 16px; color: var(--text-2); max-width: 60ch; line-height: 1.55; }
+.section { margin-bottom: 80px; }
+.section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.section-num { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); font-weight: 500; width: 40px; }
+h2 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; letter-spacing: -0.01em; margin: 0; }
+.block { margin-bottom: 48px; }
+.block-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px; }
+.palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
+.sw { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+.sw-c { height: 88px; }
+.sw-b { padding: 12px; }
+.sw-n { font-size: 12.5px; font-weight: 600; }
+.sw-v { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--text-3); margin-top: 2px; }
+.sw-h { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-2); margin-top: 6px; }
+.ts { padding: 28px 0; border-bottom: 1px solid var(--divider); display: grid; grid-template-columns: 200px 1fr 160px; gap: 32px; align-items: baseline; }
+.ts:last-child { border-bottom: 0; }
+.ts-m { font-size: 12px; color: var(--text-3); line-height: 1.6; }
+.ts-m b { color: var(--text); display: block; font-size: 13px; margin-bottom: 6px; font-weight: 600; }
+.ts-s { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); text-align: right; line-height: 1.7; }
+.tDis { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; }
+.tH1 { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; }
+.tH2 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.tH3 { font-size: 15px; font-weight: 600; }
+.tB { font-size: 14px; line-height: 1.55; }
+.tC { font-size: 11.5px; color: var(--text-3); letter-spacing: 0.02em; }
+.tM { font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+.tE { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.comp { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.comp-h { padding: 12px 16px; border-bottom: 1px solid var(--divider); background: var(--surface-2); font-size: 13px; font-weight: 600; }
+.comp-b { padding: 24px 20px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 90px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn-p { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn-g { border-color: transparent; background: transparent; color: var(--text-2); }
+.btn-d { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 600; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 500; background: var(--bg-3); color: var(--text-2); }
+.badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.b-s { background: var(--success-soft); color: var(--success); }
+.b-w { background: var(--warn-soft); color: var(--warn); }
+.b-d { background: var(--danger-soft); color: var(--danger); }
+.b-i { background: var(--info-soft); color: var(--info); }
+.b-a { background: var(--accent-soft); color: var(--accent-strong); }
+.plate { display: inline-flex; padding: 2px 8px; border-radius: 4px; background: #1b1a17; color: #fff8e8; font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 12px; letter-spacing: 0.04em; }
+.av { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; font-weight: 600; font-size: 11px; }
+.seg { display: inline-flex; background: var(--bg-2); border-radius: 6px; padding: 2px; border: 1px solid var(--border); }
+.seg button { padding: 5px 10px; font-size: 12px; font-weight: 500; border: 0; background: transparent; cursor: pointer; border-radius: 4px; color: var(--text-2); }
+.seg button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.input { padding: 8px 10px; border: 1px solid var(--border-strong); background: var(--surface); border-radius: 6px; font-size: 13px; width: 100%; font-family: inherit; }
+.input.f { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-softer); outline: none; }
+.input.e { border-color: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; min-width: 160px; }
+.kpi-l { font-size: 11.5px; color: var(--text-3); margin-bottom: 8px; }
+.kpi-v { font-size: 26px; font-weight: 600; letter-spacing: -0.03em; font-feature-settings: "tnum"; }
+.kpi-m { margin-top: 6px; font-size: 11.5px; color: var(--text-3); }
+.scale { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+.sc { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 12px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+.sc b { display: block; font-size: 13px; color: var(--text); margin-bottom: 6px; font-family: 'Inter', sans-serif; font-weight: 600; }
+.sc i { background: var(--accent); height: 24px; border-radius: 4px; margin-top: 8px; display: block; }
+.radii { display: flex; gap: 16px; align-items: flex-end; }
+.rad { width: 96px; height: 96px; background: var(--accent-soft); border: 1px solid var(--accent); display: grid; place-items: end center; padding: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--accent-strong); }
+.shadows { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.shc { background: var(--surface); border-radius: 10px; padding: 20px; height: 100px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-3); }
+.shc b { color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
+.foot { border-top: 1px solid var(--border); margin-top: 80px; padding-top: 24px; font-size: 11.5px; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; display: flex; justify-content: space-between; }
+.foot a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="header">
+    <div class="eyebrow">Design System · v1.0</div>
+    <h1>Matilde CRM — Visual Language</h1>
+    <p class="lede">Sistema de tokens, tipografia e componentes. Paleta warm-neutral com accent ambar, tipografia Inter + Plex Mono + Fraunces para equilibrio entre seriedade documentalista e modernidade operacional.</p>
+  </header>
+
+  <section class="section">
+    <div class="section-head"><div class="section-num">01</div><h2>Cores</h2></div>
+    <div class="block"><div class="block-label">Accent · Ambar</div>
+      <div class="palette">
+        <div class="sw"><div class="sw-c" style="background:#fdf4e4"></div><div class="sw-b"><div class="sw-n">Softer</div><div class="sw-v">--accent-softer</div><div class="sw-h">#FDF4E4</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#fde9c9"></div><div class="sw-b"><div class="sw-n">Soft</div><div class="sw-v">--accent-soft</div><div class="sw-h">#FDE9C9</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#c26a12"></div><div class="sw-b"><div class="sw-n">Base</div><div class="sw-v">--accent</div><div class="sw-h">#C26A12</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#a9580a"></div><div class="sw-b"><div class="sw-n">Hover</div><div class="sw-v">--accent-hover</div><div class="sw-h">#A9580A</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#8a4606"></div><div class="sw-b"><div class="sw-n">Strong</div><div class="sw-v">--accent-strong</div><div class="sw-h">#8A4606</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#3a1d03"></div><div class="sw-b"><div class="sw-n">Ink</div><div class="sw-v">--accent-ink</div><div class="sw-h">#3A1D03</div></div></div>
+      </div>
+    </div>
+    <div class="block"><div class="block-label">Neutros · Warm</div>
+      <div class="palette">
+        <div class="sw"><div class="sw-c" style="background:#fbf9f6; border-bottom: 1px solid var(--border)"></div><div class="sw-b"><div class="sw-n">BG</div><div class="sw-v">--bg</div><div class="sw-h">#FBF9F6</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#f4f1ec"></div><div class="sw-b"><div class="sw-n">BG-2</div><div class="sw-v">--bg-2</div><div class="sw-h">#F4F1EC</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#ece7df"></div><div class="sw-b"><div class="sw-n">BG-3</div><div class="sw-v">--bg-3</div><div class="sw-h">#ECE7DF</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#e8e3da"></div><div class="sw-b"><div class="sw-n">Border</div><div class="sw-v">--border</div><div class="sw-h">#E8E3DA</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#d4ccbe"></div><div class="sw-b"><div class="sw-n">Border+</div><div class="sw-v">--border-strong</div><div class="sw-h">#D4CCBE</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#fff; border-bottom: 1px solid var(--border)"></div><div class="sw-b"><div class="sw-n">Surface</div><div class="sw-v">--surface</div><div class="sw-h">#FFFFFF</div></div></div>
+      </div>
+    </div>
+    <div class="block"><div class="block-label">Tinta (text)</div>
+      <div class="palette">
+        <div class="sw"><div class="sw-c" style="background:#1b1a17"></div><div class="sw-b"><div class="sw-n">Text</div><div class="sw-v">--text</div><div class="sw-h">#1B1A17</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#4a4640"></div><div class="sw-b"><div class="sw-n">Text 2</div><div class="sw-v">--text-2</div><div class="sw-h">#4A4640</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#7a7368"></div><div class="sw-b"><div class="sw-n">Text 3</div><div class="sw-v">--text-3</div><div class="sw-h">#7A7368</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#a39b8e"></div><div class="sw-b"><div class="sw-n">Muted</div><div class="sw-v">--text-muted</div><div class="sw-h">#A39B8E</div></div></div>
+      </div>
+    </div>
+    <div class="block"><div class="block-label">Status · Semanticos</div>
+      <div class="palette">
+        <div class="sw"><div class="sw-c" style="background:#e2f1db"></div><div class="sw-b"><div class="sw-n">Success soft</div><div class="sw-v">--success-soft</div><div class="sw-h">#E2F1DB</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#2f7a3d"></div><div class="sw-b"><div class="sw-n">Success</div><div class="sw-v">--success</div><div class="sw-h">#2F7A3D</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#fbecc8"></div><div class="sw-b"><div class="sw-n">Warn soft</div><div class="sw-v">--warn-soft</div><div class="sw-h">#FBECC8</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#a66a00"></div><div class="sw-b"><div class="sw-n">Warn</div><div class="sw-v">--warn</div><div class="sw-h">#A66A00</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#b1361d"></div><div class="sw-b"><div class="sw-n">Danger</div><div class="sw-v">--danger</div><div class="sw-h">#B1361D</div></div></div>
+        <div class="sw"><div class="sw-c" style="background:#1f5a8a"></div><div class="sw-b"><div class="sw-n">Info</div><div class="sw-v">--info</div><div class="sw-h">#1F5A8A</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div class="section-num">02</div><h2>Tipografia</h2></div>
+    <div class="ts"><div class="ts-m"><b>Display</b>Titulos de pagina, hero, capas.</div><div class="tDis">Despachante Matilde</div><div class="ts-s">Fraunces 500<br/>56px / 1.0</div></div>
+    <div class="ts"><div class="ts-m"><b>H1</b>Titulo primario de modulo.</div><div class="tH1">Ordens de Servico</div><div class="ts-s">Inter 600<br/>32px / 1.15</div></div>
+    <div class="ts"><div class="ts-m"><b>H2</b>Titulo de pagina padrao.</div><div class="tH2">Controle Financeiro</div><div class="ts-s">Inter 600<br/>22px / 1.3</div></div>
+    <div class="ts"><div class="ts-m"><b>H3</b>Titulo dentro de cards.</div><div class="tH3">Atividade recente</div><div class="ts-s">Inter 600<br/>15px / 1.4</div></div>
+    <div class="ts"><div class="ts-m"><b>Body</b>Corpo do texto.</div><div class="tB">Processo protocolado no DETRAN-SP. Previsao de emplacamento 19/04, placa FAX-2K44 ja em producao.</div><div class="ts-s">Inter 400<br/>14px / 1.55</div></div>
+    <div class="ts"><div class="ts-m"><b>Caption</b>Metadados, timestamps.</div><div class="tC">Criada em 14/04/2026 · atualizada ha 2h</div><div class="ts-s">Inter 400<br/>11.5px</div></div>
+    <div class="ts"><div class="ts-m"><b>Eyebrow</b>Section labels.</div><div class="tE">Documentacao pendente · revisar</div><div class="ts-s">Inter 600 · UPPER<br/>10.5px +0.08em</div></div>
+    <div class="ts"><div class="ts-m"><b>Mono</b>Placas, IDs, valores.</div><div class="tM">OS-2615 · FAX-2K44 · R$ 1.671,20</div><div class="ts-s">Plex Mono 500<br/>13px</div></div>
+  </section>
+
+  <footer class="foot">
+    <div>CRM Matilde · design-system.html · v1.0 · 18/04/2026</div>
+    <div>Ver tambem: overview.html</div>
+  </footer>
+</main>
+</body>
+</html>

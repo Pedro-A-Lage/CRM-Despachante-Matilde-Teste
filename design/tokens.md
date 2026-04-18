@@ -1,179 +1,201 @@
 # Design Tokens — CRM Despachante Matilde
 
-> Tokens são definidos em [`src/index.css`](../src/index.css) (variáveis CSS) e
-> expostos para Tailwind em [`tailwind.config.js`](../tailwind.config.js).
-> **Nunca hardcode valores** — sempre referencie o token.
+> Tokens do **Claude Design v1.0** (warm neutrals + âmbar + Fraunces/Inter/Plex Mono).
+> Referência visual completa em [`assets/claude-design/design-system.html`](./assets/claude-design/design-system.html).
+> Definidos em [`src/index.css`](../src/index.css) e expostos pro Tailwind em
+> [`tailwind.config.js`](../tailwind.config.js). **Nunca hardcode valores.**
+
+⚠️ **Compat:** os nomes `--notion-*` foram mantidos por serem usados em 2190
+lugares no código, mas os **valores foram trocados** pela paleta Claude Design.
 
 ---
 
 ## Cores
 
-### Brand & Superfícies
+### Accent — Âmbar (ação primária)
 
-| Token CSS                  | Light       | Dark        | Tailwind          | Uso                                       |
-| -------------------------- | ----------- | ----------- | ----------------- | ----------------------------------------- |
-| `--notion-bg`              | `#ffffff`   | `#1a1a19`   | `bg-bg`           | Fundo principal da app                    |
-| `--notion-bg-alt`          | `#f6f5f4`   | `#252522`   | `bg-bg-alt`       | Fundo da sidebar, áreas secundárias       |
-| `--notion-surface`         | `#ffffff`   | `#2a2927`   | `bg-surface`      | Cards, modais, popovers                   |
-| `--notion-border`          | `rgba(0,0,0,0.1)` | `rgba(255,255,255,0.1)` | `border-border`   | Todas as bordas finas    |
+| Token CSS          | Hex       | Tailwind        | Uso                              |
+| ------------------ | --------- | --------------- | -------------------------------- |
+| `--accent-softer`  | `#fdf4e4` | `bg-amber-softer` | Fundo muito sutil, hover suave |
+| `--accent-soft`    | `#fde9c9` | `bg-amber-soft` | Badge bg, fundo hover, sidebar ativa |
+| `--notion-blue` (!) | `#c26a12` | `bg-blue` / `bg-amber` | **Base** — ação primária, link  |
+| `--accent-hover`   | `#a9580a` | `bg-amber-hover` | Hover do botão primário         |
+| `--accent-strong`  | `#8a4606` | `bg-amber-strong` | Badge text, accent escuro       |
+| `--accent-ink`     | `#3a1d03` | `bg-amber-ink`  | Hero escuro                      |
+
+⚠️ `--notion-blue` hoje **não é azul** — é âmbar `#c26a12`. O nome permaneceu
+por compatibilidade com o código existente. Para escrever código novo, prefira
+a classe Tailwind `bg-amber` / `text-amber` ou `bg-blue` / `text-blue`
+(ambas apontam pro mesmo token).
+
+### Neutros — Warm
+
+| Token CSS              | Light     | Dark      | Tailwind           | Uso                              |
+| ---------------------- | --------- | --------- | ------------------ | -------------------------------- |
+| `--notion-bg`          | `#fbf9f6` | `#1b1a17` | `bg-bg` / `bg-warm-bg` | Fundo principal warm cream  |
+| `--notion-bg-alt`      | `#f4f1ec` | `#25231f` | `bg-bg-alt` / `bg-warm-bg-2` | Sidebar, áreas 2ª    |
+| `--warm-bg-3`          | `#ece7df` | `#2f2c28` | `bg-warm-bg-3`     | Badge neutro, chip              |
+| `--notion-surface`     | `#ffffff` | `#2a2724` | `bg-surface`       | Cards, modais, popovers          |
+| `--notion-border`      | `#e8e3da` | `rgba(253,244,228,.12)` | `border-border` | Todas as bordas         |
+| `--warm-border-strong` | `#d4ccbe` | `rgba(253,244,228,.2)` | `border-warm-border-strong` | Bordas de input |
 
 ### Texto
 
-| Token CSS                       | Light     | Dark       | Tailwind            | Uso                              |
-| ------------------------------- | --------- | ---------- | ------------------- | -------------------------------- |
-| `--notion-text`                 | `rgba(0,0,0,0.95)` | `rgba(255,255,255,0.95)` | `text-text`         | Texto principal                  |
-| `--notion-text-secondary`       | `#615d59` | `#a39e98`  | `text-text-secondary` | Labels, texto auxiliar           |
-| `--notion-text-muted`           | `#a39e98` | `#615d59`  | `text-text-muted`     | Placeholders, captions, ícones discretos |
+| Token CSS                | Light     | Dark      | Tailwind              | Uso                              |
+| ------------------------ | --------- | --------- | --------------------- | -------------------------------- |
+| `--notion-text`          | `#1b1a17` | `#fdf4e4` | `text-text`           | Texto principal (warm black)     |
+| `--notion-text-secondary`| `#4a4640` | `#c8beaf` | `text-text-secondary` | Labels, texto auxiliar           |
+| `--notion-text-muted`    | `#7a7368` | `#8a8275` | `text-text-muted`     | Placeholders, captions           |
+| `--text-muted-warm`      | `#a39b8e` | `#6b6357` | —                     | Muted extra (ícones discretos)   |
 
-### Acentos / Brand
+### Status semânticos
 
-| Token CSS                  | Light       | Dark        | Tailwind          | Uso                                |
-| -------------------------- | ----------- | ----------- | ----------------- | ---------------------------------- |
-| `--notion-blue`            | `#0075de`   | `#2b8fe8`   | `bg-blue` / `text-blue` | Ação primária, link, foco     |
-| `--notion-blue-hover`      | `#005bab`   | `#0075de`   | `bg-blue-hover`   | Hover do botão primário            |
-| `--notion-blue-focus`      | `#097fe8`   | `#62aef0`   | `bg-blue-focus`   | Anel de foco                       |
-| `--notion-badge-bg`        | `#f2f9ff`   | `rgba(43,143,232,.15)` | `bg-badge-bg`     | Fundo de badge default             |
-| `--notion-badge-text`      | `#097fe8`   | `#62aef0`   | `text-badge-text` | Texto de badge default             |
+| Token CSS                  | Light     | Dark      | Tailwind              | Uso                          |
+| -------------------------- | --------- | --------- | --------------------- | ---------------------------- |
+| `--status-success`         | `#2f7a3d` | `#6fc77f` | `text-status-success` | Sucesso, aprovado, pago      |
+| `--status-success-soft`    | `#e2f1db` | rgba      | `bg-status-success-soft` | Badge success bg          |
+| `--status-warn`            | `#a66a00` | `#e0a040` | `text-status-warn`    | Aviso, pendente              |
+| `--status-warn-soft`       | `#fbecc8` | rgba      | `bg-status-warn-soft` | Badge warn bg                |
+| `--status-danger`          | `#b1361d` | `#e27560` | `text-status-danger`  | Erro, excluir                |
+| `--status-danger-soft`     | `#fbdbce` | rgba      | `bg-status-danger-soft` | Badge danger bg           |
+| `--status-info`            | `#1f5a8a` | `#5aa3d8` | `text-status-info`    | Informativo, DETRAN          |
+| `--status-info-soft`       | `#dce9f3` | rgba      | `bg-status-info-soft` | Badge info bg                |
 
-### Semânticos
+### Aliases legacy
 
-| Token CSS              | Cor           | Uso                             |
-| ---------------------- | ------------- | ------------------------------- |
-| `--notion-green`       | `#1aae39`     | Sucesso, aprovado, pago         |
-| `--notion-orange`      | `#dd5b00`     | Aviso, atenção, pendente        |
-| `--notion-teal`        | `#2a9d99`     | Info, neutro                    |
-| `--notion-pink`        | `#ff64c8`     | Tag/categoria especial          |
-| `--notion-purple`      | `#391c57`     | Tag/categoria especial          |
-| `--notion-brown`       | `#523410`     | Tag/categoria especial          |
-| `#ef4444`              | (vermelho)    | Erro, deletar (`.btn-danger`)   |
+- `--notion-green` → aponta pra `--status-success` (mesmo valor)
+- `--notion-orange` → aponta pra `--status-warn`
+- `--notion-teal` → aponta pra `--status-info`
+- `--notion-pink`, `--notion-purple`, `--notion-brown` → preservados (tags especiais)
 
-### Aliases legacy (compat shadcn/ui)
+### Aliases shadcn/ui (HSL)
 
 `--background`, `--foreground`, `--card`, `--popover`, `--primary`, `--secondary`,
-`--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring`.
-
-Todos definidos em HSL; usados por componentes shadcn. **Não mexer sem
-sincronizar com `--notion-*`.**
+`--muted`, `--accent`, `--destructive`, `--border`, `--input`, `--ring` — todos
+definidos em HSL e remapeados pra warm + âmbar. Não mexer sem sincronizar.
 
 ---
 
 ## Tipografia
 
-### Família
+### Famílias
 
-```css
-font-family: 'Inter', -apple-system, system-ui, 'Segoe UI', sans-serif;
+| Variável          | Valor                                            | Uso                          |
+| ----------------- | ------------------------------------------------ | ---------------------------- |
+| `--font-display`  | `'Fraunces', 'Inter', Georgia, serif`            | Hero, display, títulos especiais |
+| `--font-body`     | `'Inter', -apple-system, system-ui, sans-serif`  | Corpo, h1/h2/h3, UI          |
+| `--font-mono`     | `'IBM Plex Mono', ui-monospace, Menlo, monospace` | Placas, IDs, valores R$     |
+
+### Classes utilitárias
+
+```html
+<h1 class="font-display">Despachante Matilde</h1>
+<span class="font-mono">OS-2615 · FAX-2K44 · R$ 1.671,20</span>
+<p class="font-body">Corpo normal.</p>
 ```
 
-Carregada via Google Fonts (peso 400/500/600/700) em `index.css:1`.
+Via Tailwind: `font-display`, `font-mono`, `font-sans` (Inter default).
 
-### Escala (Tailwind)
+### Escala (Tailwind, peso recomendado ao lado)
 
-| Classe Tailwind     | Tamanho   | Line-height | Weight | Uso                              |
-| ------------------- | --------- | ----------- | ------ | -------------------------------- |
-| `text-display-hero` | `4.00rem` | 1.00        | 700    | Hero de landing                  |
-| `text-display-2`    | `3.38rem` | 1.04        | 700    | Display secundário               |
-| `text-section`      | `3.00rem` | 1.00        | 700    | Título de seção grande           |
-| `text-sub-lg`       | `2.50rem` | 1.50        | 700    | Subtítulo grande                 |
-| `text-sub`          | `1.63rem` | 1.23        | 700    | Subtítulo                        |
-| `text-card-title`   | `1.38rem` | 1.27        | 700    | Título de card / page header     |
-| `text-body-lg`      | `1.25rem` | 1.40        | 600    | Body grande                      |
-| `text-nav`          | `0.94rem` | 1.33        | 600    | Links de nav, sidebar            |
-| `text-caption`      | `0.88rem` | 1.43        | 500    | Legendas                         |
-| `text-badge-text`   | `0.75rem` | 1.33        | 600    | Texto de badge                   |
-
-### Pesos
-
-- `400` — corpo normal
-- `500` — labels, captions
-- `600` — semibold (badges, botões, nav)
-- `700` — bold (títulos)
-
-⚠️ **Nada de `font-weight: 800` ou `300`.** Não temos esses pesos carregados.
+| Role        | Classe Tailwind     | Tamanho   | Peso | Família  | Uso                            |
+| ----------- | ------------------- | --------- | ---- | -------- | ------------------------------ |
+| Display     | `text-display-hero` | `4.00rem` | 500  | Fraunces | Hero de landing                |
+| H1          | `text-card-title` (1.38rem+) ou custom 32px | —  | 600  | Inter    | Módulo principal       |
+| H2          | 22px                | —         | 600  | Inter    | Página padrão                  |
+| H3          | `text-body-lg` ou 15px | —      | 600  | Inter    | Dentro de card                 |
+| Body        | `text-sm` / 14px    | `0.875rem`| 400  | Inter    | Corpo                          |
+| Caption     | `text-caption`      | `0.88rem` | 500  | Inter    | Metadados, timestamps          |
+| Eyebrow     | `text-badge-text`   | `0.75rem` | 600  | Inter    | UPPERCASE, section labels      |
+| Mono        | `font-mono text-[13px]` | —    | 500  | Plex Mono | Placas, IDs, valores R$       |
 
 ---
 
 ## Espaçamento
 
-Múltiplos de 4. Disponíveis como variável CSS:
+Múltiplos de 4. Variáveis CSS e escala Tailwind alinhadas.
 
-| Variável     | Valor   | Uso típico                         |
-| ------------ | ------- | ---------------------------------- |
-| `--space-1`  | `4px`   | gap mínimo entre ícone/texto       |
-| `--space-2`  | `8px`   | padding interno mínimo             |
-| `--space-3`  | `12px`  | gap padrão                         |
-| `--space-4`  | `16px`  | padding de card                    |
-| `--space-5`  | `20px`  | padding maior                      |
-| `--space-6`  | `24px`  | padding de página                  |
-| `--space-8`  | `32px`  | seção                              |
-
-**No Tailwind**, use a escala default (`p-1`, `p-2`, `p-3`, `p-4`, `p-5`, `p-6`,
-`p-8`) que segue a mesma cadência (4 / 8 / 12 / 16 / 20 / 24 / 32 px).
-
-⚠️ **Nada de valores quebrados** como `p-[13px]` ou `gap-[7px]`.
+| Variável     | Valor   | Tailwind | Uso típico                         |
+| ------------ | ------- | -------- | ---------------------------------- |
+| `--space-1`  | `4px`   | `p-1`    | Gap mínimo                         |
+| `--space-2`  | `8px`   | `p-2`    | Padding interno mínimo             |
+| `--space-3`  | `12px`  | `p-3`    | Gap padrão                         |
+| `--space-4`  | `16px`  | `p-4`    | Padding de card                    |
+| `--space-5`  | `20px`  | `p-5`    | Padding maior                      |
+| `--space-6`  | `24px`  | `p-6`    | Padding de página                  |
+| `--space-8`  | `32px`  | `p-8`    | Seção                              |
 
 ---
 
 ## Border radius
 
-| Valor    | Tailwind        | Variável     | Uso                                     |
-| -------- | --------------- | ------------ | --------------------------------------- |
-| `4px`    | `rounded-micro` | `--radius-sm` | Inputs, badges retangulares, botões     |
-| `5px`    | `rounded-subtle` | —           | Sidebar links                           |
-| `8px`    | `rounded-standard` | `--radius-md` | Alerts, popovers, ícones               |
-| `12px`   | `rounded-comfortable` | `--radius-lg` | Cards, kanban-column                  |
-| `16px`   | `rounded-large` | —           | Modais                                  |
-| `9999px` | `rounded-pill`  | `--radius-full` | Badges arredondadas, status         |
-
-⚠️ **Não invente valores** (`rounded-[10px]`). Se precisar de outro, justifique
-e adicione como token novo.
+| Valor    | Tailwind              | Uso                                 |
+| -------- | --------------------- | ----------------------------------- |
+| `4px`    | `rounded-micro`       | Inputs, badges retangulares         |
+| `5px`    | `rounded-subtle`      | Sidebar links                       |
+| `8px`    | `rounded-standard`    | Alerts, popovers                    |
+| `12px`   | `rounded-comfortable` | Cards, kanban                       |
+| `16px`   | `rounded-large`       | Modais                              |
+| `9999px` | `rounded-pill`        | Badges arredondadas                 |
 
 ---
 
-## Sombras
+## Sombras (warm-toned)
 
 | Token CSS         | Uso                                       |
 | ----------------- | ----------------------------------------- |
-| `--shadow-card`   | Card padrão (sutil, multi-layer)          |
-| `--shadow-deep`   | Hover de card, modal, popover, dropdown   |
-| `--shadow-sm`     | Sombra mínima (legacy, evitar)            |
-| `0 0 0 2px var(--notion-blue-focus)` | Anel de foco (já em `:focus-visible` global) |
+| `--shadow-card`   | Card padrão (rgba(40,30,14, low alpha))  |
+| `--shadow-deep`   | Hover, modal, popover                     |
+| `--shadow-sm`     | Sombra mínima (legacy)                    |
 
-⚠️ **Sombra colorida é proibida.** Apenas preto com alpha baixo.
+⚠️ Sombras agora usam **rgba(40,30,14,..)** (marrom) em vez de preto puro —
+combina com a paleta warm.
 
 ---
 
-## Transições
-
-| Variável            | Valor          | Uso                            |
-| ------------------- | -------------- | ------------------------------ |
-| `--transition-fast` | `150ms ease`   | Hover, foco, mudança de cor    |
-| (custom)            | `200ms ease`   | Mudança de layout, transform   |
-| (custom)            | `220ms ease-out` | Entrada de página              |
+## Focus ring
 
 ```css
-transition: background 150ms, color 150ms;
-transition: box-shadow 200ms ease, transform 200ms ease;
+*:focus-visible {
+  outline: 2px solid var(--notion-blue-focus);  /* âmbar */
+  outline-offset: 2px;
+}
+```
+
+Para inputs com `box-shadow`:
+
+```css
+box-shadow: 0 0 0 2px var(--accent-soft);   /* anel âmbar suave */
 ```
 
 ---
 
-## Z-index
+## Z-index (inalterado)
 
 | Valor   | Uso                                                |
 | ------- | -------------------------------------------------- |
 | `30`    | Modal overlay                                      |
 | `40`    | Sidebar                                            |
-| `100`   | Sidebar mobile (drawer aberto), popovers locais    |
-| `9999`  | Toast, Radix Popper (Select / Popover dropdowns)   |
-
-**Não use valores fora desta escala** sem justificar.
+| `100`   | Sidebar mobile drawer, popovers locais             |
+| `9999`  | Toast, Radix Popper (Select / Popover)             |
 
 ---
 
-## Como adicionar um token novo
+## Placa (plate) — componente da marca
 
-1. Defina a variável CSS em `src/index.css` (no `:root` E no `.dark`).
-2. Se for cor/font/radius/shadow, adicione no `tailwind.config.js`.
-3. Documente aqui em `tokens.md`.
-4. Use o token, não o valor literal.
+Identidade visual exclusiva: placas de veículo em Plex Mono sobre fundo
+escuro warm. Não existe no Tailwind — adicione como classe `.plate` quando
+necessário:
+
+```css
+.plate {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-ink);      /* #3a1d03 */
+  color: #fff8e8;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+```

@@ -3,20 +3,29 @@
 > Estes princípios definem o "porquê" do nosso design. Antes de qualquer mudança
 > de UI, leia esta página. Quando estiver em dúvida, volte aqui.
 
+> **Claude Design v1.0** — warm neutrals + accent âmbar. Sério como cartório,
+> moderno como Linear. Referência em
+> [`assets/claude-design/`](./assets/claude-design/).
+
 ---
 
-## 1. Notion-style minimalismo
+## 1. Warm neutral minimalismo
 
-O CRM deve sentir como o Notion: superfície limpa, foco no conteúdo, decoração
-zero. Isso significa:
+O CRM deve sentir como um caderno de despachante bem cuidado: creme em vez de
+branco puro, âmbar em vez de azul corporativo, serifa nos títulos-chave, monos
+nos dados (placas, IDs, valores). Minimalista, mas com personalidade.
 
-- ✅ Fundos sólidos (`--notion-bg`, `--notion-surface`)
-- ✅ Bordas finas (`1px solid var(--notion-border)`)
-- ✅ Sombras sutis (`var(--shadow-card)`, `var(--shadow-deep)`)
+- ✅ Fundos warm cream (`--notion-bg` = `#fbf9f6`, não branco puro)
+- ✅ Bordas finas (`1px solid var(--notion-border)` = `#e8e3da`)
+- ✅ Sombras sutis warm-toned (`rgba(40,30,14,..)`)
+- ✅ Âmbar `#c26a12` como ação primária
+- ✅ Fraunces nos títulos display / hero
+- ✅ IBM Plex Mono em placas, IDs, R$
 - ❌ Gradientes
 - ❌ Glassmorphism / `backdrop-filter` (exceto modal overlay)
 - ❌ Sombras coloridas ou neon
-- ❌ Ícones decorativos sem função
+- ❌ Azul de CRM genérico
+- ❌ Branco puro (`#ffffff`) em fundos de app (só em cards/surfaces)
 
 ## 2. Conteúdo > Cromo
 
@@ -35,13 +44,16 @@ desses três níveis.
 
 **Hardcoded color, font-size ou border-radius é bug.** Sempre use:
 
-| Em vez de…              | Use…                                  |
-| ----------------------- | ------------------------------------- |
-| `color: #0075de`        | `color: var(--notion-blue)`           |
-| `padding: 16px`         | `padding: var(--space-4)`             |
-| `border-radius: 8px`    | `border-radius: 8px` (token oficial) ou classe `.rounded-standard` |
-| `font-size: 14px`       | `font-size: 0.875rem` ou Tailwind `text-sm` |
-| `box-shadow: 0 2px 4px…`| `box-shadow: var(--shadow-card)`      |
+| Em vez de…               | Use…                                  |
+| ------------------------ | ------------------------------------- |
+| `color: #c26a12`         | `color: var(--notion-blue)` (= âmbar) |
+| `background: #ef4444`    | `background: var(--status-danger)`    |
+| `padding: 16px`          | `padding: var(--space-4)`             |
+| `border-radius: 8px`     | `border-radius: 8px` (token oficial) ou classe `.rounded-standard` |
+| `font-size: 14px`        | `font-size: 0.875rem` ou Tailwind `text-sm` |
+| `font-family: 'Fraunces'`| `font-family: var(--font-display)` ou `.font-display` |
+| `font-family: 'Plex Mono'`| `font-family: var(--font-mono)` ou `.font-mono`     |
+| `box-shadow: 0 2px 4px…` | `box-shadow: var(--shadow-card)`      |
 
 Se um token não existe para o que você precisa, **pare** e adicione um novo
 token em `index.css` antes de continuar.
