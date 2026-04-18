@@ -80,6 +80,11 @@ async function findFolderIdByName(token: string, name: string): Promise<string |
   const key = name.trim().toLowerCase();
   if (wellKnown[key]) return wellKnown[key];
 
+  // Trim dos dois lados: o displayName retornado pelo Graph pode ter
+  // espaços em branco invisíveis (comum em pastas renomeadas no Outlook).
+  const matches = (displayName?: string) =>
+    displayName?.trim().toLowerCase() === key;
+
   // Busca case-insensitive percorrendo Inbox e seus filhos
   const rootResp = await fetch(
     'https://graph.microsoft.com/v1.0/me/mailFolders?$top=100&$select=id,displayName,childFolderCount',
@@ -91,7 +96,7 @@ async function findFolderIdByName(token: string, name: string): Promise<string |
   const queue: Array<{ id: string; displayName: string; childFolderCount?: number }> = rootData.value || [];
   while (queue.length) {
     const f = queue.shift()!;
-    if (f.displayName?.toLowerCase() === key) return f.id;
+    if (matches(f.displayName)) return f.id;
     if ((f.childFolderCount || 0) > 0) {
       const cResp = await fetch(
         `https://graph.microsoft.com/v1.0/me/mailFolders/${f.id}/childFolders?$top=100&$select=id,displayName,childFolderCount`,
