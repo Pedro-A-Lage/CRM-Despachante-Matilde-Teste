@@ -223,12 +223,13 @@ export default function Emails() {
     // Auto-seleciona a primeira pasta visível quando ainda não há seleção
     // (ou quando a seleção atual foi filtrada pra fora, ex.: 'Inbox').
     useEffect(() => {
-        if (orderedFolders.length === 0) return;
+        const first = orderedFolders[0];
+        if (!first) return;
         const current = selectedFolder.trim().toLowerCase();
         const visible = orderedFolders.some(f =>
             f.displayName.trim().toLowerCase() === current
         );
-        if (!visible) setSelectedFolder(orderedFolders[0].displayName);
+        if (!visible) setSelectedFolder(first.displayName);
     }, [orderedFolders, selectedFolder]);
 
     const empresaEmailAtiva = selectedEmpresaEmail || empresaDaPasta?.email || '';
