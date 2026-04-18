@@ -105,9 +105,13 @@ async function findFolderIdByName(token: string, name: string): Promise<string |
 }
 
 async function listSentToEmail(token: string, email: string, limit: number) {
-  // $filter em toRecipients/any requer header ConsistencyLevel=eventual
-  const filter = `toRecipients/any(r:r/emailAddress/address eq '${email.replace(/'/g, "''")}')`;
-  const url = `https://graph.microsoft.com/v1.0/me/mailFolders/sentitems/messages?$top=${limit}&$orderby=sentDateTime desc&$filter=${encodeURIComponent(filter)}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,sentDateTime,from,toRecipients,isRead,hasAttachments`;
+  // Graph não suporta $filter com `toRecipients/any(...)` em /messages —
+  // retorna ErrorInvalidUrlQueryFilter. Usamos $search com sintaxe KQL.
+  // $search e $orderby são mutuamente exclusivos; a ordenação por data
+  // é feita no cliente (junto com a lista de recebidos).
+  const safeEmail = email.replace(/"/g, '\\"');
+  const search = encodeURIComponent(`"to:${safeEmail}"`);
+  const url = `https://graph.microsoft.com/v1.0/me/mailFolders/sentitems/messages?$top=${limit}&$search=${search}&$select=id,conversationId,subject,bodyPreview,receivedDateTime,sentDateTime,from,toRecipients,isRead,hasAttachments`;
   const resp = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${token}`,
