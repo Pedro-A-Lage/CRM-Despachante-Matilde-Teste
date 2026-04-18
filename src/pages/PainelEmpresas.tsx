@@ -211,7 +211,7 @@ export default function PainelEmpresas() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                 <Building2 size={24} style={{ color: 'var(--notion-blue)' }} />
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--notion-text)', margin: 0 }}>
+                    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500, letterSpacing: '-0.015em', color: 'var(--notion-text)', margin: 0 }}>
                         Painel de Empresas
                     </h1>
                     <p style={{ fontSize: 14, color: 'var(--notion-text-secondary)', margin: '4px 0 0' }}>

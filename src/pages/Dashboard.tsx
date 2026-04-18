@@ -483,7 +483,7 @@ export default function Dashboard() {
                             </span>
                             <TrendingUp size={14} style={{ color: kpi.color, opacity: 0.7 }} />
                         </div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: kpi.color, lineHeight: 1, letterSpacing: '-0.5px' }}>
+                        <div className="tabular-nums" style={{ fontFamily: 'var(--font-mono)', fontSize: '1.5rem', fontWeight: 700, color: kpi.color, lineHeight: 1, letterSpacing: '-0.5px' }}>
                             {kpi.value}
                         </div>
                     </div>
@@ -561,7 +561,7 @@ export default function Dashboard() {
                                 {s.label}
                             </span>
                         </div>
-                        <div style={{ fontSize: '2.2rem', fontWeight: 800, color: s.color, lineHeight: 1, position: 'relative', zIndex: 1, letterSpacing: '-1px' }}>
+                        <div className="font-display tabular-nums" style={{ fontSize: '2.4rem', fontWeight: 500, color: s.color, lineHeight: 1, position: 'relative', zIndex: 1, letterSpacing: '-1.5px' }}>
                             {s.value}
                         </div>
                     </div>

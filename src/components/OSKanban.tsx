@@ -545,7 +545,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                         </span>
                                     </h3>
                                     {totalValue > 0 && (
-                                        <div style={{
+                                        <div className="font-mono" style={{
                                             fontSize: 10, color: 'var(--notion-text-secondary)',
                                             marginTop: 2,
                                         }}>
@@ -651,12 +651,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                         marginBottom: 4,
                                                     }}>
                                                         <Car size={12} className="kanban-card-icon" />
-                                                        <span style={{
-                                                            fontSize: 'var(--text-sm)',
-                                                            fontWeight: 'var(--fw-bold)',
-                                                            color: 'var(--notion-text)',
-                                                            letterSpacing: '0.04em',
-                                                        }}>
+                                                        <span className="plate">
                                                             {veiculo?.placa || veiculo?.chassi || '—'}
                                                         </span>
                                                     </div>
@@ -768,7 +763,7 @@ export default function OSKanban({ ordens, clientes, veiculos, onStatusChange }:
                                                             <div style={{ display: 'flex', gap: 5, alignItems: 'center', fontSize: 11 }}>
                                                                 <FileText size={11} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
                                                                 <span style={{ color: 'var(--notion-text-secondary)' }}>Valor:</span>
-                                                                <span style={{ color: 'var(--notion-green)', fontWeight: 'var(--fw-semibold)' }}>
+                                                                <span className="font-mono" style={{ color: 'var(--notion-green)', fontWeight: 'var(--fw-semibold)' }}>
                                                                     {formatBRL(os.valorServico!)}
                                                                 </span>
                                                             </div>

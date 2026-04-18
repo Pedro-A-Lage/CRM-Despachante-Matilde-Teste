@@ -136,7 +136,7 @@ export default function Financeiro() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 16px' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--notion-text)', marginBottom: 20 }}>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500, letterSpacing: '-0.015em', color: 'var(--notion-text)', marginBottom: 20 }}>
         Financeiro
       </h1>
 
@@ -393,7 +393,7 @@ export default function Financeiro() {
                         <td style={{ padding: '9px 12px 9px 0', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                           {item.qtdOS}
                         </td>
-                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'right', fontFamily: 'monospace', color: 'var(--notion-text)' }}>
+                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--notion-text)' }}>
                           {fmt(item.receitaTotal)}
                         </td>
                         <td style={{ padding: '9px 0', textAlign: 'right' }}>

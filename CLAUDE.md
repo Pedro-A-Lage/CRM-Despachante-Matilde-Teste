@@ -60,3 +60,22 @@ When spawning subagents (Agent/Task tool), the routing block is automatically in
 | `ctx stats` | Call the `ctx_stats` MCP tool and display the full output verbatim |
 | `ctx doctor` | Call the `ctx_doctor` MCP tool, run the returned shell command, display as checklist |
 | `ctx upgrade` | Call the `ctx_upgrade` MCP tool, run the returned shell command, display as checklist |
+
+---
+
+# Design System — leitura obrigatória antes de mexer em UI
+
+Toda mudança visual (cores, componentes, layouts, espaçamento, tipografia) DEVE
+seguir o design system documentado em [`design/`](./design/).
+
+Antes de implementar UI:
+
+1. Leia [`design/principles.md`](./design/principles.md) — filosofia Notion-style.
+2. Use tokens de [`design/tokens.md`](./design/tokens.md) — nunca hardcode cor/tamanho.
+3. Procure componente em [`design/components.md`](./design/components.md) antes
+   de criar novo.
+4. Siga padrões de [`design/layouts.md`](./design/layouts.md) para estrutura de página.
+5. Rode [`design/checklist.md`](./design/checklist.md) antes do commit.
+
+Tokens vivem em [`src/index.css`](./src/index.css) (`:root` e `.dark`) e
+[`tailwind.config.js`](./tailwind.config.js). Hardcoded color/size é bug.

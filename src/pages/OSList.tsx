@@ -1046,7 +1046,7 @@ export default function OSList() {
                                         </td>
                                         <td data-label="Placa" style={{
                                             padding: '14px 16px',
-                                            fontFamily: 'monospace',
+                                            fontFamily: 'var(--font-mono)',
                                             fontSize: '0.85rem',
                                             fontWeight: 600,
                                             color: 'var(--notion-text-secondary)',

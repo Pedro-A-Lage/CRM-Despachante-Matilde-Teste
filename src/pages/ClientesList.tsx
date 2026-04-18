@@ -129,7 +129,7 @@ export default function ClientesList() {
                 marginBottom: 'var(--space-8)',
             }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 800, color: 'var(--notion-text)', letterSpacing: '-0.5px' }}>
+                    <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 500, color: 'var(--notion-text)', letterSpacing: '-0.015em' }}>
                         Clientes
                     </h1>
                     <p style={{ margin: '8px 0 0', color: 'var(--notion-text-secondary)', fontSize: '0.95rem' }}>
@@ -381,7 +381,7 @@ export default function ClientesList() {
                                 marginBottom: '12px',
                                 fontSize: '0.85rem',
                                 color: 'var(--notion-text-secondary)',
-                                fontFamily: 'monospace',
+                                fontFamily: 'var(--font-mono)',
                                 position: 'relative',
                                 zIndex: 1,
                             }}>
@@ -558,7 +558,7 @@ export default function ClientesList() {
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontWeight: 600, color: 'var(--notion-text)', fontSize: '0.9rem' }}>
                                             {c.nome}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'monospace', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'var(--font-mono)', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                                             {formatCpfCnpj(c.cpfCnpj)}
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>

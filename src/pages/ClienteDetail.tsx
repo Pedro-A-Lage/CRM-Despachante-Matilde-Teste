@@ -326,7 +326,7 @@ export default function ClienteDetail() {
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <FileText size={14} style={{ color: 'var(--notion-blue)' }} />
-                                                        <span className="text-sm font-semibold">OS #{os.numero}</span>
+                                                        <span className="text-sm font-semibold font-mono">OS #{os.numero}</span>
                                                         <span className="text-xs text-gray">— {getServicoLabel(serviceLabels, os.tipoServico)}</span>
                                                     </div>
                                                     <span className={`badge ${getStatusBadge(os.status)}`} style={{ fontSize: 'var(--font-size-xs)' }}>
@@ -374,7 +374,7 @@ export default function ClienteDetail() {
                                         className="clickable"
                                         onClick={() => navigate(`/ordens/${os.id}`)}
                                     >
-                                        <td><strong>#{os.numero}</strong></td>
+                                        <td><strong className="font-mono">#{os.numero}</strong></td>
                                         <td>{getServicoLabel(serviceLabels, os.tipoServico)}</td>
                                         <td>
                                             <span className={`badge ${getStatusBadge(os.status)}`}>

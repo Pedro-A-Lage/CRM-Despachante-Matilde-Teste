@@ -17,10 +17,19 @@ module.exports = {
           muted: 'var(--notion-text-muted)',
         },
         border: 'var(--notion-border)',
+        /* Brand amber (kept as `blue` alias for backwards compat with existing markup) */
         blue: {
           DEFAULT: 'var(--notion-blue)',
           hover: 'var(--notion-blue-hover)',
           focus: 'var(--notion-blue-focus)',
+        },
+        amber: {
+          DEFAULT: 'var(--notion-blue)',
+          hover: 'var(--accent-hover)',
+          soft: 'var(--accent-soft)',
+          softer: 'var(--accent-softer)',
+          strong: 'var(--accent-strong)',
+          ink: 'var(--accent-ink)',
         },
         badge: {
           bg: 'var(--notion-badge-bg)',
@@ -32,6 +41,24 @@ module.exports = {
         pink: 'var(--notion-pink)',
         purple: 'var(--notion-purple)',
         brown: 'var(--notion-brown)',
+        /* Claude Design semantic status tokens */
+        status: {
+          success: 'var(--status-success)',
+          'success-soft': 'var(--status-success-soft)',
+          warn: 'var(--status-warn)',
+          'warn-soft': 'var(--status-warn-soft)',
+          danger: 'var(--status-danger)',
+          'danger-soft': 'var(--status-danger-soft)',
+          info: 'var(--status-info)',
+          'info-soft': 'var(--status-info-soft)',
+        },
+        warm: {
+          bg: 'var(--warm-bg)',
+          'bg-2': 'var(--warm-bg-2)',
+          'bg-3': 'var(--warm-bg-3)',
+          border: 'var(--warm-border)',
+          'border-strong': 'var(--warm-border-strong)',
+        },
         /* shadcn compat — keep these so existing bg-background/text-foreground/etc still work */
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -47,6 +74,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'system-ui', 'Segoe UI', 'sans-serif'],
+        display: ['Fraunces', 'Inter', 'Georgia', 'serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'Menlo', 'monospace'],
       },
       fontSize: {
         'display-hero': ['4.00rem', { lineHeight: '1.00', letterSpacing: '-2.125px', fontWeight: '700' }],

@@ -710,7 +710,7 @@ export default function ControlePlacas() {
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 700, color: 'var(--notion-text)' }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 500, letterSpacing: '-0.015em', color: 'var(--notion-text)' }}>
           Controle de Placas
         </h1>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -879,17 +879,17 @@ export default function ControlePlacas() {
                         </span>
                       </td>
                       {/* Custo Real */}
-                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{fmt(p.custoReal)}</td>
+                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'var(--font-mono)' }}>{fmt(p.custoReal)}</td>
                       {/* Saldo Usado */}
-                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', color: p.saldoUsado > 0 ? '#10B981' : 'var(--notion-text-secondary)' }}>
+                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'var(--font-mono)', color: p.saldoUsado > 0 ? '#10B981' : 'var(--notion-text-secondary)' }}>
                         {p.saldoUsado > 0 ? fmt(p.saldoUsado) : '—'}
                       </td>
                       {/* Boleto */}
-                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', color: p.valorBoleto > 0 ? '#3B82F6' : 'var(--notion-text-secondary)' }}>
+                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'var(--font-mono)', color: p.valorBoleto > 0 ? '#3B82F6' : 'var(--notion-text-secondary)' }}>
                         {p.valorBoleto > 0 ? fmt(p.valorBoleto) : '—'}
                       </td>
                       {/* Saldo Após */}
-                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: saldoAposColor }}>
+                      <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 600, color: saldoAposColor }}>
                         {fmt(p.saldoApos)}
                       </td>
                       {/* Ações */}
