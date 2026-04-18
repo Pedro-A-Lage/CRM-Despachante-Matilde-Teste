@@ -157,6 +157,11 @@ export default function Emails() {
             if (error) throw error;
             if (data?.error) throw new Error(data.error);
             setEmailDetails(data);
+            // Edge Function já mandou PATCH isRead=true no Graph.
+            // Reflete na UI pro badge "NOVO" sumir sem precisar recarregar.
+            setEmails(prev => prev.map(e =>
+                e.id === email.id ? { ...e, isRead: true } : e
+            ));
         } catch (err: any) {
             console.error('Erro ao carregar detalhes do e-mail:', err);
             setError('Falha ao abrir e-mail: ' + err.message);

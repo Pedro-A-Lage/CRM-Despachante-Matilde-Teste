@@ -18,7 +18,9 @@ async function getAccessToken(): Promise<string> {
     client_id: clientId,
     refresh_token: refreshToken,
     grant_type: 'refresh_token',
-    scope: 'offline_access Mail.Send Mail.Read',
+    // Mail.ReadWrite é necessário para marcar o email como lido (PATCH isRead)
+    // após abrir no leitor. Mail.ReadWrite inclui implicitamente Mail.Read.
+    scope: 'offline_access Mail.Send Mail.ReadWrite',
   });
 
   const resp = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
@@ -81,6 +83,21 @@ serve(async (req) => {
         attachmentId: a.id,
         size: a.size || 0,
       }));
+
+    // Marca o email como lido (best-effort — não bloqueia a resposta se falhar).
+    // Graph PATCH /me/messages/{id} com { isRead: true } é idempotente.
+    try {
+      await fetch(`https://graph.microsoft.com/v1.0/me/messages/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ isRead: true }),
+      });
+    } catch (e) {
+      console.error('Falha ao marcar email como lido (ignorado):', e);
+    }
 
     return new Response(
       JSON.stringify({
