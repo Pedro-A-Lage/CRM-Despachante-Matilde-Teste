@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Mail, RefreshCw, AlertTriangle, X, Paperclip, Download, Bot, CheckCircle, ArrowDownLeft, ArrowUpRight, FolderOpen } from 'lucide-react';
+import { Mail, RefreshCw, AlertTriangle, X, Paperclip, Download, ArrowDownLeft, ArrowUpRight, FolderOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getEmpresasAtivas } from '../lib/empresaService';
@@ -46,7 +46,7 @@ interface EmailDetails {
 }
 
 // System folders sempre exibidas, mesmo sem empresa parceira associada.
-// "Placas" é o destino do robô stamper (extrai dados de PDFs de placa).
+// "Placas" é o destino dos comprovantes de emplacamento.
 const SYSTEM_FOLDERS = ['placas', 'placa'];
 
 const DEFAULT_FOLDER = '';
@@ -67,9 +67,6 @@ export default function Emails() {
     const [emailDetails, setEmailDetails] = useState<EmailDetails | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
-
-    const [syncingBot, setSyncingBot] = useState(false);
-    const [botMessage, setBotMessage] = useState<string | null>(null);
 
     // Empresa cuja pasta coincide (case-insensitive) com a pasta selecionada.
     // Prioriza o campo configurável `pastaOutlook`; se vazio, cai para `nome`.
@@ -121,27 +118,6 @@ export default function Emails() {
             setEmails([]);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleBotSync = async () => {
-        setSyncingBot(true);
-        setBotMessage(null);
-        setError('');
-        try {
-            const { data, error: invokeError } = await supabase.functions.invoke('parse-outlook-stamper', {
-                body: { folderName: selectedFolder },
-            });
-            if (invokeError) throw invokeError;
-            if (data?.error) throw new Error(data.error);
-
-            setBotMessage(`Robô sincronizou ${data?.processed || 0} e-mails não lidos.`);
-            loadEmails(selectedFolder, selectedEmpresaEmail || empresaDaPasta?.email);
-        } catch (err: any) {
-            console.error('Erro ao sincronizar robô:', err);
-            setError('Falha ao rodar automação: ' + err.message);
-        } finally {
-            setSyncingBot(false);
         }
     };
 
@@ -255,7 +231,6 @@ export default function Emails() {
         if (!visible) setSelectedFolder(orderedFolders[0].displayName);
     }, [orderedFolders, selectedFolder]);
 
-    const showRobotButton = ['placa', 'placas'].includes(selectedFolder.toLowerCase());
     const empresaEmailAtiva = selectedEmpresaEmail || empresaDaPasta?.email || '';
 
     return (
@@ -266,18 +241,6 @@ export default function Emails() {
                     Caixa de E-mails {empresaDaPasta ? `— ${empresaDaPasta.nome}` : `(Outlook)`}
                 </h2>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {showRobotButton && (
-                        <button
-                            onClick={handleBotSync}
-                            className="btn btn-primary"
-                            disabled={syncingBot}
-                            style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'linear-gradient(135deg, var(--notion-purple, #9065B0), var(--notion-blue-hover))', border: 'none', boxShadow: '0 2px 8px rgba(139,92,246,0.3)' }}
-                            title="Extrair PDFs não lidos da pasta Placa e associar às Ordens de Serviço"
-                        >
-                            <Bot size={16} className={syncingBot ? 'pulse' : ''} />
-                            {syncingBot ? 'Processando...' : 'Robô Alocador de PDFs'}
-                        </button>
-                    )}
                     <button
                         onClick={() => loadEmails(selectedFolder, empresaEmailAtiva)}
                         className="btn btn-secondary"
@@ -327,12 +290,6 @@ export default function Emails() {
             </div>
 
             <div className="card-body" style={{ padding: 0 }}>
-                {botMessage && (
-                    <div style={{ margin: '16px', padding: '12px', background: 'var(--notion-green)', color: 'var(--notion-green)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
-                        <CheckCircle size={18} />
-                        {botMessage}
-                    </div>
-                )}
                 {error && (
                     <div style={{ margin: '16px', padding: '12px', background: 'rgba(221,91,0,0.08)', color: 'var(--notion-text)', border: '1px solid rgba(221,91,0,0.2)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <AlertTriangle size={16} style={{ color: 'var(--notion-orange)', flexShrink: 0 }} />
