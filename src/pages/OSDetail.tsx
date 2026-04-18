@@ -1464,7 +1464,7 @@ export default function OSDetail() {
                                                 <div style={{
                                                     fontSize: 22, fontWeight: 900,
                                                     color: isAntiga ? '#333' : '#1a1a2e',
-                                                    padding: '6px 0 4px', letterSpacing: 3, fontFamily: 'monospace',
+                                                    padding: '6px 0 4px', letterSpacing: 3, fontFamily: 'var(--font-mono)',
                                                 }}>
                                                     {placaFormatada}
                                                 </div>
@@ -1484,11 +1484,11 @@ export default function OSDetail() {
                                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11.5 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: 'var(--notion-text-secondary)' }}>Chassi</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', fontSize: 10.5, fontFamily: 'monospace' }}>{veiculo.chassi || '—'}</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', fontSize: 10.5, fontFamily: 'var(--font-mono)' }}>{veiculo.chassi || '—'}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ color: 'var(--notion-text-secondary)' }}>Renavam</span>
-                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', fontFamily: 'monospace' }}>{veiculo.renavam || '—'}</span>
+                                        <span style={{ fontWeight: 600, color: 'var(--notion-text)', fontFamily: 'var(--font-mono)' }}>{veiculo.renavam || '—'}</span>
                                     </div>
                                 </div>
                                 {/* Recibo — só transferência */}
@@ -1499,7 +1499,7 @@ export default function OSDetail() {
                                             <span style={{ color: veiculo?.dataAquisicao ? 'var(--notion-text-secondary)' : 'var(--notion-orange)' }}>Recibo</span>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                            <span style={{ fontWeight: 600, fontFamily: 'monospace', color: veiculo?.dataAquisicao ? 'var(--notion-text)' : 'var(--notion-orange)' }}>
+                                            <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', color: veiculo?.dataAquisicao ? 'var(--notion-text)' : 'var(--notion-orange)' }}>
                                                 {veiculo?.dataAquisicao
                                                     ? (veiculo.dataAquisicao.includes('T')
                                                         ? new Date(veiculo.dataAquisicao).toLocaleDateString('pt-BR', { timeZone: 'UTC' })

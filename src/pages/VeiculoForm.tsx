@@ -588,7 +588,7 @@ export default function VeiculoForm() {
                                 onBlur={handleBlur}
                                 placeholder="9BWHE21JX24060960"
                                 required
-                                style={{ ...fieldInput, textTransform: 'uppercase', fontFamily: 'monospace' }}
+                                style={{ ...fieldInput, textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}
                             />
                         </div>
                         <div>

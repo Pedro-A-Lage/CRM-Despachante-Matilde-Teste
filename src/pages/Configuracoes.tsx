@@ -671,7 +671,7 @@ function CustosFixosSection({ custos, onDataChanged }: { custos: PriceTableItem[
                       <td style={{ ...tdStyle, fontWeight: 500, borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
                         {cost.descricao}
                       </td>
-                      <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: '0.82rem', color: 'var(--notion-text-secondary)', borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
+                      <td style={{ ...tdStyle, fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--notion-text-secondary)', borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
                         {cost.codigo}
                       </td>
                       <td style={{ ...tdStyle, fontWeight: 600, borderBottom: isLast ? 'none' : tdStyle.borderBottom }}>
@@ -747,7 +747,7 @@ function CustosFixosSection({ custos, onDataChanged }: { custos: PriceTableItem[
                     </td>
                     <td style={{ ...tdStyle, borderBottom: 'none' }}>
                       <input
-                        style={{ ...inputStyle, fontFamily: 'monospace' }}
+                        style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }}
                         value={newCost.codigo}
                         onChange={e => setNewCost({ ...newCost, codigo: e.target.value })}
                         placeholder="codigo_custo"

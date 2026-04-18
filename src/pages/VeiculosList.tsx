@@ -361,10 +361,10 @@ export default function VeiculosList() {
                                 <div>
                                     <div style={{
                                         fontSize: '1.1rem',
-                                        fontWeight: 800,
+                                        fontWeight: 700,
                                         color: 'var(--notion-text)',
                                         letterSpacing: '1px',
-                                        fontFamily: 'monospace',
+                                        fontFamily: 'var(--font-mono)',
                                     }}>
                                         {v.placa || '—'}
                                     </div>
@@ -416,7 +416,7 @@ export default function VeiculosList() {
                                         fontSize: '0.8rem',
                                         fontWeight: 700,
                                         color: 'var(--notion-text)',
-                                        fontFamily: 'monospace',
+                                        fontFamily: 'var(--font-mono)',
                                     }}>
                                         {v.renavam}
                                     </div>
@@ -438,7 +438,7 @@ export default function VeiculosList() {
                                         fontSize: '0.8rem',
                                         fontWeight: 700,
                                         color: 'var(--notion-text)',
-                                        fontFamily: 'monospace',
+                                        fontFamily: 'var(--font-mono)',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
@@ -580,7 +580,7 @@ export default function VeiculosList() {
                                                     <Car size={16} style={{ color: 'var(--notion-purple, #9065B0)' }} />
                                                 </div>
                                                 <div style={{ minWidth: 0 }}>
-                                                    <div style={{ fontWeight: 700, color: 'var(--notion-text)', fontFamily: 'monospace', letterSpacing: '1px', fontSize: '0.9rem' }}>
+                                                    <div style={{ fontWeight: 700, color: 'var(--notion-text)', fontFamily: 'var(--font-mono)', letterSpacing: '1px', fontSize: '0.9rem' }}>
                                                         {v.placa || '—'}
                                                     </div>
                                                     <div style={{ fontSize: '0.8rem', color: 'var(--notion-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220 }}>
@@ -589,10 +589,10 @@ export default function VeiculosList() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'monospace', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'var(--font-mono)', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                                             {v.renavam}
                                         </td>
-                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'monospace', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)', fontFamily: 'var(--font-mono)', color: 'var(--notion-text-secondary)', fontSize: '0.85rem', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {v.chassi}
                                         </td>
                                         <td style={{ padding: '12px 16px', borderBottom: '1px solid var(--notion-border)' }}>

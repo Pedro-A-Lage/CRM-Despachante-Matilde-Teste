@@ -393,7 +393,7 @@ export default function Financeiro() {
                         <td style={{ padding: '9px 12px 9px 0', textAlign: 'center', color: 'var(--notion-text-secondary)' }}>
                           {item.qtdOS}
                         </td>
-                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'right', fontFamily: 'monospace', color: 'var(--notion-text)' }}>
+                        <td style={{ padding: '9px 12px 9px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--notion-text)' }}>
                           {fmt(item.receitaTotal)}
                         </td>
                         <td style={{ padding: '9px 0', textAlign: 'right' }}>

@@ -377,7 +377,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                     <span style={{
                       fontSize: '0.82rem',
                       color: 'var(--notion-text-secondary)',
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--font-mono)',
                     }}>
                       {cor}
                     </span>
@@ -798,7 +798,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                                   style={{
                                     fontSize: '0.7rem',
                                     color: 'var(--notion-text-muted)',
-                                    fontFamily: 'monospace',
+                                    fontFamily: 'var(--font-mono)',
                                     padding: '2px 6px',
                                     background: 'var(--notion-surface)',
                                     borderRadius: 4,
@@ -906,7 +906,7 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
               }}>
                 <Info size={14} style={{ color: 'var(--notion-blue)', flexShrink: 0 }} />
                 <span>
-                  Use <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{numero}'}</code> e <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{placa}'}</code> para substituir automaticamente.
+                  Use <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{numero}'}</code> e <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{placa}'}</code> para substituir automaticamente.
                 </span>
               </div>
 
@@ -959,16 +959,16 @@ export function EmpresaEditModal({ empresa, open, onSave, onClose }: Props) {
                 <div>
                   Anexe um template <strong>.xlsx</strong> com placeholders. Onde quiser que apareça um valor da OS, escreva entre chaves duplas:
                   <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '2px 10px', marginTop: 6, fontSize: '0.75rem' }}>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{modelo}}'}</code><span>Marca/modelo do veículo</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{placa}}'}</code><span>Placa</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{chassi}}'}</code><span>Chassi</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{dataEmissao}}'}</code><span>Data de hoje (dd/mm/aaaa)</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorVistoria}}'}</code><span>Valor da vistoria (número — use também {'{{valorVistoriaFmt}}'} para "R$ 123,45")</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorPlaca}}'}</code><span>Valor do par de placas (0 se não houver)</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorTotal}}'}</code><span>Somatório — ou use fórmula do Excel tipo <code>=E18+E19</code></span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{clienteNome}}'}</code><span>Nome do cliente da OS</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{numeroOS}}'}</code><span>Número da OS</span>
-                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'monospace', color: 'var(--notion-blue)' }}>{'{{valorPorExtenso}}'}</code><span>Total por extenso</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{modelo}}'}</code><span>Marca/modelo do veículo</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{placa}}'}</code><span>Placa</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{chassi}}'}</code><span>Chassi</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{dataEmissao}}'}</code><span>Data de hoje (dd/mm/aaaa)</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{valorVistoria}}'}</code><span>Valor da vistoria (número — use também {'{{valorVistoriaFmt}}'} para "R$ 123,45")</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{valorPlaca}}'}</code><span>Valor do par de placas (0 se não houver)</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{valorTotal}}'}</code><span>Somatório — ou use fórmula do Excel tipo <code>=E18+E19</code></span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{clienteNome}}'}</code><span>Nome do cliente da OS</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{numeroOS}}'}</code><span>Número da OS</span>
+                    <code style={{ background: 'var(--notion-bg)', padding: '1px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)', color: 'var(--notion-blue)' }}>{'{{valorPorExtenso}}'}</code><span>Total por extenso</span>
                   </div>
                   <div style={{ marginTop: 6 }}>
                     Sem template, o botão "Gerar Recibo" não aparece nas OS desta empresa.

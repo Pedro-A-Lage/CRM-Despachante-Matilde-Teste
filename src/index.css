@@ -400,10 +400,11 @@
 }
 
 .main-header h1 {
-  font-size: 1.375rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 500;
   color: var(--notion-text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   margin: 0;
 }
 
@@ -632,6 +633,8 @@
   color: var(--notion-text);
   letter-spacing: -0.02em;
   line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 .stat-card-label {
@@ -934,6 +937,8 @@ textarea:focus {
   font-weight: 700;
   color: var(--notion-text);
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 .metric-label {
@@ -962,6 +967,32 @@ textarea:focus {
 .font-display  { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.02em; }
 .font-mono     { font-family: var(--font-mono); font-feature-settings: "tnum"; }
 .font-body     { font-family: var(--font-body); }
+
+/* Placa (license plate) — brand component. Use <span class="plate">ABC-1D23</span> */
+.plate {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent-ink);
+  color: #fff8e8;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dark .plate {
+  background: #0f0c08;
+  color: #fdf4e4;
+}
+
+/* Tabular numeric helper (preserves current font but aligns digits) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
 
 /* --- Scrollbars --------------------------------------------- */
 
@@ -1597,9 +1628,11 @@ select option {
   margin-bottom: 6px;
 }
 .kanban-card-number {
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 600;
   color: var(--notion-text);
+  letter-spacing: 0.02em;
 }
 .kanban-card-date {
   font-size: 0.75rem;
