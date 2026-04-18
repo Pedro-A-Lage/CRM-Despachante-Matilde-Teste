@@ -121,7 +121,11 @@ serve(async (req) => {
 
           let pdfText = '';
           try {
-            const pdfjsLib = await import('https://esm.sh/pdfjs-dist@3.11.174/legacy/build/pdf.mjs');
+            // `?external=canvas` tells esm.sh to skip bundling pdfjs's optional
+            // canvas dependency (a native Node module). We only extract text,
+            // never render, so canvas is unused at runtime — and Deno's edge
+            // runtime can't load `.node` binaries anyway.
+            const pdfjsLib = await import('https://esm.sh/pdfjs-dist@3.11.174/legacy/build/pdf.mjs?external=canvas');
             pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
             const loadingTask = pdfjsLib.getDocument({
