@@ -187,8 +187,17 @@ window.addEventListener('MATILDE_SEND_CONTEXT_EXTRA', (event) => {
 
 // 4. RECEPTOR DE MENSAGENS DO CRM (window.postMessage → background)
 // App.tsx envia mensagens de controle (ex: CLEANUP_PRIMEIRO_EMPLACAMENTO) via postMessage.
+const ALLOWED_CRM_ORIGINS = [
+    /^https?:\/\/localhost(:\d+)?$/,
+    /^https?:\/\/(www\.)?matildecrm\.com$/,
+    /^https?:\/\/(www\.)?despachantematilde\.com(\.br)?$/,
+];
+function isAllowedCrmOrigin(origin) {
+    return typeof origin === 'string' && ALLOWED_CRM_ORIGINS.some((re) => re.test(origin));
+}
 window.addEventListener('message', (event) => {
     if (event.source !== window) return;
+    if (!isAllowedCrmOrigin(event.origin)) return;
     const data = event.data;
     if (!data || typeof data !== 'object' || data.source !== 'MATILDE_CRM') return;
 

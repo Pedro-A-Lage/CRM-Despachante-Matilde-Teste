@@ -181,6 +181,12 @@ async function capturarPDFDaPagina(pdfUrl, sourceTabId) {
 // ════════════════════════════════════════════════════════════
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    // Só aceitamos mensagens dos nossos próprios content scripts.
+    // Mensagens externas (chrome.runtime.sendMessage de outra extensão) trariam sender.id diferente.
+    if (!sender || sender.id !== chrome.runtime.id) {
+        console.warn('[Matilde][Background] Mensagem recusada — sender.id inválido:', sender?.id);
+        return false;
+    }
     console.log('[Matilde][Background] Mensagem recebida do content.js:', message.action);
 
     if (message.action === 'SAVE_DATA') {

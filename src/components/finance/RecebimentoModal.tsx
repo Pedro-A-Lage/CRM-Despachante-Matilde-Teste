@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { addPayment, updatePayment } from '../../lib/financeService';
 import type { Payment, PaymentMetodo } from '../../types/finance';
@@ -82,11 +82,17 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
   );
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  // Guard síncrono contra duplo-submit: setLoading é assíncrono (setState
+  // em batch), então em latências de rede o 2º clique pode chegar antes
+  // do botão ficar disabled. useRef comita na hora.
+  const submittingRef = useRef(false);
 
   const nomeUsuario = usuario?.nome ?? '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setErro(null);
     setLoading(true);
     try {
@@ -119,6 +125,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
       );
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   };
 

@@ -10,11 +10,34 @@ import { supabase } from './supabaseClient';
  */
 const MAX_UPLOAD_SIZE = 20 * 1024 * 1024; // 20MB
 
+// Magic bytes dos tipos de arquivo que o CRM aceita.
+// file.type vem do browser e é trivialmente falsificável; a assinatura binária
+// não é. Rejeitamos qualquer arquivo cujo conteúdo não bata com um dos tipos
+// permitidos — previne, por exemplo, um HTML/SVG disfarçado de PDF que
+// executaria script no viewer.
+const ALLOWED_SIGNATURES: Array<{ mime: string; bytes: number[] }> = [
+    { mime: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46] },              // %PDF
+    { mime: 'image/png',       bytes: [0x89, 0x50, 0x4E, 0x47] },              // ‰PNG
+    { mime: 'image/jpeg',      bytes: [0xFF, 0xD8, 0xFF] },
+    { mime: 'image/gif',       bytes: [0x47, 0x49, 0x46, 0x38] },              // GIF8
+    { mime: 'image/webp',      bytes: [0x52, 0x49, 0x46, 0x46] },              // RIFF (checa WEBP adiante se preciso)
+];
+
+async function verificarMagicBytes(file: File | Blob): Promise<string> {
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    for (const sig of ALLOWED_SIGNATURES) {
+        const ok = sig.bytes.every((b, i) => head[i] === b);
+        if (ok) return sig.mime;
+    }
+    throw new Error('Tipo de arquivo não permitido. Envie PDF, PNG, JPEG, GIF ou WEBP.');
+}
+
 export async function uploadFileToSupabase(file: File | Blob, path: string, bucketName: string = 'documentos'): Promise<string> {
     // Validar tamanho do arquivo
     if (file.size > MAX_UPLOAD_SIZE) {
         throw new Error(`Arquivo muito grande (${(file.size / 1024 / 1024).toFixed(1)}MB). Máximo permitido: ${MAX_UPLOAD_SIZE / 1024 / 1024}MB.`);
     }
+    await verificarMagicBytes(file);
     try {
 
         const { data, error } = await supabase.storage

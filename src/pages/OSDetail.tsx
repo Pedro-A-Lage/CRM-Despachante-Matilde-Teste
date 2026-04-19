@@ -2675,14 +2675,16 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
         let cancelled = false;
         async function loadPrices() {
             const vVal = await getPriceByCodigo('vistoria');
-            if (!cancelled) setPrecoVistoria(vVal);
+            if (cancelled) return;
+            setPrecoVistoria(vVal);
             const tipoV = os.tipoVeiculo === 'moto' ? 'placa_moto_mercosul' : 'placa_carro_mercosul';
             const pVal = await getPriceByCodigo(tipoV);
-            if (!cancelled) setPrecoPlaca(pVal);
+            if (cancelled) return;
+            setPrecoPlaca(pVal);
         }
         loadPrices();
         return () => { cancelled = true; };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [os.id, os.tipoVeiculo]);
 
     // Vistoria PDF upload
     const [vistUploading, setVistUploading] = useState(false);

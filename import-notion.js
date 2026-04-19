@@ -27,6 +27,34 @@ function mapServico(servico) {
     return 'transferencia'; // default
 }
 
+// Parser CSV RFC 4180 mínimo: lida com campos entre aspas contendo vírgulas,
+// newlines e aspas duplicadas (""). Retorna array de arrays de strings.
+function parseCsv(input) {
+    const rows = [];
+    let row = [];
+    let field = '';
+    let inQuotes = false;
+    for (let i = 0; i < input.length; i++) {
+        const c = input[i];
+        if (inQuotes) {
+            if (c === '"') {
+                if (input[i + 1] === '"') { field += '"'; i++; }
+                else { inQuotes = false; }
+            } else {
+                field += c;
+            }
+        } else {
+            if (c === '"') inQuotes = true;
+            else if (c === ',') { row.push(field); field = ''; }
+            else if (c === '\r') { /* ignora — \n cuida do break */ }
+            else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+            else field += c;
+        }
+    }
+    if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+    return rows;
+}
+
 async function importData() {
     console.log("Iniciando importação do Notion...");
 
@@ -35,22 +63,22 @@ async function importData() {
         return;
     }
 
-    // Nota: Para um script real, usaríamos um parser de CSV robusto (como csv-parse)
-    // Aqui usaremos uma leitura simplificada assumindo o formato padrão do Notion
     const content = fs.readFileSync(CSV_FILE, 'utf-8');
-    const lines = content.split('\n');
-    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+    const rows = parseCsv(content);
+    if (rows.length === 0) { console.error('CSV vazio.'); return; }
+    const headers = rows[0].map(h => h.trim());
 
     // Função auxiliar para pegar valor por header
     const getVal = (row, headerName) => {
         const idx = headers.indexOf(headerName);
         if (idx === -1) return '';
-        return row[idx]?.replace(/"/g, '').trim() || '';
+        return (row[idx] ?? '').trim();
     };
 
-    for (let i = 1; i < lines.length; i++) {
-        const row = lines[i].split(',');
-        if (row.length < headers.length) continue;
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        // Linhas completamente vazias (ex: trailing newline) são puladas
+        if (row.every((v) => !v || !v.trim())) continue;
 
         const nome = getVal(row, 'Name'); // Ou o nome da coluna no seu Notion
         const cpfCnpj = getVal(row, 'CPF/CNPJ').replace(/[^\d]/g, '');

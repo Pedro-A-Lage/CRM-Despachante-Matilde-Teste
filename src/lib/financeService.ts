@@ -535,7 +535,9 @@ export async function getRelatorio(
     .from('finance_charges')
     .select('valor_previsto, valor_pago, status')
     .in('os_id', osIds)
-    .neq('status', 'cancelado');
+    .neq('status', 'cancelado')
+    .gte('criado_em', `${inicio}T00:00:00`)
+    .lte('criado_em', `${fim}T23:59:59`);
   const totalCustos = (chargesData ?? []).reduce((s, c: any) => s + Number(c.valor_previsto), 0);
 
   const { data: paymentsData } = await supabase
@@ -705,32 +707,11 @@ export async function reverterPagamento(chargeId: string): Promise<void> {
 }
 
 export async function confirmarTodosDaOS(osId: string, usuario: string): Promise<void> {
-  const { data, error: fetchError } = await supabase
-    .from('finance_charges')
-    .select('id, valor_previsto')
-    .eq('os_id', osId)
-    .eq('status', 'a_pagar');
-
-  if (fetchError) throw fetchError;
-  if (!data || data.length === 0) return;
-
-  const now = new Date().toISOString();
-
-  // Confirmar cada charge atomicamente (status + valor_pago juntos)
-  for (const charge of data) {
-    const { error } = await supabase
-      .from('finance_charges')
-      .update({
-        status: 'pago',
-        valor_pago: Number(charge.valor_previsto),
-        confirmado_por: usuario,
-        confirmado_em: now,
-        atualizado_em: now,
-      })
-      .eq('id', charge.id)
-      .eq('status', 'a_pagar');
-    if (error) throw error;
-  }
+  const { error } = await supabase.rpc('confirmar_todos_charges_os', {
+    p_os_id: osId,
+    p_usuario: usuario,
+  });
+  if (error) throw error;
 }
 
 export async function getResumoControle(): Promise<ControleResumo> {

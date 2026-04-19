@@ -569,15 +569,9 @@ export async function saveOrdem(ordem: Partial<OrdemDeServico> & { clienteId: st
         atualizadoEm: timestamp,
     };
     const dbData = ordemToDb(nova);
-    // Calcular próximo numero = MAX(numero) + 1
-    // Usa maybeSingle() pra não quebrar em tabela vazia
-    const { data: maxRow } = await supabase
-        .from('ordens_de_servico')
-        .select('numero')
-        .order('numero', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-    dbData.numero = (maxRow?.numero ?? 0) + 1;
+    // `numero` é gerado atomicamente pela sequence ordens_de_servico_numero_seq
+    // (migration 20260419000002). Passar NULL força o Postgres a usar o DEFAULT.
+    delete dbData.numero;
     const { data, error } = await supabase
         .from('ordens_de_servico')
         .insert(dbData)

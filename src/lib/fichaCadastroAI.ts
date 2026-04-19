@@ -217,7 +217,12 @@ REGRAS GERAIS
  * - PDF (application/pdf): usa pdfParser (regex, muito mais rápido).
  * - Imagem (jpg/png/webp): usa Gemini (IA) — regex não funciona em foto.
  */
+const MAX_FILE_BYTES = 20 * 1024 * 1024; // 20 MB — limite pré-Gemini evita OOM no browser
+
 export async function extrairDadosFichaCadastro(file: File): Promise<DadosFichaCadastro> {
+    if (file.size > MAX_FILE_BYTES) {
+        throw new Error(`Arquivo muito grande (${Math.round(file.size / 1024 / 1024)}MB). Limite: 20MB.`);
+    }
     const mime = detectarMimeType(file);
     if (mime.startsWith('image/')) {
         return extrairViaGemini(file, mime);
