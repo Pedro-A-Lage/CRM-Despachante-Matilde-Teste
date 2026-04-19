@@ -19,10 +19,11 @@ diferente — não misture os focos.
 ## Preparação (rode em paralelo)
 
 ```bash
+BASE="${1:-main}"
 git status
-git log --oneline BASE...HEAD
-git diff --stat BASE...HEAD
-git diff BASE...HEAD
+git log --oneline "$BASE"...HEAD
+git diff --stat "$BASE"...HEAD
+git diff "$BASE"...HEAD
 ```
 
 Leia também os arquivos de contexto (apenas na primeira vez, se ainda não

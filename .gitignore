@@ -10,5 +10,7 @@ chrome-extension.zip
 *.png
 .claude/*
 !.claude/commands/
+.claude/commands/*
+!.claude/commands/*.md
 .playwright-mcp/
 DocumentosDespachante/
