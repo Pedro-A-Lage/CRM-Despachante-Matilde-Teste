@@ -8,6 +8,7 @@ ts_errors.*
 !.env.example
 chrome-extension.zip
 *.png
-.claude/
+.claude/*
+!.claude/commands/
 .playwright-mcp/
 DocumentosDespachante/
