@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentação do CRM
+    url: https://github.com/pedro-a-lage/crm-despachante-matilde-teste/tree/main/recorri-docs
+    about: Antes de abrir issue, confira se a resposta está nos docs.
+  - name: Canal #dev-crm
+    url: https://matilde.slack.com
+    about: Dúvidas rápidas e suporte do time.
