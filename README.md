@@ -79,6 +79,12 @@ npm run dev
 3. Clique em "Carregar sem compactação" (Load unpacked).
 4. Selecione a pasta `chrome-extension` presente na raiz deste projeto.
 
+## 📚 Para devs novos — comece aqui
+
+Antes de escrever código, leia o **[Developer Onboarding Kit](./docs/onboarding/README.md)**:
+setup, arquitetura, glossário de negócio, tour do codebase, banco, workflow de dev,
+extensão Chrome, troubleshooting e checklist da primeira semana.
+
 ## 📁 Estrutura do Projeto
 
 ```text
