@@ -45,6 +45,13 @@ function ymd(dateStr?: string | null): string {
 
 type RangePreset = 'hoje' | 'ontem' | 'semana' | 'mes' | 'custom';
 
+// Recebedores fixos (quem recebe dinheiro no escritório) — lista curta e
+// controlada; diferente dos pagadores (quem vai pagar a taxa no banco/Detran).
+const RECEBEDORES_FIXOS: Pagador[] = [
+  { id: '__rec_pedro__', nome: 'Pedro', ativo: true, criado_em: '', atualizado_em: '' },
+  { id: '__rec_geraldo__', nome: 'Geraldo', ativo: true, criado_em: '', atualizado_em: '' },
+];
+
 function computeRange(preset: RangePreset, custom: { de: string; ate: string }): { de: string; ate: string } {
   const today = new Date();
   const iso = (d: Date) => d.toISOString().split('T')[0]!;
@@ -473,10 +480,11 @@ export default function ControleDiario() {
                         <td onClick={e => e.stopPropagation()} style={{ cursor: 'default' }}>
                           <NomePicker
                             value={p.recebido_por || ''}
-                            pagadores={pagadores}
+                            pagadores={RECEBEDORES_FIXOS}
                             onChange={(nome) => handleSetRecebidoPor(p.id, nome)}
                             onCreate={handleCreatePagador}
                             placeholder="— definir recebedor —"
+                            hideAdd
                           />
                         </td>
                       </tr>
@@ -703,12 +711,14 @@ function NomePicker({
   onChange,
   onCreate,
   placeholder,
+  hideAdd = false,
 }: {
   value: string;
   pagadores: Pagador[];
   onChange: (nome: string | null) => void;
   onCreate: (nome: string) => Promise<Pagador | null>;
   placeholder?: string;
+  hideAdd?: boolean;
 }) {
   const [adicionando, setAdicionando] = useState(false);
   const [novoNome, setNovoNome] = useState('');
@@ -812,19 +822,21 @@ function NomePicker({
           <option value={value}>{value} (antigo)</option>
         )}
       </select>
-      <button
-        type="button"
-        onClick={() => setAdicionando(true)}
-        title="Adicionar novo"
-        aria-label="Adicionar novo nome"
-        style={{
-          height: 26, width: 26, border: '1px solid var(--notion-border)', borderRadius: 6,
-          background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}
-      >
-        <Plus size={13} />
-      </button>
+      {!hideAdd && (
+        <button
+          type="button"
+          onClick={() => setAdicionando(true)}
+          title="Adicionar novo"
+          aria-label="Adicionar novo nome"
+          style={{
+            height: 26, width: 26, border: '1px solid var(--notion-border)', borderRadius: 6,
+            background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <Plus size={13} />
+        </button>
+      )}
     </div>
   );
 }
