@@ -93,6 +93,7 @@ export default function ControleDiario() {
   const [pagadores, setPagadores] = useState<Pagador[]>([]);
   const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
   const [empresaFilter, setEmpresaFilter] = useState<string>(''); // '' = todas | 'particular' | empresa.id
+  const [activeTab, setActiveTab] = useState<'os' | 'recebimentos' | 'taxas'>('os');
   const { showToast } = useToast();
 
   // Route guard
@@ -232,33 +233,28 @@ export default function ControleDiario() {
   const placaPagas = taxasPagasDoPeriodo.filter(c => c.categoria === 'placa');
   const totalDaeTransfPlaca = [...daeTransferenciaPagas, ...placaPagas].reduce((s, c) => s + (c.valor_pago || 0), 0);
 
-  // --- Resumos por pessoa ---
-  const resumoPorPagador = useMemo(() => {
-    const map = new Map<string, { nome: string; qtd: number; total: number; dae: number; placa: number }>();
+  // --- Resumo unificado por pessoa (recebeu + pagou) ---
+  const resumoPorPessoa = useMemo(() => {
+    const map = new Map<string, { nome: string; recRecebimentos: number; recTotal: number; recDinheiro: number; pagTaxas: number; pagTotal: number }>();
+    for (const p of recebimentosDoPeriodo) {
+      const nome = p.recebido_por || '— sem recebedor —';
+      const e = map.get(nome) ?? { nome, recRecebimentos: 0, recTotal: 0, recDinheiro: 0, pagTaxas: 0, pagTotal: 0 };
+      e.recRecebimentos += 1;
+      e.recTotal += p.valor || 0;
+      if (p.metodo === 'dinheiro') e.recDinheiro += p.valor || 0;
+      map.set(nome, e);
+    }
     for (const c of taxasPagasDoPeriodo) {
       const nome = c.pago_por || '— sem pagador —';
-      const entry = map.get(nome) ?? { nome, qtd: 0, total: 0, dae: 0, placa: 0 };
-      entry.qtd += 1;
-      entry.total += c.valor_pago || 0;
-      if (c.categoria === 'dae_principal') entry.dae += c.valor_pago || 0;
-      if (c.categoria === 'placa') entry.placa += c.valor_pago || 0;
-      map.set(nome, entry);
+      const e = map.get(nome) ?? { nome, recRecebimentos: 0, recTotal: 0, recDinheiro: 0, pagTaxas: 0, pagTotal: 0 };
+      e.pagTaxas += 1;
+      e.pagTotal += c.valor_pago || 0;
+      map.set(nome, e);
     }
-    return Array.from(map.values()).sort((a, b) => b.total - a.total);
-  }, [taxasPagasDoPeriodo]);
+    return Array.from(map.values()).sort((a, b) => (b.recTotal + b.pagTotal) - (a.recTotal + a.pagTotal));
+  }, [recebimentosDoPeriodo, taxasPagasDoPeriodo]);
 
-  const resumoPorRecebedor = useMemo(() => {
-    const map = new Map<string, { nome: string; qtd: number; total: number; dinheiro: number }>();
-    for (const p of recebimentosDoPeriodo) {
-      const nome = p.recebido_por || '— não informado —';
-      const entry = map.get(nome) ?? { nome, qtd: 0, total: 0, dinheiro: 0 };
-      entry.qtd += 1;
-      entry.total += p.valor || 0;
-      if (p.metodo === 'dinheiro') entry.dinheiro += p.valor || 0;
-      map.set(nome, entry);
-    }
-    return Array.from(map.values()).sort((a, b) => b.total - a.total);
-  }, [recebimentosDoPeriodo]);
+  const saldoDoDia = totalRecebido - totalTaxasPagas;
 
   const clienteMap = useMemo(() => new Map(clientes.map(c => [c.id, c])), [clientes]);
   const veiculoMap = useMemo(() => new Map(veiculos.map(v => [v.id, v])), [veiculos]);
@@ -403,61 +399,250 @@ export default function ControleDiario() {
         </div>
       )}
 
-      {/* Stats cards */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+      {/* === LAYOUT 2 colunas: Resumo + Pessoas === */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)',
+        gap: 16,
+        marginBottom: 16,
+      }} className="cd-row">
+        {/* Resumo do dia (card grande à esquerda) */}
+        <div style={{
+          background: 'var(--notion-surface)',
+          border: '1px solid var(--notion-border)',
+          borderRadius: 12,
+          padding: '18px 22px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 14,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)' }}>Resumo do período</span>
+            <span style={{ fontSize: 11, color: 'var(--notion-text-muted)' }}>
+              {ordensDoPeriodo.length} OS · {recebimentosDoPeriodo.length} receb. · {taxasPagasDoPeriodo.length} taxas
+            </span>
+          </div>
+
+          {/* Saldo do período em destaque */}
+          <div style={{
+            display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+            paddingBottom: 14,
+            borderBottom: '1px solid var(--notion-border)',
+          }}>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Saldo do período
+              </div>
+              <div style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 32, fontWeight: 700,
+                color: saldoDoDia >= 0 ? 'var(--status-success)' : 'var(--status-danger)',
+                lineHeight: 1.1, marginTop: 4,
+              }}>
+                {fmt(saldoDoDia)}
+              </div>
+              <div className="text-xs" style={{ color: 'var(--notion-text-muted)', marginTop: 4 }}>
+                = recebido − taxas pagas
+              </div>
+            </div>
+          </div>
+
+          {/* Linhas: entradas / saídas */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <SummaryLine
+              icon={<DollarSign size={14} />}
+              label="Recebido dos clientes"
+              value={totalRecebido}
+              accent="success"
+              hint={`${recebimentosDoPeriodo.length} recebimento(s)`}
+            />
+            <SummaryLine
+              icon={<CheckCircle size={14} />}
+              label="Taxas pagas"
+              value={totalTaxasPagas}
+              accent="danger"
+              hint={`${taxasPagasDoPeriodo.length} taxa(s)`}
+            />
+          </div>
+
+          {/* Caixa em dinheiro */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
+            paddingTop: 12,
+            borderTop: '1px solid var(--notion-border)',
+          }}>
+            <SummaryLine
+              icon={<Wallet size={14} />}
+              label="Entrou em dinheiro"
+              value={totalDinheiroPeriodo}
+              accent="warn"
+              hint="no período"
+            />
+            <SummaryLine
+              icon={<Wallet size={14} />}
+              label="Caixa acumulado"
+              value={caixaDinheiroAcumulado}
+              accent="warn"
+              hint="histórico total"
+            />
+          </div>
+
+          {/* DAE + Placa em destaque */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            paddingTop: 12,
+            borderTop: '1px solid var(--notion-border)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--status-info)' }}>
+              <TrendingUp size={14} />
+              <span className="text-sm" style={{ fontWeight: 600, color: 'var(--notion-text)' }}>
+                DAE Transferência + Placa
+              </span>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--status-info)' }}>
+                {fmt(totalDaeTransfPlaca)}
+              </div>
+              <div className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>
+                {daeTransferenciaPagas.length} DAE · {placaPagas.length} placa
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pessoas do período (sidebar à direita) */}
+        <div style={{
+          background: 'var(--notion-surface)',
+          border: '1px solid var(--notion-border)',
+          borderRadius: 12,
+          padding: '14px 16px',
+          display: 'flex',
+          flexDirection: 'column',
           gap: 10,
-          marginBottom: 24,
-        }}
-      >
-        <StatCard
-          icon={<FileText size={18} />}
-          label="OS abertas no período"
-          value={ordensDoPeriodo.length.toString()}
-          hint={`de ${ordens.length} no total`}
-        />
-        <StatCard
-          icon={<DollarSign size={18} />}
-          label="Recebido dos clientes"
-          value={fmt(totalRecebido)}
-          hint={`${recebimentosDoPeriodo.length} recebimento(s)`}
-          accent="success"
-        />
-        <StatCard
-          icon={<Wallet size={18} />}
-          label="Entrou em dinheiro"
-          value={fmt(totalDinheiroPeriodo)}
-          hint={`no período selecionado`}
-          accent="warn"
-        />
-        <StatCard
-          icon={<Wallet size={18} />}
-          label="Caixa em dinheiro (acumulado)"
-          value={fmt(caixaDinheiroAcumulado)}
-          hint="total histórico"
-          accent="warn"
-        />
-        <StatCard
-          icon={<CheckCircle size={18} />}
-          label="Taxas pagas"
-          value={fmt(totalTaxasPagas)}
-          hint={`${taxasPagasDoPeriodo.length} taxa(s)`}
-        />
-        <StatCard
-          icon={<TrendingUp size={18} />}
-          label="DAE Transferência + Placa"
-          value={fmt(totalDaeTransfPlaca)}
-          hint={`${daeTransferenciaPagas.length} DAE · ${placaPagas.length} placa`}
-          accent="info"
-        />
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Users size={14} style={{ color: 'var(--notion-text-secondary)' }} />
+            <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)', margin: 0 }}>Pessoas do período</span>
+          </div>
+          {resumoPorPessoa.length === 0 ? (
+            <div className="text-sm" style={{ color: 'var(--notion-text-muted)', fontStyle: 'italic', padding: 'var(--space-3) 0' }}>
+              Nenhuma movimentação no período.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {resumoPorPessoa.map(p => (
+                <div key={p.nome} style={{
+                  padding: '8px 10px',
+                  background: 'var(--notion-bg-alt)',
+                  border: '1px solid var(--notion-border)',
+                  borderRadius: 8,
+                }}>
+                  <div className="text-sm" style={{ fontWeight: 700, color: 'var(--notion-text)', marginBottom: 4 }}>
+                    {p.nome}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {p.recRecebimentos > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                        <span style={{ color: 'var(--notion-text-muted)' }}>Recebeu ({p.recRecebimentos})</span>
+                        <span className="font-mono" style={{ fontWeight: 600, color: 'var(--status-success)' }}>{fmt(p.recTotal)}</span>
+                      </div>
+                    )}
+                    {p.recDinheiro > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                        <span style={{ color: 'var(--notion-text-muted)', paddingLeft: 12 }}>↳ em dinheiro</span>
+                        <span className="font-mono" style={{ color: 'var(--status-warn)' }}>{fmt(p.recDinheiro)}</span>
+                      </div>
+                    )}
+                    {p.pagTaxas > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                        <span style={{ color: 'var(--notion-text-muted)' }}>Pagou taxas ({p.pagTaxas})</span>
+                        <span className="font-mono" style={{ fontWeight: 600, color: 'var(--status-danger)' }}>{fmt(p.pagTotal)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Total geral das pessoas */}
+              <div style={{
+                marginTop: 4,
+                padding: '8px 10px',
+                background: 'rgba(0,117,222,0.08)',
+                border: '1px solid var(--notion-blue)',
+                borderRadius: 8,
+              }}>
+                <div className="text-sm" style={{ fontWeight: 700, color: 'var(--notion-blue)', marginBottom: 4 }}>
+                  TOTAL
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                  <span style={{ color: 'var(--notion-text-secondary)' }}>Total recebido</span>
+                  <span className="font-mono" style={{ fontWeight: 700 }}>{fmt(totalRecebido)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+                  <span style={{ color: 'var(--notion-text-secondary)' }}>Total pago em taxas</span>
+                  <span className="font-mono" style={{ fontWeight: 700 }}>{fmt(totalTaxasPagas)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* === Section 1: OS abertas no período === */}
-      <Section title={`OS abertas no período (${ordensDoPeriodo.length})`} icon={<FileText size={16} />}>
-        {ordensDoPeriodo.length === 0 ? (
-          <EmptyRow>Nenhuma OS aberta nesse período.</EmptyRow>
+      {/* === TABS: OS / Recebimentos / Taxas === */}
+      <div style={{
+        background: 'var(--notion-surface)',
+        border: '1px solid var(--notion-border)',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 16,
+      }}>
+        <div style={{
+          display: 'flex', gap: 4, padding: '6px 8px',
+          borderBottom: '1px solid var(--notion-border)',
+          background: 'var(--notion-bg-alt)',
+        }}>
+          {([
+            { id: 'os', label: 'OS abertas', count: ordensDoPeriodo.length, icon: <FileText size={14} /> },
+            { id: 'recebimentos', label: 'Recebimentos', count: recebimentosDoPeriodo.length, icon: <DollarSign size={14} /> },
+            { id: 'taxas', label: 'Taxas pagas', count: taxasPagasDoPeriodo.length, icon: <CheckCircle size={14} /> },
+          ] as const).map(t => {
+            const active = activeTab === t.id;
+            return (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '8px 14px', borderRadius: 8, border: 'none',
+                  background: active ? 'var(--notion-surface)' : 'transparent',
+                  color: active ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 13, cursor: 'pointer',
+                  boxShadow: active ? 'var(--shadow-card)' : 'none',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {t.icon}
+                {t.label}
+                <span style={{
+                  fontSize: 11, fontWeight: 700,
+                  padding: '2px 7px', borderRadius: 99,
+                  background: active ? 'rgba(0,117,222,0.12)' : 'var(--notion-bg-alt)',
+                  color: active ? 'var(--notion-blue)' : 'var(--notion-text-muted)',
+                }}>
+                  {t.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+      {/* OS abertas */}
+      {activeTab === 'os' && (
+        ordensDoPeriodo.length === 0 ? (
+          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
+            Nenhuma OS aberta nesse período.
+          </div>
         ) : (
           <div className="table-container">
             <table className="table">
@@ -515,13 +700,15 @@ export default function ControleDiario() {
               </tbody>
             </table>
           </div>
-        )}
-      </Section>
+        )
+      )}
 
-      {/* === Section 2: Recebimentos do período === */}
-      <Section title={`Recebimentos no período (${recebimentosDoPeriodo.length})`} icon={<DollarSign size={16} />}>
-        {recebimentosDoPeriodo.length === 0 ? (
-          <EmptyRow>Nenhum recebimento nesse período.</EmptyRow>
+      {/* Recebimentos */}
+      {activeTab === 'recebimentos' && (
+        recebimentosDoPeriodo.length === 0 ? (
+          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
+            Nenhum recebimento nesse período.
+          </div>
         ) : (
           <div className="table-container">
             <table className="table">
@@ -575,19 +762,20 @@ export default function ControleDiario() {
               </tbody>
             </table>
           </div>
-        )}
-      </Section>
+        )
+      )}
 
-      {/* === Section 3: Taxas pagas no período (DAE + Placa em destaque) === */}
-      <Section
-        title={`Taxas pagas no período (${taxasPagasDoPeriodo.length})`}
-        icon={<CheckCircle size={16} />}
-        subtitle="DAE Transferência e Placa em destaque"
-      >
-        {taxasPagasDoPeriodo.length === 0 ? (
-          <EmptyRow>Nenhuma taxa paga nesse período.</EmptyRow>
+      {/* Taxas pagas */}
+      {activeTab === 'taxas' && (
+        taxasPagasDoPeriodo.length === 0 ? (
+          <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
+            Nenhuma taxa paga nesse período.
+          </div>
         ) : (
           <div className="table-container">
+            <div style={{ padding: '8px 16px 0', fontSize: 11, color: 'var(--notion-text-muted)' }}>
+              DAE Transferência e Placa em destaque
+            </div>
             <table className="table">
               <thead>
                 <tr>
@@ -643,144 +831,47 @@ export default function ControleDiario() {
               </tbody>
             </table>
           </div>
-        )}
-      </Section>
+        )
+      )}
+      </div>{/* end tabs container */}
 
-      {/* === Section 4: Resumo por pagador === */}
-      <Section title="Resumo por pagador" icon={<Users size={16} />}>
-        {resumoPorPagador.length === 0 ? (
-          <EmptyRow>Nenhuma taxa paga com pagador identificado no período.</EmptyRow>
-        ) : (
-          <div className="table-container">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Pagador</th>
-                  <th>Taxas</th>
-                  <th>Total</th>
-                  <th>DAE</th>
-                  <th>Placa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resumoPorPagador.map(r => (
-                  <tr key={r.nome}>
-                    <td style={{ fontWeight: 600 }}>{r.nome}</td>
-                    <td>{r.qtd}</td>
-                    <td style={{ fontWeight: 600 }}>{fmt(r.total)}</td>
-                    <td style={{ color: 'var(--notion-text-muted)' }}>{fmt(r.dae)}</td>
-                    <td style={{ color: 'var(--notion-text-muted)' }}>{fmt(r.placa)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Section>
-
-      {/* === Section 5: Resumo por recebedor === */}
-      <Section title="Resumo por recebedor" icon={<Users size={16} />}>
-        {resumoPorRecebedor.length === 0 ? (
-          <EmptyRow>Nenhum recebimento com recebedor identificado no período.</EmptyRow>
-        ) : (
-          <div className="table-container">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Recebedor</th>
-                  <th>Recebimentos</th>
-                  <th>Total</th>
-                  <th>Em dinheiro</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resumoPorRecebedor.map(r => (
-                  <tr key={r.nome}>
-                    <td style={{ fontWeight: 600 }}>{r.nome}</td>
-                    <td>{r.qtd}</td>
-                    <td style={{ fontWeight: 600 }}>{fmt(r.total)}</td>
-                    <td style={{ color: 'var(--status-warn)', fontWeight: 500 }}>{fmt(r.dinheiro)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Section>
-
-      <style>{`@keyframes ctrlsp { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes ctrlsp { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media (max-width: 900px) {
+          .cd-row { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
 
 // ── Small components ─────────────────────────────────────────────────────────
 
-function StatCard({
+function SummaryLine({
   icon, label, value, hint, accent,
 }: {
   icon: React.ReactNode;
   label: string;
-  value: string;
+  value: number;
   hint?: string;
-  accent?: 'success' | 'warn' | 'info';
+  accent?: 'success' | 'danger' | 'warn' | 'info';
 }) {
   const color =
     accent === 'success' ? 'var(--status-success)'
+    : accent === 'danger' ? 'var(--status-danger)'
     : accent === 'warn' ? 'var(--status-warn)'
     : accent === 'info' ? 'var(--status-info)'
-    : 'var(--notion-blue)';
+    : 'var(--notion-text)';
   return (
-    <div
-      style={{
-        background: 'var(--notion-surface)',
-        border: '1px solid var(--notion-border)',
-        borderRadius: 10,
-        padding: '14px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 4,
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color }}>
-        {icon}
-        <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)' }}>{label}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--notion-text-secondary)' }}>
+        <span style={{ color }}>{icon}</span>
+        <span className="text-xs" style={{ fontWeight: 600 }}>{label}</span>
       </div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--notion-text)', fontFamily: 'var(--font-mono)' }}>
-        {value}
+      <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color }}>
+        {value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       </div>
       {hint && <div className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>{hint}</div>}
-    </div>
-  );
-}
-
-function Section({
-  title, icon, subtitle, children,
-}: {
-  title: string;
-  icon?: React.ReactNode;
-  subtitle?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="card" style={{ marginBottom: 16 }}>
-      <div className="card-header">
-        <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {icon}
-          <span>{title}</span>
-        </h3>
-        {subtitle && <span className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>{subtitle}</span>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function EmptyRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="card-body">
-      <p className="text-sm" style={{ color: 'var(--notion-text-muted)', margin: 0, textAlign: 'center', padding: 'var(--space-4) 0' }}>
-        {children}
-      </p>
     </div>
   );
 }
