@@ -11,6 +11,10 @@ import {
   Calendar,
   TrendingUp,
   Search,
+  Users,
+  Plus,
+  X,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../components/ConfirmProvider';
@@ -20,8 +24,12 @@ import {
   confirmarPagamento,
   reverterPagamento,
   confirmarTodosDaOS,
+  getPagadores,
+  createPagador,
+  updatePagador,
+  deletePagador,
 } from '../lib/financeService';
-import type { OSChargeGroup, ChargeWithOS, ControleResumo } from '../types/finance';
+import type { OSChargeGroup, ChargeWithOS, ControleResumo, Pagador } from '../types/finance';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import { getEmpresas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
@@ -83,14 +91,19 @@ function isOverdue(charge: ChargeWithOS): boolean {
 interface ConfirmPopoverProps {
   charge: ChargeWithOS;
   onClose: () => void;
-  onConfirm: (chargeId: string, valor: number, data: string) => Promise<void>;
+  onConfirm: (chargeId: string, valor: number, data: string, pagoPor: string | null) => Promise<void>;
+  pagadores: Pagador[];
+  onCreatePagador: (nome: string) => Promise<Pagador>;
 }
 
-function ConfirmPopover({ charge, onClose, onConfirm }: ConfirmPopoverProps) {
+function ConfirmPopover({ charge, onClose, onConfirm, pagadores, onCreatePagador }: ConfirmPopoverProps) {
   const [valor, setValor] = useState<string>(
     maskMoney(String(Math.round((isNaN(charge.valor_previsto) ? 0 : charge.valor_previsto) * 100))),
   );
   const [data, setData] = useState(todayStr());
+  const [pagoPor, setPagoPor] = useState<string>(charge.pago_por || '');
+  const [novoNome, setNovoNome] = useState('');
+  const [adicionando, setAdicionando] = useState(false);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -108,10 +121,23 @@ function ConfirmPopover({ charge, onClose, onConfirm }: ConfirmPopoverProps) {
     e.preventDefault();
     setLoading(true);
     try {
-      await onConfirm(charge.id, unmaskMoney(valor), data);
+      await onConfirm(charge.id, unmaskMoney(valor), data, pagoPor || null);
       onClose();
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleAddPagador() {
+    const nome = novoNome.trim();
+    if (!nome) return;
+    try {
+      const novo = await onCreatePagador(nome);
+      setPagoPor(novo.nome);
+      setNovoNome('');
+      setAdicionando(false);
+    } catch (err) {
+      console.error('Erro ao criar pagador:', err);
     }
   }
 
@@ -140,6 +166,55 @@ function ConfirmPopover({ charge, onClose, onConfirm }: ConfirmPopoverProps) {
             className="input"
           />
         </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label className="label">Pago por</label>
+          {adicionando ? (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <input
+                type="text"
+                autoFocus
+                placeholder="Nome do pagador"
+                value={novoNome}
+                onChange={e => setNovoNome(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddPagador(); } }}
+                className="input"
+                style={{ flex: 1 }}
+              />
+              <button type="button" onClick={handleAddPagador} className="btn btn-primary btn-sm">
+                <Plus size={12} />
+              </button>
+              <button type="button" onClick={() => { setAdicionando(false); setNovoNome(''); }} className="btn btn-ghost btn-sm" aria-label="Cancelar">
+                <X size={12} />
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <select
+                value={pagoPor}
+                onChange={e => setPagoPor(e.target.value)}
+                className="input"
+                style={{ flex: 1 }}
+              >
+                <option value="">— selecionar —</option>
+                {pagadores.filter(p => p.ativo).map(p => (
+                  <option key={p.id} value={p.nome}>{p.nome}</option>
+                ))}
+                {pagoPor && !pagadores.some(p => p.nome === pagoPor) && (
+                  <option value={pagoPor}>{pagoPor} (antigo)</option>
+                )}
+              </select>
+              <button
+                type="button"
+                onClick={() => setAdicionando(true)}
+                className="btn btn-ghost btn-sm"
+                title="Adicionar novo pagador"
+                aria-label="Adicionar novo pagador"
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+          )}
+        </div>
         <button
           type="submit"
           disabled={loading}
@@ -153,17 +228,151 @@ function ConfirmPopover({ charge, onClose, onConfirm }: ConfirmPopoverProps) {
   );
 }
 
+// ── Gerenciador de Pagadores ─────────────────────────────────────────────────
+
+interface GerenciarPagadoresModalProps {
+  pagadores: Pagador[];
+  onClose: () => void;
+  onCreate: (nome: string) => Promise<void>;
+  onUpdate: (id: string, patch: { nome?: string; ativo?: boolean }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}
+
+function GerenciarPagadoresModal({ pagadores, onClose, onCreate, onUpdate, onDelete }: GerenciarPagadoresModalProps) {
+  const [novoNome, setNovoNome] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNome, setEditNome] = useState('');
+
+  async function handleAdd() {
+    const nome = novoNome.trim();
+    if (!nome) return;
+    try {
+      await onCreate(nome);
+      setNovoNome('');
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleSaveEdit(id: string) {
+    const nome = editNome.trim();
+    if (!nome) return;
+    await onUpdate(id, { nome });
+    setEditingId(null);
+    setEditNome('');
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Gerenciar Pagadores</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Fechar">×</button>
+        </div>
+        <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input
+              type="text"
+              placeholder="Novo pagador..."
+              value={novoNome}
+              onChange={e => setNovoNome(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAdd(); } }}
+              className="form-input"
+              style={{ flex: 1 }}
+            />
+            <button onClick={handleAdd} className="btn btn-primary btn-sm" disabled={!novoNome.trim()}>
+              <Plus size={14} /> Adicionar
+            </button>
+          </div>
+          {pagadores.length === 0 ? (
+            <p className="text-sm" style={{ color: 'var(--notion-text-muted)', margin: 0, textAlign: 'center', padding: 'var(--space-4) 0' }}>
+              Nenhum pagador cadastrado.
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {pagadores.map(p => (
+                <div
+                  key={p.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '8px 10px',
+                    background: 'var(--notion-bg-alt)',
+                    border: '1px solid var(--notion-border)',
+                    borderRadius: 8,
+                    opacity: p.ativo ? 1 : 0.5,
+                  }}
+                >
+                  {editingId === p.id ? (
+                    <>
+                      <input
+                        autoFocus
+                        type="text"
+                        value={editNome}
+                        onChange={e => setEditNome(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleSaveEdit(p.id); } if (e.key === 'Escape') { setEditingId(null); } }}
+                        className="form-input"
+                        style={{ flex: 1 }}
+                      />
+                      <button onClick={() => handleSaveEdit(p.id)} className="btn btn-primary btn-sm">Salvar</button>
+                      <button onClick={() => setEditingId(null)} className="btn btn-ghost btn-sm"><X size={12} /></button>
+                    </>
+                  ) : (
+                    <>
+                      <span
+                        className="text-sm"
+                        style={{ flex: 1, fontWeight: 500, color: 'var(--notion-text)', textDecoration: p.ativo ? 'none' : 'line-through' }}
+                        onDoubleClick={() => { setEditingId(p.id); setEditNome(p.nome); }}
+                        title="Clique duplo para renomear"
+                      >
+                        {p.nome}
+                      </span>
+                      <button
+                        onClick={() => onUpdate(p.id, { ativo: !p.ativo })}
+                        className="btn btn-ghost btn-sm"
+                        title={p.ativo ? 'Desativar' : 'Ativar'}
+                      >
+                        {p.ativo ? 'Desativar' : 'Ativar'}
+                      </button>
+                      <button
+                        onClick={() => { setEditingId(p.id); setEditNome(p.nome); }}
+                        className="btn btn-ghost btn-sm"
+                        title="Renomear"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => onDelete(p.id)}
+                        className="btn btn-ghost btn-sm"
+                        title="Remover"
+                        aria-label={`Remover ${p.nome}`}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Charge Row ────────────────────────────────────────────────────────────────
 
 interface ChargeRowProps {
   charge: ChargeWithOS;
   isAdmin: boolean;
-  onConfirm: (chargeId: string, valor: number, data: string) => Promise<void>;
+  onConfirm: (chargeId: string, valor: number, data: string, pagoPor: string | null) => Promise<void>;
   onRevert: (chargeId: string) => Promise<void>;
   loadingConfirm: string | null;
+  pagadores: Pagador[];
+  onCreatePagador: (nome: string) => Promise<Pagador>;
 }
 
-function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: ChargeRowProps) {
+function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm, pagadores, onCreatePagador }: ChargeRowProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const overdue = isOverdue(charge);
   const paid = charge.status === 'pago';
@@ -228,7 +437,13 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
         {paid ? (
           <>
             <span style={{ fontSize: 12, color: 'var(--notion-green)', fontWeight: 500 }}>
-              Pago &middot; {charge.confirmado_por} &middot; {formattedDate}
+              {charge.pago_por ? <>Pago por <strong>{charge.pago_por}</strong></> : 'Pago'}
+              {' · '}{formattedDate}
+              {charge.confirmado_por && (
+                <span style={{ color: 'var(--notion-text-muted)', fontWeight: 400 }}>
+                  {' · conf. '}{charge.confirmado_por}
+                </span>
+              )}
             </span>
             {isAdmin && (
               <button
@@ -273,6 +488,8 @@ function ChargeRow({ charge, isAdmin, onConfirm, onRevert, loadingConfirm }: Cha
             charge={charge}
             onClose={() => setPopoverOpen(false)}
             onConfirm={onConfirm}
+            pagadores={pagadores}
+            onCreatePagador={onCreatePagador}
           />
         )}
       </div>
@@ -286,13 +503,15 @@ interface OSCardProps {
   group: OSChargeGroup;
   isAdmin: boolean;
   usuario: string;
-  onConfirm: (chargeId: string, valor: number, data: string) => Promise<void>;
+  onConfirm: (chargeId: string, valor: number, data: string, pagoPor: string | null) => Promise<void>;
   onRevert: (chargeId: string) => Promise<void>;
   onConfirmAll: (osId: string) => Promise<void>;
   loadingConfirm: string | null;
+  pagadores: Pagador[];
+  onCreatePagador: (nome: string) => Promise<Pagador>;
 }
 
-function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConfirm }: OSCardProps) {
+function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConfirm, pagadores, onCreatePagador }: OSCardProps) {
   const navigate = useNavigate();
   const serviceLabels = useServiceLabels();
   const hasPending = group.charges.some(c => c.status === 'a_pagar');
@@ -369,6 +588,8 @@ function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConf
           onConfirm={onConfirm}
           onRevert={onRevert}
           loadingConfirm={loadingConfirm}
+          pagadores={pagadores}
+          onCreatePagador={onCreatePagador}
         />
       ))}
     </div>
@@ -446,6 +667,9 @@ export default function ControlePagamentos() {
   const [dataFim, setDataFim] = useState(todayStr());
   const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
   const [empresaFilter, setEmpresaFilter] = useState<string>('');
+  const [pagadores, setPagadores] = useState<Pagador[]>([]);
+  const [pagadorFilter, setPagadorFilter] = useState<string>('todos'); // 'todos' | 'sem' | nome
+  const [gerenciarOpen, setGerenciarOpen] = useState(false);
 
   // Route guard
   useEffect(() => {
@@ -473,14 +697,48 @@ export default function ControlePagamentos() {
 
   useEffect(() => { getEmpresas().then(setEmpresas); }, []);
 
+  const recarregarPagadores = useCallback(async () => {
+    try {
+      const lista = await getPagadores();
+      setPagadores(lista);
+    } catch (err) {
+      console.error('Erro ao carregar pagadores:', err);
+    }
+  }, []);
+
+  useEffect(() => { recarregarPagadores(); }, [recarregarPagadores]);
+
+  const handleCreatePagador = useCallback(async (nome: string): Promise<Pagador> => {
+    const novo = await createPagador(nome);
+    await recarregarPagadores();
+    return novo;
+  }, [recarregarPagadores]);
+
+  const handleUpdatePagador = useCallback(async (id: string, patch: { nome?: string; ativo?: boolean }) => {
+    await updatePagador(id, patch);
+    await recarregarPagadores();
+  }, [recarregarPagadores]);
+
+  const handleDeletePagador = useCallback(async (id: string) => {
+    const ok = await confirm({
+      title: 'Remover pagador',
+      message: 'Remover este pagador da lista? Cobranças já registradas continuam com o nome antigo.',
+      confirmText: 'Remover',
+      danger: true,
+    });
+    if (!ok) return;
+    await deletePagador(id);
+    await recarregarPagadores();
+  }, [confirm, recarregarPagadores]);
+
   const handleConfirmar = useCallback(
-    async (chargeId: string, valor: number, data: string) => {
+    async (chargeId: string, valor: number, data: string, pagoPor: string | null) => {
       if (!usuario) return;
       if (loadingConfirmRef.current) return;
       loadingConfirmRef.current = chargeId;
       setLoadingConfirm(chargeId);
       try {
-        await confirmarPagamento(chargeId, valor, data, usuario.nome);
+        await confirmarPagamento(chargeId, valor, data, usuario.nome, pagoPor);
         await carregar();
       } finally {
         loadingConfirmRef.current = null;
@@ -567,6 +825,13 @@ export default function ControlePagamentos() {
       // Category filter
       if (categoriaFilter !== 'todos') {
         charges = charges.filter(c => c.categoria === categoriaFilter);
+      }
+
+      // Pagador filter
+      if (pagadorFilter === 'sem') {
+        charges = charges.filter(c => c.status === 'pago' && !c.pago_por);
+      } else if (pagadorFilter !== 'todos') {
+        charges = charges.filter(c => c.pago_por === pagadorFilter);
       }
 
       // Date filter (on confirmado_em for paid, criado_em for pending)
@@ -820,6 +1085,38 @@ export default function ControlePagamentos() {
           <option value="outro">Outro</option>
         </select>
 
+        {/* Pagador dropdown + gerenciar */}
+        <div style={{ display: 'flex', gap: 4 }}>
+          <select
+            value={pagadorFilter}
+            onChange={e => setPagadorFilter(e.target.value)}
+            style={{ ...inputStyle, minWidth: 150 }}
+            title="Filtrar por quem pagou a taxa"
+          >
+            <option value="todos">Pago por: Todos</option>
+            <option value="sem">Sem pagador</option>
+            {pagadores.filter(p => p.ativo).map(p => (
+              <option key={p.id} value={p.nome}>{p.nome}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setGerenciarOpen(true)}
+            title="Gerenciar lista de pagadores"
+            aria-label="Gerenciar lista de pagadores"
+            style={{
+              ...inputStyle,
+              padding: '0 10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <Users size={14} />
+          </button>
+        </div>
+
         {/* Date range */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Calendar size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
@@ -958,9 +1255,22 @@ export default function ControlePagamentos() {
               onRevert={handleReverter}
               onConfirmAll={handleConfirmarTodos}
               loadingConfirm={loadingConfirm}
+              pagadores={pagadores}
+              onCreatePagador={handleCreatePagador}
             />
           ))}
         </div>
+      )}
+
+      {/* Modal de gerenciamento de pagadores */}
+      {gerenciarOpen && (
+        <GerenciarPagadoresModal
+          pagadores={pagadores}
+          onClose={() => setGerenciarOpen(false)}
+          onCreate={async (nome) => { await handleCreatePagador(nome); }}
+          onUpdate={handleUpdatePagador}
+          onDelete={handleDeletePagador}
+        />
       )}
 
       {/* Spin keyframe */}

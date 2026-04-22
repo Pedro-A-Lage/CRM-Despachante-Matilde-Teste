@@ -46,6 +46,15 @@ export interface FinanceCharge {
   atualizado_em: string;
   confirmado_por?: string;
   confirmado_em?: string;
+  pago_por?: string;
+}
+
+export interface Pagador {
+  id: string;
+  nome: string;
+  ativo: boolean;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 export interface Payment {

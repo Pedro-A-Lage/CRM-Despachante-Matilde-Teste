@@ -12,6 +12,7 @@ import type {
   ChargeWithOS,
   OSChargeGroup,
   ControleResumo,
+  Pagador,
 } from '../types/finance';
 
 import { getServiceConfig } from './configService';
@@ -623,6 +624,7 @@ export async function getAllChargesWithOS(): Promise<ChargeWithOS[]> {
         atualizado_em: row.atualizado_em,
         confirmado_por: row.confirmado_por,
         confirmado_em: row.confirmado_em,
+        pago_por: row.pago_por ?? undefined,
         os_numero: os.numero,
         tipo_servico: os.tipo_servico,
         cliente_nome: cliente?.nome || 'Cliente não encontrado',
@@ -675,6 +677,7 @@ export async function confirmarPagamento(
   valor: number,
   data: string,
   usuario: string,
+  pagoPor?: string | null,
 ): Promise<void> {
   const confirmadoEm = new Date(data + 'T12:00:00').toISOString();
   const { error } = await supabase
@@ -684,6 +687,7 @@ export async function confirmarPagamento(
       valor_pago: valor,
       confirmado_por: usuario,
       confirmado_em: confirmadoEm,
+      pago_por: pagoPor ?? null,
       atualizado_em: new Date().toISOString(),
     })
     .eq('id', chargeId);
@@ -698,13 +702,14 @@ export async function reverterPagamento(chargeId: string): Promise<void> {
       valor_pago: 0,
       confirmado_por: null,
       confirmado_em: null,
+      pago_por: null,
       atualizado_em: new Date().toISOString(),
     })
     .eq('id', chargeId);
   if (error) throw error;
 }
 
-export async function confirmarTodosDaOS(osId: string, usuario: string): Promise<void> {
+export async function confirmarTodosDaOS(osId: string, usuario: string, pagoPor?: string | null): Promise<void> {
   const { data, error: fetchError } = await supabase
     .from('finance_charges')
     .select('id, valor_previsto')
@@ -725,6 +730,7 @@ export async function confirmarTodosDaOS(osId: string, usuario: string): Promise
         valor_pago: Number(charge.valor_previsto),
         confirmado_por: usuario,
         confirmado_em: now,
+        pago_por: pagoPor ?? null,
         atualizado_em: now,
       })
       .eq('id', charge.id)
@@ -1110,4 +1116,49 @@ export async function getTopServicos(
     }))
     .sort((a, b) => b.receitaTotal - a.receitaTotal)
     .slice(0, 8);
+}
+
+// ── PAGADORES ────────────────────────────────────────────────
+// Lista editável de "quem pagou a taxa" (separado de quem confirmou no CRM)
+
+function mapPagadorRow(row: any): Pagador {
+  return {
+    id: row.id,
+    nome: row.nome,
+    ativo: row.ativo !== false,
+    criado_em: row.criado_em,
+    atualizado_em: row.atualizado_em,
+  };
+}
+
+export async function getPagadores(somenteAtivos = false): Promise<Pagador[]> {
+  const query = supabase.from('pagadores').select('*').order('nome', { ascending: true });
+  const { data, error } = somenteAtivos ? await query.eq('ativo', true) : await query;
+  if (error) throw error;
+  return (data || []).map(mapPagadorRow);
+}
+
+export async function createPagador(nome: string): Promise<Pagador> {
+  const trimmed = nome.trim();
+  if (!trimmed) throw new Error('Nome do pagador é obrigatório');
+  const { data, error } = await supabase
+    .from('pagadores')
+    .insert({ nome: trimmed })
+    .select()
+    .single();
+  if (error) throw error;
+  return mapPagadorRow(data);
+}
+
+export async function updatePagador(id: string, patch: { nome?: string; ativo?: boolean }): Promise<void> {
+  const update: Record<string, unknown> = { atualizado_em: new Date().toISOString() };
+  if (patch.nome !== undefined) update.nome = patch.nome.trim();
+  if (patch.ativo !== undefined) update.ativo = patch.ativo;
+  const { error } = await supabase.from('pagadores').update(update).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deletePagador(id: string): Promise<void> {
+  const { error } = await supabase.from('pagadores').delete().eq('id', id);
+  if (error) throw error;
 }
