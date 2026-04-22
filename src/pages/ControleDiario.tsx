@@ -232,7 +232,8 @@ export default function ControleDiario() {
     c => c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia'
   );
   const placaPagas = taxasPagasDoPeriodo.filter(c => c.categoria === 'placa');
-  const totalDaeTransfPlaca = [...daeTransferenciaPagas, ...placaPagas].reduce((s, c) => s + (c.valor_pago || 0), 0);
+  const vistoriaPagas = taxasPagasDoPeriodo.filter(c => c.categoria === 'vistoria');
+  const totalDaeTransfPlacaVist = [...daeTransferenciaPagas, ...placaPagas, ...vistoriaPagas].reduce((s, c) => s + (c.valor_pago || 0), 0);
 
   // --- Resumo unificado por pessoa (recebeu + pagou) ---
   const resumoPorPessoa = useMemo(() => {
@@ -508,15 +509,15 @@ export default function ControleDiario() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--status-info)' }}>
               <TrendingUp size={14} />
               <span className="text-sm" style={{ fontWeight: 600, color: 'var(--notion-text)' }}>
-                DAE Transferência + Placa
+                DAE Transferência + Placa + Vistoria
               </span>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--status-info)' }}>
-                {fmt(totalDaeTransfPlaca)}
+                {fmt(totalDaeTransfPlacaVist)}
               </div>
               <div className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>
-                {daeTransferenciaPagas.length} DAE · {placaPagas.length} placa
+                {daeTransferenciaPagas.length} DAE · {placaPagas.length} placa · {vistoriaPagas.length} vistoria
               </div>
             </div>
           </div>
@@ -811,7 +812,7 @@ export default function ControleDiario() {
       {/* Taxas pagas */}
       <div className="cd-tab-content" data-active={activeTab === 'taxas' ? 'true' : 'false'}>
         <div className="cd-print-only" style={{ padding: '8px 16px', fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
-          Taxas pagas no período ({taxasPagasDoPeriodo.length}) — DAE Transferência e Placa em destaque
+          Taxas pagas no período ({taxasPagasDoPeriodo.length}) — DAE Transferência, Placa e Vistoria em destaque
         </div>
         {taxasPagasDoPeriodo.length === 0 ? (
           <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
@@ -820,7 +821,7 @@ export default function ControleDiario() {
         ) : (
           <div className="table-container">
             <div className="cd-no-print" style={{ padding: '8px 16px 0', fontSize: 11, color: 'var(--notion-text-muted)' }}>
-              DAE Transferência e Placa em destaque
+              DAE Transferência, Placa e Vistoria em destaque
             </div>
             <table className="table">
               <thead>
@@ -839,7 +840,7 @@ export default function ControleDiario() {
                   .slice()
                   .sort((a, b) => (b.confirmado_em || '').localeCompare(a.confirmado_em || ''))
                   .map(c => {
-                    const destaque = c.categoria === 'placa' || (c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia');
+                    const destaque = c.categoria === 'placa' || c.categoria === 'vistoria' || (c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia');
                     const isTransf = c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia';
                     const os = ordemMap.get(c.os_id);
                     return (
