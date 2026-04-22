@@ -2932,7 +2932,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                 );
                 if (daeCharges.length > 0) {
                     for (const dae of daeCharges) {
-                        await marcarCustoPago(dae.id, { confirmadoPor: usuario?.nome ?? null });
+                        await marcarCustoPago(dae.id, { confirmadoPor: authUser?.nome ?? null });
                     }
                     await addAuditEntry(os.id, 'Financeiro', 'DAE marcado como pago automaticamente (vistoria agendada).');
                 }
