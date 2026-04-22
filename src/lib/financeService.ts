@@ -1158,6 +1158,30 @@ export async function getPagadores(somenteAtivos = false): Promise<Pagador[]> {
 export async function createPagador(nome: string): Promise<Pagador> {
   const trimmed = nome.trim();
   if (!trimmed) throw new Error('Nome do pagador é obrigatório');
+
+  // Find-or-create: se o nome já existe, retorna o existente (reativando se
+  // estiver inativo). Evita 409 de UNIQUE quando o usuário digita um nome
+  // já presente na tabela.
+  const { data: existente, error: findErr } = await supabase
+    .from('pagadores')
+    .select('*')
+    .ilike('nome', trimmed)
+    .limit(1)
+    .maybeSingle();
+  if (findErr) throw findErr;
+
+  if (existente) {
+    if (!existente.ativo) {
+      const { error: updErr } = await supabase
+        .from('pagadores')
+        .update({ ativo: true, atualizado_em: new Date().toISOString() })
+        .eq('id', existente.id);
+      if (updErr) throw updErr;
+      return mapPagadorRow({ ...existente, ativo: true });
+    }
+    return mapPagadorRow(existente);
+  }
+
   const { data, error } = await supabase
     .from('pagadores')
     .insert({ nome: trimmed })
