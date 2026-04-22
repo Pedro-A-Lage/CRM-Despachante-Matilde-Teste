@@ -448,6 +448,14 @@ export async function deletePayment(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function updateChargePagoPor(chargeId: string, nome: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('finance_charges')
+    .update({ pago_por: nome, atualizado_em: new Date().toISOString() })
+    .eq('id', chargeId);
+  if (error) throw error;
+}
+
 export async function marcarCustoPago(chargeId: string): Promise<void> {
   const { data, error: fetchErr } = await supabase
     .from('finance_charges')

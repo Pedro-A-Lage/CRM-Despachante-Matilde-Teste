@@ -10,15 +10,23 @@ import {
   Users,
   Wallet,
   FileText,
+  Plus,
+  Check,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getAllChargesWithOS,
   getAllPayments,
+  getPagadores,
+  createPagador,
+  updatePayment,
+  updateChargePagoPor,
 } from '../lib/financeService';
 import { getOrdens, getClientes, getVeiculos } from '../lib/database';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
-import type { ChargeWithOS, Payment } from '../types/finance';
+import { useToast } from '../components/Toast';
+import type { ChargeWithOS, Payment, Pagador } from '../types/finance';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import { PAYMENT_METODO_LABELS, FINANCE_CATEGORIA_LABELS } from '../types/finance';
 
@@ -73,6 +81,8 @@ export default function ControleDiario() {
   const [veiculos, setVeiculos] = useState<Veiculo[]>([]);
   const [charges, setCharges] = useState<ChargeWithOS[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [pagadores, setPagadores] = useState<Pagador[]>([]);
+  const { showToast } = useToast();
 
   // Route guard
   useEffect(() => {
@@ -85,18 +95,20 @@ export default function ControleDiario() {
     setLoading(true);
     setErro(null);
     try {
-      const [o, c, v, ch, p] = await Promise.all([
+      const [o, c, v, ch, p, pg] = await Promise.all([
         getOrdens(),
         getClientes(),
         getVeiculos(),
         getAllChargesWithOS(),
         getAllPayments(),
+        getPagadores(),
       ]);
       setOrdens(o);
       setClientes(c);
       setVeiculos(v);
       setCharges(ch);
       setPayments(p);
+      setPagadores(pg);
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Erro ao carregar dados');
     } finally {
@@ -105,6 +117,35 @@ export default function ControleDiario() {
   }, []);
 
   useEffect(() => { carregar(); }, [carregar]);
+
+  const handleCreatePagador = useCallback(async (nome: string): Promise<Pagador> => {
+    const novo = await createPagador(nome);
+    const lista = await getPagadores();
+    setPagadores(lista);
+    return novo;
+  }, []);
+
+  const handleSetRecebidoPor = useCallback(async (paymentId: string, nome: string | null) => {
+    try {
+      await updatePayment(paymentId, { recebido_por: nome ?? undefined });
+      setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, recebido_por: nome ?? undefined } : p));
+      showToast('Recebedor atualizado', 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Erro ao salvar recebedor', 'error');
+    }
+  }, [showToast]);
+
+  const handleSetPagoPor = useCallback(async (chargeId: string, nome: string | null) => {
+    try {
+      await updateChargePagoPor(chargeId, nome);
+      setCharges(prev => prev.map(c => c.id === chargeId ? { ...c, pago_por: nome ?? undefined } : c));
+      showToast('Pagador atualizado', 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Erro ao salvar pagador', 'error');
+    }
+  }, [showToast]);
 
   const range = useMemo(() => computeRange(preset, customRange), [preset, customRange]);
   const { de, ate } = range;
@@ -417,7 +458,15 @@ export default function ControleDiario() {
                           </span>
                         </td>
                         <td style={{ fontWeight: 600 }}>{fmt(p.valor || 0)}</td>
-                        <td>{p.recebido_por || <span style={{ color: 'var(--notion-text-muted)', fontStyle: 'italic' }}>— não informado —</span>}</td>
+                        <td onClick={e => e.stopPropagation()} style={{ cursor: 'default' }}>
+                          <NomePicker
+                            value={p.recebido_por || ''}
+                            pagadores={pagadores}
+                            onChange={(nome) => handleSetRecebidoPor(p.id, nome)}
+                            onCreate={handleCreatePagador}
+                            placeholder="— definir recebedor —"
+                          />
+                        </td>
                       </tr>
                     );
                   })}
@@ -476,10 +525,14 @@ export default function ControleDiario() {
                           </span>
                         </td>
                         <td style={{ fontWeight: 600 }}>{fmt(c.valor_pago || 0)}</td>
-                        <td>
-                          {c.pago_por
-                            ? <strong>{c.pago_por}</strong>
-                            : <span style={{ color: 'var(--notion-text-muted)', fontStyle: 'italic' }}>— sem pagador —</span>}
+                        <td onClick={e => e.stopPropagation()} style={{ cursor: 'default' }}>
+                          <NomePicker
+                            value={c.pago_por || ''}
+                            pagadores={pagadores}
+                            onChange={(nome) => handleSetPagoPor(c.id, nome)}
+                            onCreate={handleCreatePagador}
+                            placeholder="— definir pagador —"
+                          />
                         </td>
                         <td style={{ color: 'var(--notion-text-muted)' }}>{c.confirmado_por || '—'}</td>
                       </tr>
@@ -626,6 +679,135 @@ function EmptyRow({ children }: { children: React.ReactNode }) {
       <p className="text-sm" style={{ color: 'var(--notion-text-muted)', margin: 0, textAlign: 'center', padding: 'var(--space-4) 0' }}>
         {children}
       </p>
+    </div>
+  );
+}
+
+// ── NomePicker: seletor inline de pagador/recebedor ─────────────────────────
+
+function NomePicker({
+  value,
+  pagadores,
+  onChange,
+  onCreate,
+  placeholder,
+}: {
+  value: string;
+  pagadores: Pagador[];
+  onChange: (nome: string | null) => void;
+  onCreate: (nome: string) => Promise<Pagador>;
+  placeholder?: string;
+}) {
+  const [adicionando, setAdicionando] = useState(false);
+  const [novoNome, setNovoNome] = useState('');
+
+  async function handleAddNovo() {
+    const nome = novoNome.trim();
+    if (!nome) return;
+    try {
+      await onCreate(nome);
+      onChange(nome);
+      setNovoNome('');
+      setAdicionando(false);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  if (adicionando) {
+    return (
+      <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <input
+          autoFocus
+          type="text"
+          value={novoNome}
+          placeholder="Novo nome..."
+          onChange={e => setNovoNome(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') { e.preventDefault(); handleAddNovo(); }
+            if (e.key === 'Escape') { setAdicionando(false); setNovoNome(''); }
+          }}
+          style={{
+            height: 26,
+            fontSize: 12,
+            padding: '2px 8px',
+            border: '1px solid var(--notion-border)',
+            borderRadius: 6,
+            background: 'var(--notion-surface)',
+            color: 'var(--notion-text)',
+            outline: 'none',
+            minWidth: 120,
+          }}
+        />
+        <button
+          onClick={handleAddNovo}
+          title="Salvar"
+          aria-label="Salvar novo pagador"
+          style={{
+            height: 26, width: 26, border: 'none', borderRadius: 6,
+            background: 'var(--status-success-soft)', color: 'var(--status-success)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <Check size={13} />
+        </button>
+        <button
+          onClick={() => { setAdicionando(false); setNovoNome(''); }}
+          title="Cancelar"
+          aria-label="Cancelar"
+          style={{
+            height: 26, width: 26, border: 'none', borderRadius: 6,
+            background: 'transparent', color: 'var(--notion-text-muted)',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <X size={13} />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value || null)}
+        style={{
+          height: 26,
+          fontSize: 12,
+          padding: '0 8px',
+          border: '1px solid var(--notion-border)',
+          borderRadius: 6,
+          background: value ? 'var(--notion-surface)' : 'var(--notion-bg-alt)',
+          color: value ? 'var(--notion-text)' : 'var(--notion-text-muted)',
+          fontWeight: value ? 600 : 400,
+          fontStyle: value ? 'normal' : 'italic',
+          outline: 'none',
+          cursor: 'pointer',
+          minWidth: 140,
+        }}
+      >
+        <option value="">{placeholder ?? '—'}</option>
+        {pagadores.filter(p => p.ativo).map(p => (
+          <option key={p.id} value={p.nome}>{p.nome}</option>
+        ))}
+        {value && !pagadores.some(p => p.nome === value) && (
+          <option value={value}>{value} (antigo)</option>
+        )}
+      </select>
+      <button
+        type="button"
+        onClick={() => setAdicionando(true)}
+        title="Adicionar novo"
+        aria-label="Adicionar novo nome"
+        style={{
+          height: 26, width: 26, border: '1px solid var(--notion-border)', borderRadius: 6,
+          background: 'var(--notion-bg-alt)', color: 'var(--notion-text-secondary)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        <Plus size={13} />
+      </button>
     </div>
   );
 }
