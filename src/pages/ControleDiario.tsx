@@ -559,6 +559,20 @@ export default function ControleDiario() {
                         <span className="font-mono" style={{ fontWeight: 600, color: 'var(--status-danger)' }}>{fmt(p.pagTotal)}</span>
                       </div>
                     )}
+                    {(() => {
+                      const saldo = p.recTotal - p.pagTotal;
+                      const cor = saldo > 0 ? 'var(--status-success)' : saldo < 0 ? 'var(--status-danger)' : 'var(--notion-text-secondary)';
+                      return (
+                        <div style={{
+                          display: 'flex', justifyContent: 'space-between', fontSize: 12,
+                          marginTop: 4, paddingTop: 4,
+                          borderTop: '1px dashed var(--notion-border)',
+                        }}>
+                          <span style={{ color: 'var(--notion-text-secondary)', fontWeight: 600 }}>Saldo</span>
+                          <span className="font-mono" style={{ fontWeight: 700, color: cor }}>{fmt(saldo)}</span>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -576,11 +590,22 @@ export default function ControleDiario() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                   <span style={{ color: 'var(--notion-text-secondary)' }}>Total recebido</span>
-                  <span className="font-mono" style={{ fontWeight: 700 }}>{fmt(totalRecebido)}</span>
+                  <span className="font-mono" style={{ fontWeight: 700, color: 'var(--status-success)' }}>{fmt(totalRecebido)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                   <span style={{ color: 'var(--notion-text-secondary)' }}>Total pago em taxas</span>
-                  <span className="font-mono" style={{ fontWeight: 700 }}>{fmt(totalTaxasPagas)}</span>
+                  <span className="font-mono" style={{ fontWeight: 700, color: 'var(--status-danger)' }}>{fmt(totalTaxasPagas)}</span>
+                </div>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', fontSize: 13,
+                  marginTop: 6, paddingTop: 6,
+                  borderTop: '1px solid var(--notion-blue)',
+                }}>
+                  <span style={{ color: 'var(--notion-blue)', fontWeight: 700 }}>Saldo total</span>
+                  <span className="font-mono" style={{
+                    fontWeight: 800,
+                    color: saldoDoDia >= 0 ? 'var(--status-success)' : 'var(--status-danger)',
+                  }}>{fmt(saldoDoDia)}</span>
                 </div>
               </div>
             </div>
