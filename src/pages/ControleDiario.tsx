@@ -136,7 +136,7 @@ export default function ControleDiario() {
       // o nome ainda pode ser salvo como texto no pagamento/charge.
       const msg = e instanceof Error ? e.message : String(e);
       console.error('[ControleDiario] createPagador falhou:', msg);
-      showToast(`Aviso: não foi possível cadastrar "${nome}" na lista (${msg}). O nome foi salvo só no registro.`, 'warning');
+      showToast(`Aviso: não foi possível cadastrar "${nome}" na lista (${msg}). O nome foi salvo só no registro.`, 'info');
       return null;
     }
   }, [showToast]);
