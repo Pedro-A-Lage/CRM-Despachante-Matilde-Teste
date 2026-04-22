@@ -13,8 +13,10 @@ import {
   Plus,
   Check,
   X,
-  Printer,
+  FileSpreadsheet,
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getAllChargesWithOS,
@@ -273,6 +275,230 @@ export default function ControleDiario() {
     : empresaFilter === 'particular' ? 'Particulares'
     : empresas.find(e => e.id === empresaFilter)?.nome ?? 'Empresa';
 
+  const exportarPDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const margin = 10;
+    const pageW = doc.internal.pageSize.getWidth();
+
+    const fmt2 = (v: number) => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtBRL = (v: number) => 'R$ ' + fmt2(v);
+    const dt = (iso?: string | null) => iso ? new Date(iso).toLocaleDateString('pt-BR') : '—';
+
+    // ===== HEADER =====
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Controle Diário', margin, 14);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(80);
+    doc.text(`Período: ${rangeLabel}  ·  Empresa: ${empresaLabel}`, margin, 19);
+    doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, pageW - margin, 19, { align: 'right' });
+    doc.setDrawColor(200);
+    doc.line(margin, 22, pageW - margin, 22);
+
+    let y = 27;
+
+    // ===== RESUMO =====
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(30);
+    doc.text('Resumo do período', margin, y);
+    y += 5;
+
+    autoTable(doc, {
+      startY: y,
+      theme: 'plain',
+      styles: { fontSize: 9, cellPadding: 2 },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 }, 1: { halign: 'right' } },
+      body: [
+        ['OS abertas no período', `${ordensDoPeriodo.length}`],
+        ['Recebido dos clientes', fmtBRL(totalRecebido)],
+        ['Taxas pagas', fmtBRL(totalTaxasPagas)],
+        [{ content: 'Saldo do período', styles: { fontStyle: 'bold', textColor: saldoDoDia >= 0 ? [47, 122, 61] : [177, 54, 29] } },
+         { content: fmtBRL(saldoDoDia), styles: { halign: 'right', fontStyle: 'bold', textColor: saldoDoDia >= 0 ? [47, 122, 61] : [177, 54, 29] } }],
+        ['Entrou em dinheiro (período)', fmtBRL(totalDinheiroPeriodo)],
+        ['Caixa em dinheiro (acumulado)', fmtBRL(caixaDinheiroAcumulado)],
+        ['DAE Transferência + Placa + Vistoria', `${fmtBRL(totalDaeTransfPlacaVist)}  (${daeTransferenciaPagas.length} DAE · ${placaPagas.length} placa · ${vistoriaPagas.length} vistoria)`],
+      ],
+    });
+    y = (doc as any).lastAutoTable.finalY + 6;
+
+    // ===== PESSOAS =====
+    if (resumoPorPessoa.length > 0) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text('Pessoas do período', margin, y);
+      y += 2;
+      autoTable(doc, {
+        startY: y + 2,
+        head: [['Pessoa', 'Recebeu (qtd)', 'Recebeu (R$)', 'Em dinheiro', 'Pagou taxas (qtd)', 'Pagou (R$)', 'Saldo']],
+        body: [
+          ...resumoPorPessoa.map(p => {
+            const saldo = p.recTotal - p.pagTotal;
+            return [
+              p.nome,
+              p.recRecebimentos ? String(p.recRecebimentos) : '—',
+              p.recTotal ? fmtBRL(p.recTotal) : '—',
+              p.recDinheiro ? fmtBRL(p.recDinheiro) : '—',
+              p.pagTaxas ? String(p.pagTaxas) : '—',
+              p.pagTotal ? fmtBRL(p.pagTotal) : '—',
+              fmtBRL(saldo),
+            ];
+          }),
+          [
+            { content: 'TOTAL', styles: { fontStyle: 'bold', fillColor: [230, 238, 248] } },
+            { content: String(recebimentosDoPeriodo.length), styles: { fontStyle: 'bold', fillColor: [230, 238, 248] } },
+            { content: fmtBRL(totalRecebido), styles: { fontStyle: 'bold', fillColor: [230, 238, 248] } },
+            { content: fmtBRL(totalDinheiroPeriodo), styles: { fontStyle: 'bold', fillColor: [230, 238, 248] } },
+            { content: String(taxasPagasDoPeriodo.length), styles: { fontStyle: 'bold', fillColor: [230, 238, 248] } },
+            { content: fmtBRL(totalTaxasPagas), styles: { fontStyle: 'bold', fillColor: [230, 238, 248] } },
+            { content: fmtBRL(saldoDoDia), styles: { fontStyle: 'bold', fillColor: [230, 238, 248], textColor: saldoDoDia >= 0 ? [47, 122, 61] : [177, 54, 29] } },
+          ],
+        ],
+        headStyles: { fillColor: [70, 70, 70], textColor: 255, fontSize: 9 },
+        styles: { fontSize: 9, cellPadding: 2 },
+        columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right', fontStyle: 'bold' } },
+      });
+      y = (doc as any).lastAutoTable.finalY + 6;
+    }
+
+    // ===== OS ABERTAS =====
+    if (ordensDoPeriodo.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(`OS abertas no período (${ordensDoPeriodo.length})`, margin, y);
+      autoTable(doc, {
+        startY: y + 2,
+        head: [['Nº OS', 'Cliente', 'Placa', 'Serviço', 'Valor', 'Recebido', 'Falta', 'Status', 'Métodos']],
+        body: ordensDoPeriodo.map(os => {
+          const cli = clienteMap.get(os.clienteId);
+          const v = veiculoMap.get(os.veiculoId);
+          const osPayments = payments.filter(p => p.os_id === os.id);
+          const recebido = osPayments.reduce((s, p) => s + (p.valor || 0), 0);
+          const total = Number(os.valorServico) || 0;
+          const desconto = Number(os.desconto) || 0;
+          const efetivo = Math.max(0, total - desconto);
+          const falta = Math.max(0, efetivo - recebido);
+          const statusPg = falta <= 0.009 && efetivo > 0 ? 'Pago' : recebido > 0 ? 'Parcial' : 'Pendente';
+          const metodos = Array.from(new Set(osPayments.map(p => PAYMENT_METODO_LABELS[p.metodo]))).join(', ');
+          return [
+            `#${os.numero}`,
+            cli?.nome || '—',
+            v?.placa || '—',
+            getServicoLabel(serviceLabels, os.tipoServico),
+            fmtBRL(efetivo),
+            fmtBRL(recebido),
+            fmtBRL(falta),
+            statusPg,
+            metodos || '—',
+          ];
+        }),
+        headStyles: { fillColor: [70, 70, 70], textColor: 255, fontSize: 9 },
+        styles: { fontSize: 8, cellPadding: 1.8 },
+        columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } },
+      });
+      y = (doc as any).lastAutoTable.finalY + 6;
+    }
+
+    // ===== RECEBIMENTOS =====
+    if (recebimentosDoPeriodo.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(`Recebimentos no período (${recebimentosDoPeriodo.length})`, margin, y);
+      const rec = recebimentosDoPeriodo
+        .slice()
+        .sort((a, b) => (b.data_pagamento || '').localeCompare(a.data_pagamento || ''));
+      autoTable(doc, {
+        startY: y + 2,
+        head: [['Data', 'Nº OS', 'Cliente', 'Método', 'Valor', 'Recebido por']],
+        body: rec.map(p => {
+          const os = ordemMap.get(p.os_id);
+          const cli = os ? clienteMap.get(os.clienteId) : null;
+          return [
+            dt((p.data_pagamento || '') + 'T12:00:00'),
+            os ? `#${os.numero}` : '—',
+            cli?.nome || '—',
+            PAYMENT_METODO_LABELS[p.metodo],
+            fmtBRL(p.valor || 0),
+            p.recebido_por || '—',
+          ];
+        }),
+        headStyles: { fillColor: [47, 122, 61], textColor: 255, fontSize: 9 },
+        styles: { fontSize: 8, cellPadding: 1.8 },
+        columnStyles: { 4: { halign: 'right', fontStyle: 'bold' } },
+        // Destaque em amber para dinheiro
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 3 && data.cell.raw === 'Dinheiro') {
+            data.cell.styles.fillColor = [251, 236, 200];
+            data.cell.styles.fontStyle = 'bold';
+          }
+        },
+      });
+      y = (doc as any).lastAutoTable.finalY + 6;
+    }
+
+    // ===== TAXAS PAGAS =====
+    if (taxasPagasDoPeriodo.length > 0) {
+      if (y > 160) { doc.addPage(); y = 15; }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text(`Taxas pagas no período (${taxasPagasDoPeriodo.length})`, margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120);
+      doc.text('DAE Transferência, Placa e Vistoria em destaque', margin, y + 4);
+      doc.setTextColor(30);
+      const taxas = taxasPagasDoPeriodo
+        .slice()
+        .sort((a, b) => (b.confirmado_em || '').localeCompare(a.confirmado_em || ''));
+      autoTable(doc, {
+        startY: y + 6,
+        head: [['Data', 'Nº OS', 'Cliente', 'Categoria', 'Valor', 'Pago por', 'Confirmado por']],
+        body: taxas.map(c => {
+          const isTransf = c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia';
+          const catLabel = isTransf ? 'DAE Transferência' : (FINANCE_CATEGORIA_LABELS[c.categoria] ?? c.categoria);
+          return [
+            dt(c.confirmado_em),
+            `#${c.os_numero}`,
+            c.cliente_nome,
+            catLabel,
+            fmtBRL(c.valor_pago || 0),
+            c.pago_por || '—',
+            c.confirmado_por || '—',
+          ];
+        }),
+        headStyles: { fillColor: [31, 90, 138], textColor: 255, fontSize: 9 },
+        styles: { fontSize: 8, cellPadding: 1.8 },
+        columnStyles: { 4: { halign: 'right', fontStyle: 'bold' } },
+        didParseCell: (data) => {
+          if (data.section === 'body' && data.column.index === 3) {
+            const v = String(data.cell.raw);
+            if (v === 'DAE Transferência' || v === 'Placa' || v === 'Vistoria') {
+              // highlight da linha inteira
+              const row = data.row.cells;
+              Object.values(row).forEach(c => { (c as any).styles.fillColor = [220, 233, 243]; });
+            }
+          }
+        },
+      });
+    }
+
+    // ===== FOOTER com page numbers =====
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(120);
+      doc.text(`Página ${i} de ${totalPages}`, pageW - margin, doc.internal.pageSize.getHeight() - 5, { align: 'right' });
+    }
+
+    const dtStr = new Date().toISOString().split('T')[0];
+    doc.save(`controle-diario_${dtStr}_${empresaLabel.replace(/\s+/g, '-').toLowerCase()}.pdf`);
+  };
+
   return (
     <div style={{ padding: '24px 20px', maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
@@ -286,8 +512,8 @@ export default function ControleDiario() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }} className="cd-no-print">
-          <button onClick={() => window.print()} className="btn btn-secondary btn-sm" title="Exportar para PDF (use 'Salvar como PDF' no diálogo de impressão)">
-            <Printer size={13} />
+          <button onClick={exportarPDF} className="btn btn-secondary btn-sm" title="Baixar PDF do controle diário com os filtros atuais">
+            <FileSpreadsheet size={13} />
             Exportar PDF
           </button>
           <button onClick={carregar} disabled={loading} className="btn btn-secondary btn-sm">
@@ -887,31 +1113,11 @@ export default function ControleDiario() {
         @media (max-width: 900px) {
           .cd-row { grid-template-columns: 1fr !important; }
         }
-
-        /* Tabs: só a ativa visível no modo tela */
+        /* Tabs: só a ativa visível */
         .cd-tab-content { display: none; }
         .cd-tab-content[data-active="true"] { display: block; }
+        /* legado (usado antes da exportação em PDF nativo) */
         .cd-print-only { display: none; }
-
-        /* Modo impressão / Salvar como PDF */
-        @media print {
-          /* esconde elementos da UI */
-          .cd-no-print, .sidebar, .main-header, .app-shell-header { display: none !important; }
-          /* mostra todas as tabs no PDF e os títulos */
-          .cd-tab-content { display: block !important; page-break-inside: auto; margin-bottom: 12px; }
-          .cd-print-only { display: block !important; }
-          /* layout de página */
-          body, html { background: #fff !important; color: #111 !important; }
-          .cd-row { grid-template-columns: 1fr !important; }
-          /* permite quebra de página dentro de tabelas grandes mas evita cortar linhas */
-          table { page-break-inside: auto; }
-          tr { page-break-inside: avoid; page-break-after: auto; }
-          thead { display: table-header-group; }
-          /* contraste */
-          .badge, .info-item-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          /* compacta margens da página */
-          @page { margin: 14mm 12mm; }
-        }
       `}</style>
     </div>
   );
