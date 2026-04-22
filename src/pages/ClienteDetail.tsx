@@ -106,21 +106,30 @@ export default function ClienteDetail() {
 
     return (
         <div>
-            <div className="page-header">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} className="btn btn-ghost">
-                        <ArrowLeft size={20} />
+            <div
+                className="page-header"
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 'var(--space-4)',
+                    flexWrap: 'wrap',
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: 0 }}>
+                    <button onClick={() => navigate(-1)} className="btn btn-ghost" aria-label="Voltar">
+                        <ArrowLeft size={18} />
                     </button>
-                    <div>
-                        <h2>{cliente.nome}</h2>
-                        <p className="page-header-subtitle">
+                    <div style={{ minWidth: 0 }}>
+                        <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cliente.nome}</span>
                             <span className={`badge ${cliente.tipo === 'PF' ? 'badge-info' : 'badge-primary'}`}>
                                 {cliente.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}
                             </span>
-                        </p>
+                        </h2>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
                     {cliente.pastaDriveUrl && (
                         <a
                             href={cliente.pastaDriveUrl}
@@ -145,89 +154,90 @@ export default function ClienteDetail() {
                 <div className="card-header">
                     <h3 className="card-title">Dados do Cliente</h3>
                 </div>
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                        gap: 'var(--space-3)',
-                    }}
-                >
-                    <InfoCell label={cliente.tipo === 'PF' ? 'CPF' : 'CNPJ'} value={cliente.cpfCnpj} icon={<Hash size={11} />} />
-                    {cliente.tipo === 'PF' && (
-                        <InfoCell label="RG" value={cliente.rg} icon={<Hash size={11} />} />
-                    )}
-                    {cliente.tipo === 'PF' && (cliente.orgaoExpedidor || cliente.ufDocumento) && (
+                <div className="card-body">
+                    <div
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: 'var(--space-4) var(--space-5)',
+                        }}
+                    >
+                        <InfoCell label={cliente.tipo === 'PF' ? 'CPF' : 'CNPJ'} value={cliente.cpfCnpj} icon={<Hash size={11} />} mono />
+                        {cliente.tipo === 'PF' && (
+                            <InfoCell label="RG" value={cliente.rg} icon={<Hash size={11} />} mono />
+                        )}
+                        {cliente.tipo === 'PF' && (cliente.orgaoExpedidor || cliente.ufDocumento) && (
+                            <InfoCell
+                                label="Órgão Expedidor"
+                                value={[cliente.orgaoExpedidor, cliente.ufDocumento].filter(Boolean).join(' / ')}
+                            />
+                        )}
+                        {cliente.telefones.filter(Boolean).map((tel, i) => (
+                            <InfoCell
+                                key={i}
+                                label={`Telefone${cliente.telefones.filter(Boolean).length > 1 ? ' ' + (i + 1) : ''}`}
+                                value={tel}
+                                icon={<Phone size={11} />}
+                                mono
+                            />
+                        ))}
+                        {cliente.email && (
+                            <InfoCell label="E-mail" value={cliente.email} icon={<Mail size={11} />} />
+                        )}
+                        {cliente.cep && (
+                            <InfoCell label="CEP" value={cliente.cep} icon={<MapPin size={11} />} mono />
+                        )}
+                        {(cliente.endereco || cliente.numero) && (
+                            <InfoCell
+                                label="Endereço"
+                                value={[cliente.endereco, cliente.numero].filter(Boolean).join(', ')}
+                                span={2}
+                                icon={<MapPin size={11} />}
+                            />
+                        )}
+                        {cliente.complemento && (
+                            <InfoCell label="Complemento" value={cliente.complemento} />
+                        )}
+                        {cliente.bairro && (
+                            <InfoCell label="Bairro" value={cliente.bairro} />
+                        )}
+                        {(cliente.municipio || cliente.uf) && (
+                            <InfoCell
+                                label="Município / UF"
+                                value={[cliente.municipio, cliente.uf].filter(Boolean).join(' / ')}
+                            />
+                        )}
                         <InfoCell
-                            label="Órgão Expedidor"
-                            value={[cliente.orgaoExpedidor, cliente.ufDocumento].filter(Boolean).join(' / ')}
+                            label="Cadastro"
+                            value={new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                            icon={<Calendar size={11} />}
                         />
-                    )}
-                    {cliente.telefones.filter(Boolean).map((tel, i) => (
-                        <InfoCell
-                            key={i}
-                            label={`Telefone${cliente.telefones.filter(Boolean).length > 1 ? ' ' + (i + 1) : ''}`}
-                            value={tel}
-                            icon={<Phone size={11} />}
-                        />
-                    ))}
-                    {cliente.email && (
-                        <InfoCell label="E-mail" value={cliente.email} icon={<Mail size={11} />} />
-                    )}
-                    {cliente.cep && (
-                        <InfoCell label="CEP" value={cliente.cep} icon={<MapPin size={11} />} />
-                    )}
-                    {(cliente.endereco || cliente.numero) && (
-                        <InfoCell
-                            label="Endereço"
-                            value={[cliente.endereco, cliente.numero].filter(Boolean).join(', ')}
-                            span={2}
-                            icon={<MapPin size={11} />}
-                        />
-                    )}
-                    {cliente.complemento && (
-                        <InfoCell label="Complemento" value={cliente.complemento} />
-                    )}
-                    {cliente.bairro && (
-                        <InfoCell label="Bairro" value={cliente.bairro} />
-                    )}
-                    {(cliente.municipio || cliente.uf) && (
-                        <InfoCell
-                            label="Município / UF"
-                            value={[cliente.municipio, cliente.uf].filter(Boolean).join(' / ')}
-                        />
-                    )}
-                    <InfoCell
-                        label="Cadastro"
-                        value={new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
-                        icon={<Calendar size={11} />}
-                    />
-                </div>
-                {cliente.observacoes && (
-                    <div style={{
-                        marginTop: 'var(--space-4)',
-                        padding: 'var(--space-3)',
-                        background: 'var(--notion-bg-alt)',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--notion-border)',
-                    }}>
-                        <span className="info-item-label" style={{ display: 'block', marginBottom: 4 }}>Observações</span>
-                        <p className="text-sm" style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                            {cliente.observacoes}
-                        </p>
                     </div>
-                )}
+                    {cliente.observacoes && (
+                        <div style={{
+                            marginTop: 'var(--space-5)',
+                            paddingTop: 'var(--space-4)',
+                            borderTop: '1px solid var(--notion-border)',
+                        }}>
+                            <span className="info-item-label" style={{ display: 'block', marginBottom: 6 }}>Observações</span>
+                            <p className="text-sm" style={{ margin: 0, whiteSpace: 'pre-wrap', color: 'var(--notion-text)' }}>
+                                {cliente.observacoes}
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Documentos */}
             <div className="card mb-6">
                 <div className="card-header">
-                    <h3 className="card-title">
-                        <FileText size={20} style={{ display: 'inline', marginRight: 8 }} />
+                    <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FileText size={18} />
                         Documentos
                     </h3>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                     {docTypes.map((docType) => {
                         const uploaded = cliente.documentos.find((d) => d.tipo === docType.tipo);
                         return (
@@ -251,103 +261,112 @@ export default function ClienteDetail() {
             {/* Veículos */}
             <div className="card mb-6">
                 <div className="card-header">
-                    <h3 className="card-title">
-                        <Car size={20} style={{ display: 'inline', marginRight: 8 }} />
+                    <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Car size={18} />
                         Veículos ({veiculos.length})
                     </h3>
                     <Link to={`/veiculos/novo?clienteId=${id}`} className="btn btn-secondary btn-sm">
                         <Plus size={14} /> Adicionar
                     </Link>
                 </div>
-                {veiculos.length === 0 ? (
-                    <p className="text-sm text-gray">Nenhum veículo vinculado a este cliente.</p>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                        {veiculos.map((v) => {
-                            const veiculoOrdens = ordens.filter((o) => o.veiculoId === v.id);
-                            return (
-                                <div
-                                    key={v.id}
-                                    style={{
-                                        padding: 'var(--space-4)',
-                                        background: 'var(--notion-bg-alt)',
-                                        borderRadius: 'var(--radius-md)',
-                                        border: '1px solid var(--notion-border)',
-                                    }}
-                                >
-                                    <div className="flex justify-between items-center" style={{ marginBottom: 'var(--space-2)' }}>
-                                        <div>
-                                            <p className="font-bold">{v.placa || 'SEM PLACA'} — {v.marcaModelo || 'Modelo não informado'}</p>
-                                            <p className="text-xs text-gray">
-                                                Chassi: {v.chassi} {v.renavam && `| Renavam: ${v.renavam}`}
-                                            </p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            {v.pastaDriveId && (
-                                                <a
-                                                    href={`https://drive.google.com/drive/folders/${v.pastaDriveId}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="btn btn-secondary btn-sm"
-                                                    title="Abrir pasta do veículo no Drive"
+                <div className="card-body">
+                    {veiculos.length === 0 ? (
+                        <p className="text-sm" style={{ color: 'var(--notion-text-muted)', margin: 0 }}>
+                            Nenhum veículo vinculado a este cliente.
+                        </p>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                            {veiculos.map((v) => {
+                                const veiculoOrdens = ordens.filter((o) => o.veiculoId === v.id);
+                                return (
+                                    <div
+                                        key={v.id}
+                                        style={{
+                                            padding: 'var(--space-4)',
+                                            background: 'var(--notion-bg-alt)',
+                                            borderRadius: 8,
+                                            border: '1px solid var(--notion-border)',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                                            <div style={{ minWidth: 0 }}>
+                                                <p style={{ margin: 0, fontWeight: 600, color: 'var(--notion-text)' }}>
+                                                    <span className="font-mono">{v.placa || 'SEM PLACA'}</span>
+                                                    {' — '}
+                                                    {v.marcaModelo || 'Modelo não informado'}
+                                                </p>
+                                                <p className="text-xs" style={{ margin: '2px 0 0', color: 'var(--notion-text-muted)' }}>
+                                                    Chassi: <span className="font-mono">{v.chassi}</span>
+                                                    {v.renavam && <> {' | '} Renavam: <span className="font-mono">{v.renavam}</span></>}
+                                                </p>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
+                                                {v.pastaDriveId && (
+                                                    <a
+                                                        href={`https://drive.google.com/drive/folders/${v.pastaDriveId}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="btn btn-secondary btn-sm"
+                                                        title="Abrir pasta do veículo no Drive"
+                                                    >
+                                                        <FolderOpen size={14} /> Drive
+                                                    </a>
+                                                )}
+                                                <button
+                                                    onClick={() => setEditingVeiculo(v)}
+                                                    className="btn btn-ghost btn-sm"
+                                                    title="Editar veículo"
+                                                    aria-label="Editar veículo"
                                                 >
-                                                    <FolderOpen size={14} /> Drive
-                                                </a>
-                                            )}
-                                            <button
-                                                onClick={() => setEditingVeiculo(v)}
-                                                className="btn btn-ghost btn-sm"
-                                                title="Editar veículo"
-                                            >
-                                                <Pencil size={14} />
-                                            </button>
+                                                    <Pencil size={14} />
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Related OS */}
-                                    {veiculoOrdens.length > 0 && (
-                                        <div style={{ marginTop: 'var(--space-2)' }}>
-                                            {veiculoOrdens.map((os) => (
-                                                <div
-                                                    key={os.id}
-                                                    className="clickable"
-                                                    onClick={() => navigate(`/ordens/${os.id}`)}
-                                                    style={{
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'space-between',
-                                                        padding: 'var(--space-2) var(--space-3)',
-                                                        background: 'var(--bg-surface)',
-                                                        borderRadius: 'var(--radius-sm)',
-                                                        marginTop: 'var(--space-1)',
-                                                        cursor: 'pointer',
-                                                        border: '1px solid var(--notion-border)',
-                                                    }}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <FileText size={14} style={{ color: 'var(--notion-blue)' }} />
-                                                        <span className="text-sm font-semibold font-mono">OS #{os.numero}</span>
-                                                        <span className="text-xs text-gray">— {getServicoLabel(serviceLabels, os.tipoServico)}</span>
+                                        {/* Related OS */}
+                                        {veiculoOrdens.length > 0 && (
+                                            <div style={{ marginTop: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                                                {veiculoOrdens.map((os) => (
+                                                    <div
+                                                        key={os.id}
+                                                        className="clickable"
+                                                        onClick={() => navigate(`/ordens/${os.id}`)}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            padding: 'var(--space-2) var(--space-3)',
+                                                            background: 'var(--notion-surface)',
+                                                            borderRadius: 4,
+                                                            cursor: 'pointer',
+                                                            border: '1px solid var(--notion-border)',
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                            <FileText size={14} style={{ color: 'var(--notion-blue)' }} />
+                                                            <span className="text-sm font-mono" style={{ fontWeight: 600 }}>OS #{os.numero}</span>
+                                                            <span className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>— {getServicoLabel(serviceLabels, os.tipoServico)}</span>
+                                                        </div>
+                                                        <span className={`badge ${getStatusBadge(os.status)}`}>
+                                                            {STATUS_OS_LABELS[os.status]}
+                                                        </span>
                                                     </div>
-                                                    <span className={`badge ${getStatusBadge(os.status)}`} style={{ fontSize: 'var(--font-size-xs)' }}>
-                                                        {STATUS_OS_LABELS[os.status]}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Ordens de Serviço */}
             <div className="card">
                 <div className="card-header">
-                    <h3 className="card-title">
-                        <FileText size={20} style={{ display: 'inline', marginRight: 8 }} />
+                    <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FileText size={18} />
                         Ordens de Serviço ({ordens.length})
                     </h3>
                     <Link to="/ordens" className="btn btn-secondary btn-sm">
@@ -355,10 +374,14 @@ export default function ClienteDetail() {
                     </Link>
                 </div>
                 {ordens.length === 0 ? (
-                    <p className="text-sm text-gray">Nenhuma ordem de serviço para este cliente.</p>
+                    <div className="card-body">
+                        <p className="text-sm" style={{ color: 'var(--notion-text-muted)', margin: 0 }}>
+                            Nenhuma ordem de serviço para este cliente.
+                        </p>
+                    </div>
                 ) : (
                     <div className="table-container">
-                        <table>
+                        <table className="table">
                             <thead>
                                 <tr>
                                     <th>OS</th>
@@ -373,8 +396,9 @@ export default function ClienteDetail() {
                                         key={os.id}
                                         className="clickable"
                                         onClick={() => navigate(`/ordens/${os.id}`)}
+                                        style={{ cursor: 'pointer' }}
                                     >
-                                        <td><strong className="font-mono">#{os.numero}</strong></td>
+                                        <td><span className="font-mono" style={{ fontWeight: 600 }}>#{os.numero}</span></td>
                                         <td>{getServicoLabel(serviceLabels, os.tipoServico)}</td>
                                         <td>
                                             <span className={`badge ${getStatusBadge(os.status)}`}>
@@ -505,34 +529,36 @@ function DocumentSlot({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                gap: 'var(--space-3)',
                 padding: 'var(--space-3) var(--space-4)',
-                background: uploaded ? 'rgba(16,185,129,0.08)' : 'var(--notion-bg-alt)',
-                borderRadius: 'var(--radius-md)',
-                border: `1px solid ${uploaded ? 'rgba(16,185,129,0.35)' : 'var(--notion-border)'}`,
-                borderLeft: `3px solid ${uploaded ? 'var(--notion-green)' : 'var(--notion-border)'}`,
-                transition: 'all var(--transition-fast)',
+                background: uploaded ? 'var(--status-success-soft)' : 'var(--notion-bg-alt)',
+                borderRadius: 8,
+                border: '1px solid var(--notion-border)',
+                borderLeft: `3px solid ${uploaded ? 'var(--status-success)' : 'var(--notion-border)'}`,
+                transition: 'border-color 150ms ease, background 150ms ease',
+                flexWrap: 'wrap',
             }}
         >
-            <div className="flex items-center gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: 0 }}>
                 {uploaded ? (
-                    <CheckCircle size={18} style={{ color: 'var(--notion-green)', flexShrink: 0 }} />
+                    <CheckCircle size={18} style={{ color: 'var(--status-success)', flexShrink: 0 }} />
                 ) : (
-                    <File size={18} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
+                    <File size={18} style={{ color: 'var(--notion-text-muted)', flexShrink: 0 }} />
                 )}
-                <div>
-                    <p className="font-semibold text-sm" style={{ margin: 0, color: 'var(--notion-text)' }}>{label}</p>
+                <div style={{ minWidth: 0 }}>
+                    <p className="text-sm" style={{ margin: 0, fontWeight: 600, color: 'var(--notion-text)' }}>{label}</p>
                     {uploaded ? (
-                        <p className="text-xs" style={{ margin: 0, color: 'var(--notion-green)', fontWeight: 600 }}>
+                        <p className="text-xs" style={{ margin: 0, color: 'var(--status-success)', fontWeight: 500 }}>
                             Enviado em {new Date(uploaded.dataUpload!).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                         </p>
                     ) : (
-                        <p className="text-xs text-gray" style={{ margin: 0 }}>Nenhum arquivo enviado</p>
+                        <p className="text-xs" style={{ margin: 0, color: 'var(--notion-text-muted)' }}>Nenhum arquivo enviado</p>
                     )}
-                    {error && <p className="text-xs" style={{ color: 'var(--notion-orange)', margin: 0 }}>{error}</p>}
+                    {error && <p className="text-xs" style={{ color: 'var(--status-danger)', margin: 0 }}>{error}</p>}
                 </div>
             </div>
 
-            <div className="flex gap-2">
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
                 {uploaded?.arquivo && (
                     <a
                         href={uploaded.arquivo}
@@ -545,7 +571,7 @@ function DocumentSlot({
                 )}
 
                 {uploaded && (
-                    <button className="btn btn-ghost btn-sm" onClick={handleRemove} title="Remover documento">
+                    <button className="btn btn-ghost btn-sm" onClick={handleRemove} title="Remover documento" aria-label="Remover documento">
                         <Trash2 size={14} />
                     </button>
                 )}
@@ -583,47 +609,34 @@ function InfoCell({
     value,
     icon,
     span,
+    mono = false,
 }: {
     label: string;
     value?: string | null;
     icon?: React.ReactNode;
     span?: number;
+    mono?: boolean;
 }) {
     const display = value && value.trim() ? value : '—';
     const isEmpty = display === '—';
     return (
         <div
+            className="info-item"
             style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2,
-                padding: '8px 12px',
-                background: 'var(--notion-bg-alt)',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--notion-border)',
                 minWidth: 0,
                 ...(span ? { gridColumn: `span ${span}` } : {}),
             }}
         >
             <span
-                style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    color: 'var(--notion-text-secondary)',
-                }}
+                className="info-item-label"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
             >
                 {icon} {label}
             </span>
             <span
+                className={`info-item-value${mono && !isEmpty ? ' font-mono' : ''}`}
                 style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: isEmpty ? 'var(--notion-text-secondary)' : 'var(--notion-text)',
+                    color: isEmpty ? 'var(--notion-text-muted)' : 'var(--notion-text)',
                     fontStyle: isEmpty ? 'italic' : 'normal',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
