@@ -2355,7 +2355,7 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
                 <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--notion-border)' }}>
                         <span style={{ ...CLBL, marginBottom: 0, flex: 1 }}>Lista de Documentos</span>
-                        {os.tipoServico === 'transferencia' && !vendorCnpjDocsPresentes && (
+                        {!vendorCnpjDocsPresentes && (
                             <button
                                 type="button"
                                 onClick={handleAddVendorCnpjDocs}
