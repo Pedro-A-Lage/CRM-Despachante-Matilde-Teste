@@ -23,6 +23,8 @@ import {
   updatePayment,
   updateChargePagoPor,
 } from '../lib/financeService';
+import { getEmpresas } from '../lib/empresaService';
+import type { EmpresaParceira } from '../types/empresa';
 import { getOrdens, getClientes, getVeiculos } from '../lib/database';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import { useToast } from '../components/Toast';
@@ -89,6 +91,8 @@ export default function ControleDiario() {
   const [charges, setCharges] = useState<ChargeWithOS[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [pagadores, setPagadores] = useState<Pagador[]>([]);
+  const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
+  const [empresaFilter, setEmpresaFilter] = useState<string>(''); // '' = todas | 'particular' | empresa.id
   const { showToast } = useToast();
 
   // Route guard
@@ -102,13 +106,14 @@ export default function ControleDiario() {
     setLoading(true);
     setErro(null);
     try {
-      const [o, c, v, ch, p, pg] = await Promise.all([
+      const [o, c, v, ch, p, pg, emp] = await Promise.all([
         getOrdens(),
         getClientes(),
         getVeiculos(),
         getAllChargesWithOS(),
         getAllPayments(),
         getPagadores(),
+        getEmpresas(),
       ]);
       setOrdens(o);
       setClientes(c);
@@ -116,6 +121,7 @@ export default function ControleDiario() {
       setCharges(ch);
       setPayments(p);
       setPagadores(pg);
+      setEmpresas(emp);
     } catch (e) {
       setErro(e instanceof Error ? e.message : 'Erro ao carregar dados');
     } finally {
@@ -169,30 +175,46 @@ export default function ControleDiario() {
   const range = useMemo(() => computeRange(preset, customRange), [preset, customRange]);
   const { de, ate } = range;
 
+  // Helper: OS bate com o filtro de empresa?
+  const osPassaFiltroEmpresa = useCallback((empresaId: string | null | undefined): boolean => {
+    if (!empresaFilter) return true;
+    if (empresaFilter === 'particular') return !empresaId;
+    return empresaId === empresaFilter;
+  }, [empresaFilter]);
+
+  // Map auxiliar para resolver OS a partir de payment
+  const ordemPorId = useMemo(() => new Map(ordens.map(o => [o.id, o])), [ordens]);
+
   // --- OS abertas no período ---
   const ordensDoPeriodo = useMemo(() => {
-    return ordens.filter(o => {
-      const d = ymd(o.dataAbertura);
-      return d >= de && d <= ate;
-    }).sort((a, b) => new Date(b.dataAbertura).getTime() - new Date(a.dataAbertura).getTime());
-  }, [ordens, de, ate]);
+    return ordens
+      .filter(o => {
+        const d = ymd(o.dataAbertura);
+        if (d < de || d > ate) return false;
+        return osPassaFiltroEmpresa(o.empresaParceiraId);
+      })
+      .sort((a, b) => new Date(b.dataAbertura).getTime() - new Date(a.dataAbertura).getTime());
+  }, [ordens, de, ate, osPassaFiltroEmpresa]);
 
   // --- Recebimentos do período ---
   const recebimentosDoPeriodo = useMemo(() => {
     return payments.filter(p => {
       const d = ymd(p.data_pagamento);
-      return d >= de && d <= ate;
+      if (d < de || d > ate) return false;
+      const os = ordemPorId.get(p.os_id);
+      return osPassaFiltroEmpresa(os?.empresaParceiraId);
     });
-  }, [payments, de, ate]);
+  }, [payments, de, ate, ordemPorId, osPassaFiltroEmpresa]);
 
   // --- Taxas pagas no período ---
   const taxasPagasDoPeriodo = useMemo(() => {
     return charges.filter(c => {
       if (c.status !== 'pago') return false;
       const d = ymd(c.confirmado_em);
-      return d >= de && d <= ate;
+      if (d < de || d > ate) return false;
+      return osPassaFiltroEmpresa(c.empresa_parceira_id);
     });
-  }, [charges, de, ate]);
+  }, [charges, de, ate, osPassaFiltroEmpresa]);
 
   // --- Stats ---
   const totalRecebido = recebimentosDoPeriodo.reduce((s, p) => s + (p.valor || 0), 0);
@@ -240,7 +262,7 @@ export default function ControleDiario() {
 
   const clienteMap = useMemo(() => new Map(clientes.map(c => [c.id, c])), [clientes]);
   const veiculoMap = useMemo(() => new Map(veiculos.map(v => [v.id, v])), [veiculos]);
-  const ordemMap = useMemo(() => new Map(ordens.map(o => [o.id, o])), [ordens]);
+  const ordemMap = ordemPorId;
 
   if (!usuario || (usuario.role !== 'admin' && usuario.role !== 'gerente')) return null;
 
@@ -319,6 +341,66 @@ export default function ControleDiario() {
 
       {erro && (
         <div className="alert alert-danger" style={{ marginBottom: 20 }}>{erro}</div>
+      )}
+
+      {/* Empresa filter */}
+      {empresas.length > 0 && (
+        <div
+          style={{
+            background: 'var(--notion-surface)',
+            border: '1px solid var(--notion-border)',
+            borderRadius: 10,
+            padding: '10px 14px',
+            marginBottom: 20,
+            display: 'flex',
+            gap: 6,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+          }}
+        >
+          <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)', marginRight: 4 }}>Empresa:</span>
+          <button
+            type="button"
+            onClick={() => setEmpresaFilter('')}
+            className={`btn btn-sm ${empresaFilter === '' ? 'btn-primary' : 'btn-secondary'}`}
+          >
+            Todas
+          </button>
+          {empresas.map(emp => {
+            const active = empresaFilter === emp.id;
+            return (
+              <button
+                key={emp.id}
+                type="button"
+                onClick={() => setEmpresaFilter(emp.id)}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: 12,
+                  fontWeight: active ? 700 : 500,
+                  borderRadius: 6,
+                  border: `1.5px solid ${active ? emp.cor : 'var(--notion-border)'}`,
+                  background: active ? emp.cor : 'transparent',
+                  color: active ? '#fff' : 'var(--notion-text-secondary)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: active ? '#fff' : emp.cor }} />
+                {emp.nome}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setEmpresaFilter('particular')}
+            className={`btn btn-sm ${empresaFilter === 'particular' ? 'btn-primary' : 'btn-secondary'}`}
+          >
+            Particulares
+          </button>
+        </div>
       )}
 
       {/* Stats cards */}
