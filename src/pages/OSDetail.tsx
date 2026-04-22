@@ -1145,14 +1145,14 @@ export default function OSDetail() {
                                         }
                                     >
                                         {tab.icon}
+                                        {isEmpresaTudoEnviado && (
+                                            <CheckCircle size={12} style={{ marginLeft: -2, marginRight: 2, color: '#28A06A' }} />
+                                        )}
                                         {tab.label}
                                         {isFinanceiroComDebito && (
                                             <span style={{ fontSize: 9, marginLeft: 4, background: 'rgba(239,68,68,0.18)', color: '#ef4444', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>
                                                 Pendente
                                             </span>
-                                        )}
-                                        {isEmpresaTudoEnviado && (
-                                            <CheckCircle size={12} style={{ marginLeft: 4, color: '#28A06A' }} />
                                         )}
                                     </button>
                                 );
