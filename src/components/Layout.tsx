@@ -70,6 +70,7 @@ const navGroups: NavGroup[] = [
         items: [
             { to: '/financeiro', icon: DollarSign, label: 'Financeiro', permissao: 'financeiro' },
             { to: '/controle-pagamentos', icon: ClipboardCheck, label: 'Controle de Pagamentos', permissao: 'controle_pagamentos' },
+            { to: '/controle-diario', icon: Calendar, label: 'Controle Diário', permissao: 'controle_pagamentos' },
             { to: '/painel-empresas', icon: Building2, label: 'Empresas Parceiras' },
             { to: '/controle-placas', icon: CreditCard, label: 'Controle de Placas' },
             { to: '/emails', icon: MessageSquare, label: 'E-mails', permissao: 'emails' },
@@ -245,6 +246,7 @@ export default function Layout({ children }: LayoutProps) {
         if (path.startsWith('/emails')) return 'Caixa de E-mails';
         if (path.startsWith('/financeiro')) return 'Financeiro';
         if (path.startsWith('/controle-pagamentos')) return 'Controle de Pagamentos';
+        if (path.startsWith('/controle-diario')) return 'Controle Diário';
         if (path.startsWith('/painel-empresas')) return 'Empresas Parceiras';
         if (path.startsWith('/controle-placas')) return 'Controle de Placas';
         if (path.startsWith('/configuracoes')) return 'Configurações de Serviços';

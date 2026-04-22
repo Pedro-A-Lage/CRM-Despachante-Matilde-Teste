@@ -395,6 +395,15 @@ export async function getPaymentsByOS(osId: string): Promise<Payment[]> {
   return (data as Payment[]).map(p => ({ ...p, valor: Number(p.valor) }));
 }
 
+export async function getAllPayments(): Promise<Payment[]> {
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*')
+    .order('data_pagamento', { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Payment[]).map(p => ({ ...p, valor: Number(p.valor) }));
+}
+
 export async function addPayment(
   osId: string,
   dataPagamento: string,

@@ -15,6 +15,7 @@ import VistoriaCalendar from './pages/VistoriaCalendar';
 import Financeiro from './pages/Financeiro';
 import UsuariosList from './pages/UsuariosList';
 import ControlePagamentos from './pages/ControlePagamentos';
+import ControleDiario from './pages/ControleDiario';
 import Configuracoes from './pages/Configuracoes';
 import PainelEmpresas from './pages/PainelEmpresas';
 import ControlePlacas from './pages/ControlePlacas';
@@ -1661,6 +1662,7 @@ function AppInner() {
                                         <Route path="/painel-empresas" element={<PainelEmpresas />} />
                                         <Route path="/controle-placas" element={<ControlePlacas />} />
                                         <Route path="/controle-pagamentos" element={<PermissionRoute permissao="controle_pagamentos"><ControlePagamentos /></PermissionRoute>} />
+                                        <Route path="/controle-diario" element={<PermissionRoute permissao="controle_pagamentos"><ControleDiario /></PermissionRoute>} />
                                         <Route path="/financeiro" element={<PermissionRoute permissao="financeiro"><Financeiro /></PermissionRoute>} />
                                         <Route path="/configuracoes" element={<PermissionRoute permissao="configuracoes"><Configuracoes /></PermissionRoute>} />
                                         <Route path="/usuarios" element={<PermissionRoute permissao="usuarios"><UsuariosList /></PermissionRoute>} />
