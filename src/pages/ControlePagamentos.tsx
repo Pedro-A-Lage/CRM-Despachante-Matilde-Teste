@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../components/ConfirmProvider';
+import { usePagadorPrompt } from '../components/PagadorPromptProvider';
 import {
   getAllChargesWithOS,
   groupChargesByOS,
@@ -653,6 +654,7 @@ export default function ControlePagamentos() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const askPagador = usePagadorPrompt();
 
   const [groups, setGroups] = useState<OSChargeGroup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -781,10 +783,16 @@ export default function ControlePagamentos() {
         confirmText: 'Confirmar Todos',
       });
       if (!ok) return;
-      await confirmarTodosDaOS(osId, usuario.nome);
+      const pagoPor = await askPagador({
+        title: 'Quem pagou estas taxas?',
+        message: 'Selecione quem fisicamente pagou as taxas no banco/Detran.',
+        allowSkip: true,
+      });
+      if (pagoPor === null) return;
+      await confirmarTodosDaOS(osId, usuario.nome, pagoPor || null);
       await carregar();
     },
-    [usuario, confirm, carregar],
+    [usuario, confirm, askPagador, carregar],
   );
 
   const handleConfirmarTodosGlobal = useCallback(
@@ -798,12 +806,18 @@ export default function ControlePagamentos() {
         confirmText: 'Confirmar Todos',
       });
       if (!ok) return;
+      const pagoPor = await askPagador({
+        title: 'Quem pagou estas taxas?',
+        message: `Selecione quem fisicamente pagou as ${pendentes.length} OS.`,
+        allowSkip: true,
+      });
+      if (pagoPor === null) return;
       for (const g of pendentes) {
-        await confirmarTodosDaOS(g.osId, usuario.nome);
+        await confirmarTodosDaOS(g.osId, usuario.nome, pagoPor || null);
       }
       await carregar();
     },
-    [usuario, confirm, groups, carregar],
+    [usuario, confirm, askPagador, groups, carregar],
   );
 
   // Filtering logic

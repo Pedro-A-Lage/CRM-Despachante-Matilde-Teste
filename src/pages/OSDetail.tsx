@@ -61,6 +61,7 @@ import {
 import { getCurrentUser } from '../lib/auth';
 import { temPermissao } from '../lib/permissions';
 import { useConfirm } from '../components/ConfirmProvider';
+import { usePagadorPrompt } from '../components/PagadorPromptProvider';
 import { useToast } from '../components/Toast';
 import { DocumentViewer } from '../components/DocumentViewer';
 import {
@@ -2722,6 +2723,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
     const isAdmin = authUser?.role === 'admin';
     const serviceLabels = useServiceLabels();
     const confirm = useConfirm();
+    const askPagador = usePagadorPrompt();
     const { showToast } = useToast();
     const vistoria = os.vistoria || { status: 'agendar' as const, local: '' };
 
@@ -2930,7 +2932,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                 );
                 if (daeCharges.length > 0) {
                     for (const dae of daeCharges) {
-                        await marcarCustoPago(dae.id);
+                        await marcarCustoPago(dae.id, { confirmadoPor: usuario?.nome ?? null });
                     }
                     await addAuditEntry(os.id, 'Financeiro', 'DAE marcado como pago automaticamente (vistoria agendada).');
                 }
@@ -3232,6 +3234,16 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                     <button
                                         onClick={async () => {
                                             const novoStatus: StatusPagamento = taxaStatus === 'pago' ? 'aguardando_pagamento' : 'pago';
+                                            // Se estamos marcando como pago, perguntar quem pagou
+                                            let pagoPor: string | null | undefined;
+                                            if (novoStatus === 'pago') {
+                                                pagoPor = await askPagador({
+                                                    title: 'Quem pagou a vistoria?',
+                                                    message: 'Selecione quem fisicamente pagou a taxa.',
+                                                    allowSkip: true,
+                                                });
+                                                if (pagoPor === null) return; // cancelado
+                                            }
                                             setTaxaStatus(novoStatus);
                                             setTaxaValor(precoVistoria.toFixed(2).replace('.', ','));
                                             setDirty(true);
@@ -3241,7 +3253,7 @@ function VistoriaTab({ os, onRefresh, daePaga, veiculo, cliente, onDirtyChange, 
                                                 const vistCharge = charges.find(c => c.categoria === 'vistoria' && c.status !== 'cancelado');
                                                 if (vistCharge) {
                                                     if (novoStatus === 'pago') {
-                                                        await marcarCustoPago(vistCharge.id);
+                                                        await marcarCustoPago(vistCharge.id, { confirmadoPor: authUser?.nome ?? null, pagoPor: pagoPor || null });
                                                     }
                                                 }
                                             } catch (err) { console.warn('Erro ao sincronizar pagamento vistoria:', err); }

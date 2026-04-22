@@ -456,7 +456,10 @@ export async function updateChargePagoPor(chargeId: string, nome: string | null)
   if (error) throw error;
 }
 
-export async function marcarCustoPago(chargeId: string): Promise<void> {
+export async function marcarCustoPago(
+  chargeId: string,
+  opts?: { confirmadoPor?: string | null; pagoPor?: string | null },
+): Promise<void> {
   const { data, error: fetchErr } = await supabase
     .from('finance_charges')
     .select('valor_previsto')
@@ -465,11 +468,16 @@ export async function marcarCustoPago(chargeId: string): Promise<void> {
   if (fetchErr || !data) throw fetchErr || new Error('Custo não encontrado');
 
   const valorPrevisto = Number((data as { valor_previsto: number }).valor_previsto);
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from('finance_charges')
     .update({
       valor_pago: valorPrevisto,
       status: 'pago',
+      confirmado_em: now,
+      confirmado_por: opts?.confirmadoPor ?? null,
+      pago_por: opts?.pagoPor ?? null,
+      atualizado_em: now,
     })
     .eq('id', chargeId);
   if (error) throw error;
@@ -481,6 +489,10 @@ export async function desmarcarCustoPago(chargeId: string): Promise<void> {
     .update({
       valor_pago: 0,
       status: 'a_pagar',
+      confirmado_em: null,
+      confirmado_por: null,
+      pago_por: null,
+      atualizado_em: new Date().toISOString(),
     })
     .eq('id', chargeId);
   if (error) throw error;

@@ -21,6 +21,7 @@ import { PAYMENT_METODO_LABELS } from '../../types/finance';
 import RecebimentoModal from './RecebimentoModal';
 import CustoAdicionalModal from './CustoAdicionalModal';
 import { useConfirm } from '../ConfirmProvider';
+import { usePagadorPrompt } from '../PagadorPromptProvider';
 
 interface Props {
   osId: string;
@@ -174,6 +175,7 @@ export default function FinancePainel({
   formaPagamentoPadraoEmpresa,
 }: Props) {
   const confirm = useConfirm();
+  const askPagador = usePagadorPrompt();
   const { usuario } = useAuth();
   const isAdmin = userRole === 'admin' || usuario?.role === 'admin';
   const [charges, setCharges] = useState<FinanceCharge[]>([]);
@@ -324,17 +326,23 @@ export default function FinancePainel({
   };
 
   const handlePagarCusto = async (chargeId: string) => {
+    const pagoPor = await askPagador({
+      title: 'Quem pagou esta taxa?',
+      message: 'Selecione quem fisicamente pagou no banco/Detran.',
+      allowSkip: true,
+    });
+    if (pagoPor === null) return; // cancelado
     setCharges(prev =>
       prev.map(c =>
         c.id === chargeId
-          ? { ...c, status: 'pago' as FinanceCharge['status'], valor_pago: c.valor_previsto }
+          ? { ...c, status: 'pago' as FinanceCharge['status'], valor_pago: c.valor_previsto, pago_por: pagoPor || undefined }
           : c,
       ),
     );
     try {
-      await marcarCustoPago(chargeId);
+      await marcarCustoPago(chargeId, { confirmadoPor: usuario?.nome ?? null, pagoPor: pagoPor || null });
       await carregar(true);
-      setMensagem({ tipo: 'sucesso', texto: 'Custo marcado como pago.' });
+      setMensagem({ tipo: 'sucesso', texto: pagoPor ? `Custo pago por ${pagoPor}.` : 'Custo marcado como pago.' });
     } catch (err) {
       console.error(err);
       await carregar(true);

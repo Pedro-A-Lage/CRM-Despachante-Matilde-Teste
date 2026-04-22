@@ -21,6 +21,7 @@ import PainelEmpresas from './pages/PainelEmpresas';
 import ControlePlacas from './pages/ControlePlacas';
 import Login from './pages/Login';
 import { ConfirmProvider } from './components/ConfirmProvider';
+import { PagadorPromptProvider } from './components/PagadorPromptProvider';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import TrocarSenhaModal from './components/TrocarSenhaModal';
 import { useEffect, useState } from 'react';
@@ -1631,6 +1632,7 @@ function AppInner() {
         <NovaOSModalContext.Provider value={novaOSModal}>
             <AuthProvider>
                 <ConfirmProvider>
+                    <PagadorPromptProvider>
                     <Routes>
                         <Route path="/login" element={<Login />} />
                         <Route path="/*" element={
@@ -1672,6 +1674,7 @@ function AppInner() {
                             </ProtectedRoute>
                         } />
                     </Routes>
+                    </PagadorPromptProvider>
                 </ConfirmProvider>
             </AuthProvider>
             <NovaOSModal
