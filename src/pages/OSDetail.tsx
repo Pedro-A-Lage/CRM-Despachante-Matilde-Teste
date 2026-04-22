@@ -554,6 +554,7 @@ export default function OSDetail() {
     const [veiculo, setVeiculo] = useState<any>(null);
     const [empresa, setEmpresa] = useState<EmpresaParceira | null>(null);
     const [empresasAtivas, setEmpresasAtivas] = useState<EmpresaParceira[]>([]);
+    const [totalCustosAtivos, setTotalCustosAtivos] = useState<number>(0);
     const [reciboModalOpen, setReciboModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabId>('checklist');
@@ -630,11 +631,16 @@ export default function OSDetail() {
                 });
             }
             getEmpresasAtivas().then(setEmpresasAtivas);
-            const [c, v, payments] = await Promise.all([
+            const [c, v, payments, chargesOs] = await Promise.all([
                 getCliente(ordem.clienteId),
                 getVeiculo(ordem.veiculoId),
                 getPaymentsByOS(ordem.id),
+                getChargesByOS(ordem.id),
             ]);
+            const custosAtivos = chargesOs
+                .filter((c: any) => c.status !== 'cancelado')
+                .reduce((sum: number, c: any) => sum + Number(c.valor_previsto || 0), 0);
+            setTotalCustosAtivos(custosAtivos);
             setCliente(c);
             setVeiculo(v);
             // Bloqueio baseado em recebimentos do cliente (não custos)
@@ -1612,56 +1618,78 @@ export default function OSDetail() {
                                 <option key={emp.id} value={emp.id}>{emp.nome}</option>
                             ))}
                         </select>
-                        {empresa && (
-                            <div style={{ marginTop: 8 }}>
-                                {usuario?.role === 'admin' && (
-                                    <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)', display: 'flex', gap: 12, marginBottom: 6 }}>
-                                        <span>Serviço: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorServico?.toFixed(2) || '—'}</strong></span>
-                                        {empresa.valorPlaca != null && (
-                                            <span>Placa: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorPlaca.toFixed(2)}</strong></span>
-                                        )}
-                                    </div>
-                                )}
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            // Atualizar valor da placa nas cobranças
-                                            if (empresa.valorPlaca != null) {
-                                                const charges = await getChargesByOS(os.id);
-                                                const placaCharge = charges.find((c) => c.categoria === 'placa' && c.status !== 'cancelado');
-                                                if (placaCharge) {
-                                                    await updateCharge(placaCharge.id, { valor_previsto: empresa.valorPlaca });
+                        {empresa && (() => {
+                            const honorarioEmpresa = empresa.valorServico ?? 0;
+                            const honorarioGravado = Math.round(((Number(os.valorServico) || 0) - totalCustosAtivos) * 100) / 100;
+                            const diffHonorario = Math.round((honorarioEmpresa - honorarioGravado) * 100) / 100;
+                            const mismatch = Math.abs(diffHonorario) >= 0.01;
+                            return (
+                                <div style={{ marginTop: 8 }}>
+                                    {usuario?.role === 'admin' && (
+                                        <div style={{ fontSize: 11, color: 'var(--notion-text-secondary)', display: 'flex', gap: 12, marginBottom: 6 }}>
+                                            <span>Serviço: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorServico?.toFixed(2) || '—'}</strong></span>
+                                            {empresa.valorPlaca != null && (
+                                                <span>Placa: <strong style={{ color: 'var(--notion-blue)' }}>R$ {empresa.valorPlaca.toFixed(2)}</strong></span>
+                                            )}
+                                        </div>
+                                    )}
+                                    {mismatch && (
+                                        <div style={{
+                                            display: 'flex', alignItems: 'flex-start', gap: 6,
+                                            fontSize: 10, fontWeight: 600,
+                                            color: 'var(--status-warn)',
+                                            background: 'var(--status-warn-soft)',
+                                            border: '1px solid var(--status-warn)',
+                                            borderRadius: 6, padding: '6px 8px', marginBottom: 6,
+                                        }}>
+                                            <AlertTriangle size={11} style={{ flexShrink: 0, marginTop: 1 }} />
+                                            <span style={{ lineHeight: 1.35 }}>
+                                                Honorário desta OS (R$ {honorarioGravado.toFixed(2)}) não bate com o valor atual da empresa
+                                                (R$ {honorarioEmpresa.toFixed(2)}). Clique abaixo para sincronizar.
+                                            </span>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                if (empresa.valorPlaca != null) {
+                                                    const charges = await getChargesByOS(os.id);
+                                                    const placaCharge = charges.find((c) => c.categoria === 'placa' && c.status !== 'cancelado');
+                                                    if (placaCharge) {
+                                                        await updateCharge(placaCharge.id, { valor_previsto: empresa.valorPlaca });
+                                                    }
                                                 }
+                                                const updatedCharges = await getChargesByOS(os.id);
+                                                const totalCustos = updatedCharges
+                                                    .filter((c) => c.status !== 'cancelado')
+                                                    .reduce((sum, c) => sum + Number(c.valor_previsto), 0);
+                                                const novoValor = totalCustos + (empresa.valorServico ?? 0);
+                                                await updateOrdem(os.id, { valorServico: novoValor });
+                                                setOs({ ...os, valorServico: novoValor });
+                                                setTotalCustosAtivos(totalCustos);
+                                                refresh();
+                                            } catch (err) {
+                                                console.error('[Empresa] Erro ao aplicar valores:', err);
                                             }
-                                            // Recalcular valorServico = custos + honorário
-                                            const updatedCharges = await getChargesByOS(os.id);
-                                            const totalCustos = updatedCharges
-                                                .filter((c) => c.status !== 'cancelado')
-                                                .reduce((sum, c) => sum + Number(c.valor_previsto), 0);
-                                            const novoValor = totalCustos + (empresa.valorServico ?? 0);
-                                            await updateOrdem(os.id, { valorServico: novoValor });
-                                            setOs({ ...os, valorServico: novoValor });
-                                            refresh();
-                                        } catch (err) {
-                                            console.error('[Empresa] Erro ao aplicar valores:', err);
-                                        }
-                                    }}
-                                    style={{
-                                        width: '100%',
-                                        fontSize: 10,
-                                        fontWeight: 600,
-                                        color: 'var(--notion-blue)',
-                                        background: 'rgba(0,117,222,0.08)',
-                                        border: '1px solid rgba(0,117,222,0.25)',
-                                        borderRadius: 6,
-                                        padding: '5px 0',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    Aplicar valor de placa da empresa
-                                </button>
-                            </div>
-                        )}
+                                        }}
+                                        title="Recalcula serviço e placa com os valores atuais da empresa"
+                                        style={{
+                                            width: '100%',
+                                            fontSize: 10,
+                                            fontWeight: 600,
+                                            color: mismatch ? 'var(--status-warn)' : 'var(--notion-blue)',
+                                            background: mismatch ? 'var(--status-warn-soft)' : 'rgba(0,117,222,0.08)',
+                                            border: `1px solid ${mismatch ? 'var(--status-warn)' : 'rgba(0,117,222,0.25)'}`,
+                                            borderRadius: 6,
+                                            padding: '5px 0',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        Aplicar valores atuais da empresa
+                                    </button>
+                                </div>
+                            );
+                        })()}
                     </div>
 
                 </div>{/* end sidebar */}
