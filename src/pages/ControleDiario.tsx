@@ -13,6 +13,7 @@ import {
   Plus,
   Check,
   X,
+  Printer,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -266,6 +267,11 @@ export default function ControleDiario() {
     ? new Date(de + 'T12:00:00').toLocaleDateString('pt-BR')
     : `${new Date(de + 'T12:00:00').toLocaleDateString('pt-BR')} → ${new Date(ate + 'T12:00:00').toLocaleDateString('pt-BR')}`;
 
+  const empresaLabel =
+    empresaFilter === '' ? 'Todas as empresas'
+    : empresaFilter === 'particular' ? 'Particulares'
+    : empresas.find(e => e.id === empresaFilter)?.nome ?? 'Empresa';
+
   return (
     <div style={{ padding: '24px 20px', maxWidth: 1200, margin: '0 auto' }}>
       {/* Header */}
@@ -275,13 +281,19 @@ export default function ControleDiario() {
             Controle Diário
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--notion-text-secondary)' }}>
-            OS abertas, recebimentos e taxas pagas · {rangeLabel}
+            OS abertas, recebimentos e taxas pagas · {rangeLabel} · {empresaLabel}
           </p>
         </div>
-        <button onClick={carregar} disabled={loading} className="btn btn-secondary btn-sm">
-          <RefreshCw size={13} style={{ animation: loading ? 'ctrlsp 1s linear infinite' : 'none' }} />
-          Atualizar
-        </button>
+        <div style={{ display: 'flex', gap: 8 }} className="cd-no-print">
+          <button onClick={() => window.print()} className="btn btn-secondary btn-sm" title="Exportar para PDF (use 'Salvar como PDF' no diálogo de impressão)">
+            <Printer size={13} />
+            Exportar PDF
+          </button>
+          <button onClick={carregar} disabled={loading} className="btn btn-secondary btn-sm">
+            <RefreshCw size={13} style={{ animation: loading ? 'ctrlsp 1s linear infinite' : 'none' }} />
+            Atualizar
+          </button>
+        </div>
       </div>
 
       {/* Range selector */}
@@ -621,7 +633,7 @@ export default function ControleDiario() {
         overflow: 'hidden',
         marginBottom: 16,
       }}>
-        <div style={{
+        <div className="cd-no-print" style={{
           display: 'flex', gap: 4, padding: '6px 8px',
           borderBottom: '1px solid var(--notion-border)',
           background: 'var(--notion-bg-alt)',
@@ -663,8 +675,11 @@ export default function ControleDiario() {
         </div>
 
       {/* OS abertas */}
-      {activeTab === 'os' && (
-        ordensDoPeriodo.length === 0 ? (
+      <div className="cd-tab-content" data-active={activeTab === 'os' ? 'true' : 'false'}>
+        <div className="cd-print-only" style={{ padding: '8px 16px', fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
+          OS abertas no período ({ordensDoPeriodo.length})
+        </div>
+        {ordensDoPeriodo.length === 0 ? (
           <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
             Nenhuma OS aberta nesse período.
           </div>
@@ -725,12 +740,15 @@ export default function ControleDiario() {
               </tbody>
             </table>
           </div>
-        )
-      )}
+        )}
+      </div>
 
       {/* Recebimentos */}
-      {activeTab === 'recebimentos' && (
-        recebimentosDoPeriodo.length === 0 ? (
+      <div className="cd-tab-content" data-active={activeTab === 'recebimentos' ? 'true' : 'false'}>
+        <div className="cd-print-only" style={{ padding: '8px 16px', fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
+          Recebimentos no período ({recebimentosDoPeriodo.length})
+        </div>
+        {recebimentosDoPeriodo.length === 0 ? (
           <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
             Nenhum recebimento nesse período.
           </div>
@@ -787,18 +805,21 @@ export default function ControleDiario() {
               </tbody>
             </table>
           </div>
-        )
-      )}
+        )}
+      </div>
 
       {/* Taxas pagas */}
-      {activeTab === 'taxas' && (
-        taxasPagasDoPeriodo.length === 0 ? (
+      <div className="cd-tab-content" data-active={activeTab === 'taxas' ? 'true' : 'false'}>
+        <div className="cd-print-only" style={{ padding: '8px 16px', fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
+          Taxas pagas no período ({taxasPagasDoPeriodo.length}) — DAE Transferência e Placa em destaque
+        </div>
+        {taxasPagasDoPeriodo.length === 0 ? (
           <div style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--notion-text-muted)', fontSize: 14 }}>
             Nenhuma taxa paga nesse período.
           </div>
         ) : (
           <div className="table-container">
-            <div style={{ padding: '8px 16px 0', fontSize: 11, color: 'var(--notion-text-muted)' }}>
+            <div className="cd-no-print" style={{ padding: '8px 16px 0', fontSize: 11, color: 'var(--notion-text-muted)' }}>
               DAE Transferência e Placa em destaque
             </div>
             <table className="table">
@@ -856,14 +877,39 @@ export default function ControleDiario() {
               </tbody>
             </table>
           </div>
-        )
-      )}
+        )}
+      </div>
       </div>{/* end tabs container */}
 
       <style>{`
         @keyframes ctrlsp { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media (max-width: 900px) {
           .cd-row { grid-template-columns: 1fr !important; }
+        }
+
+        /* Tabs: só a ativa visível no modo tela */
+        .cd-tab-content { display: none; }
+        .cd-tab-content[data-active="true"] { display: block; }
+        .cd-print-only { display: none; }
+
+        /* Modo impressão / Salvar como PDF */
+        @media print {
+          /* esconde elementos da UI */
+          .cd-no-print, .sidebar, .main-header, .app-shell-header { display: none !important; }
+          /* mostra todas as tabs no PDF e os títulos */
+          .cd-tab-content { display: block !important; page-break-inside: auto; margin-bottom: 12px; }
+          .cd-print-only { display: block !important; }
+          /* layout de página */
+          body, html { background: #fff !important; color: #111 !important; }
+          .cd-row { grid-template-columns: 1fr !important; }
+          /* permite quebra de página dentro de tabelas grandes mas evita cortar linhas */
+          table { page-break-inside: auto; }
+          tr { page-break-inside: avoid; page-break-after: auto; }
+          thead { display: table-header-group; }
+          /* contraste */
+          .badge, .info-item-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          /* compacta margens da página */
+          @page { margin: 14mm 12mm; }
         }
       `}</style>
     </div>
