@@ -2191,6 +2191,22 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
         markDirty(true);
     };
 
+    const VENDOR_CNPJ_DOCS = ['CNPJ (Vendedor)', 'Contrato Social (Vendedor)', 'CNH Responsável pela Empresa (Vendedor)'];
+    const vendorCnpjDocsPresentes = VENDOR_CNPJ_DOCS.every(nome =>
+        localChecklist.some(i => i.nome.toUpperCase() === nome.toUpperCase())
+    );
+
+    const handleAddVendorCnpjDocs = () => {
+        const existentes = new Set(localChecklist.map(i => i.nome.toUpperCase()));
+        const novos = VENDOR_CNPJ_DOCS
+            .filter(nome => !existentes.has(nome.toUpperCase()))
+            .map(nome => ({ id: generateId(), nome, status: 'pendente' as StatusChecklist }));
+        if (novos.length === 0) return;
+        setLocalChecklist([...localChecklist, ...novos]);
+        markDirty(true);
+        showToast(`${novos.length} documento(s) do vendedor CNPJ adicionado(s)`, 'success');
+    };
+
     const handleNaoPossuiCNH = (itemId: string) => {
         const hasIdentidade = localChecklist.some(i => i.nome.toUpperCase() === 'IDENTIDADE' || i.nome.toUpperCase() === 'RG');
         const hasCPF = localChecklist.some(i => i.nome.toUpperCase() === 'CPF');
@@ -2337,8 +2353,34 @@ function ChecklistTab({ os, cliente: clienteProp, veiculo, onRefresh, checklistC
 
                 {/* COLUNA ESQUERDA: Document List */}
                 <div style={{ background: 'var(--notion-bg)', borderRadius: 10, border: '1px solid var(--notion-border)', overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', borderBottom: '1px solid var(--notion-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--notion-border)' }}>
                         <span style={{ ...CLBL, marginBottom: 0, flex: 1 }}>Lista de Documentos</span>
+                        {os.tipoServico === 'transferencia' && !vendorCnpjDocsPresentes && (
+                            <button
+                                type="button"
+                                onClick={handleAddVendorCnpjDocs}
+                                title="Adiciona CNPJ, Contrato Social e CNH do Responsável do vendedor ao checklist"
+                                style={{
+                                    height: 24,
+                                    padding: '0 10px',
+                                    borderRadius: 6,
+                                    border: '1px solid var(--notion-blue)',
+                                    background: 'rgba(0,117,222,0.08)',
+                                    color: 'var(--notion-blue)',
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,117,222,0.16)')}
+                                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,117,222,0.08)')}
+                            >
+                                <Plus size={12} /> Vendedor CNPJ
+                            </button>
+                        )}
                         <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--notion-blue)', opacity: 0.7 }}>{total} itens</span>
                     </div>
                     {localChecklist.map((item, idx) => {
