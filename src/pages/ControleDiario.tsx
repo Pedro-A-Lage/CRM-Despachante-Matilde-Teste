@@ -51,7 +51,7 @@ type RangePreset = 'hoje' | 'ontem' | 'semana' | 'mes' | 'custom';
 // controlada; diferente dos pagadores (quem vai pagar a taxa no banco/Detran).
 const RECEBEDORES_FIXOS: Pagador[] = [
   { id: '__rec_pedro__', nome: 'Pedro', ativo: true, criado_em: '', atualizado_em: '' },
-  { id: '__rec_geraldo__', nome: 'Geraldo', ativo: true, criado_em: '', atualizado_em: '' },
+  { id: '__rec_geraldinho__', nome: 'Geraldinho', ativo: true, criado_em: '', atualizado_em: '' },
 ];
 
 function computeRange(preset: RangePreset, custom: { de: string; ate: string }): { de: string; ate: string } {
