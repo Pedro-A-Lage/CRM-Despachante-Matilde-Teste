@@ -118,21 +118,32 @@ export default function ControleDiario() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  const handleCreatePagador = useCallback(async (nome: string): Promise<Pagador> => {
-    const novo = await createPagador(nome);
-    const lista = await getPagadores();
-    setPagadores(lista);
-    return novo;
-  }, []);
+  const handleCreatePagador = useCallback(async (nome: string): Promise<Pagador | null> => {
+    try {
+      const novo = await createPagador(nome);
+      const lista = await getPagadores();
+      setPagadores(lista);
+      return novo;
+    } catch (e) {
+      // Se a tabela pagadores não existe ou o insert falha, segue sem cadastrar —
+      // o nome ainda pode ser salvo como texto no pagamento/charge.
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[ControleDiario] createPagador falhou:', msg);
+      showToast(`Aviso: não foi possível cadastrar "${nome}" na lista (${msg}). O nome foi salvo só no registro.`, 'warning');
+      return null;
+    }
+  }, [showToast]);
 
   const handleSetRecebidoPor = useCallback(async (paymentId: string, nome: string | null) => {
     try {
-      await updatePayment(paymentId, { recebido_por: nome ?? undefined });
+      // null limpa o campo; string define
+      await updatePayment(paymentId, { recebido_por: nome as any });
       setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, recebido_por: nome ?? undefined } : p));
-      showToast('Recebedor atualizado', 'success');
+      showToast(nome ? `Recebedor definido: ${nome}` : 'Recebedor removido', 'success');
     } catch (e) {
-      console.error(e);
-      showToast('Erro ao salvar recebedor', 'error');
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[ControleDiario] updatePayment falhou:', msg);
+      showToast(`Erro ao salvar recebedor: ${msg}`, 'error');
     }
   }, [showToast]);
 
@@ -140,10 +151,11 @@ export default function ControleDiario() {
     try {
       await updateChargePagoPor(chargeId, nome);
       setCharges(prev => prev.map(c => c.id === chargeId ? { ...c, pago_por: nome ?? undefined } : c));
-      showToast('Pagador atualizado', 'success');
+      showToast(nome ? `Pagador definido: ${nome}` : 'Pagador removido', 'success');
     } catch (e) {
-      console.error(e);
-      showToast('Erro ao salvar pagador', 'error');
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[ControleDiario] updateChargePagoPor falhou:', msg);
+      showToast(`Erro ao salvar pagador: ${msg}`, 'error');
     }
   }, [showToast]);
 
@@ -695,22 +707,25 @@ function NomePicker({
   value: string;
   pagadores: Pagador[];
   onChange: (nome: string | null) => void;
-  onCreate: (nome: string) => Promise<Pagador>;
+  onCreate: (nome: string) => Promise<Pagador | null>;
   placeholder?: string;
 }) {
   const [adicionando, setAdicionando] = useState(false);
   const [novoNome, setNovoNome] = useState('');
+  const [salvando, setSalvando] = useState(false);
 
   async function handleAddNovo() {
     const nome = novoNome.trim();
-    if (!nome) return;
+    if (!nome || salvando) return;
+    setSalvando(true);
     try {
-      await onCreate(nome);
+      // Tenta cadastrar na lista; mesmo que falhe, aplica o nome ao registro.
+      await onCreate(nome).catch(() => null);
       onChange(nome);
       setNovoNome('');
       setAdicionando(false);
-    } catch (e) {
-      console.error(e);
+    } finally {
+      setSalvando(false);
     }
   }
 
@@ -741,12 +756,14 @@ function NomePicker({
         />
         <button
           onClick={handleAddNovo}
+          disabled={salvando}
           title="Salvar"
           aria-label="Salvar novo pagador"
           style={{
             height: 26, width: 26, border: 'none', borderRadius: 6,
             background: 'var(--status-success-soft)', color: 'var(--status-success)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: salvando ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: salvando ? 0.5 : 1,
           }}
         >
           <Check size={13} />

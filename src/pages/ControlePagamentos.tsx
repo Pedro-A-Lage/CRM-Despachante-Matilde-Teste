@@ -132,13 +132,14 @@ function ConfirmPopover({ charge, onClose, onConfirm, pagadores, onCreatePagador
     const nome = novoNome.trim();
     if (!nome) return;
     try {
-      const novo = await onCreatePagador(nome);
-      setPagoPor(novo.nome);
-      setNovoNome('');
-      setAdicionando(false);
+      await onCreatePagador(nome);
     } catch (err) {
-      console.error('Erro ao criar pagador:', err);
+      // Se o cadastro falhar, ainda selecionamos o nome digitado
+      console.error('Erro ao criar pagador (prossegue com o nome mesmo assim):', err);
     }
+    setPagoPor(nome);
+    setNovoNome('');
+    setAdicionando(false);
   }
 
   return (
