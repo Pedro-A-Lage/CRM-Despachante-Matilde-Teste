@@ -286,10 +286,36 @@ export async function gerarCobrancasIniciais(
   }[] = [];
 
   if (regra.dae) {
-    const codigo = regra.dae === 'alteracao' ? 'dae_alteracao' : 'dae_principal';
-    const descricao = regra.dae === 'alteracao' ? 'DAE Alteração' : 'DAE Principal';
-    const categoria: FinanceChargeCategoria = regra.dae === 'alteracao' ? 'dae_adicional' : 'dae_principal';
-    const valor = await getPriceByCodigo(codigo);
+    // Retrocompat: valores antigos 'principal' e 'alteracao' viram códigos
+    // legacy. Valores novos já vêm como código da price_table (ex.:
+    // 'dae_transferencia', 'dae_primeiro_emplacamento', etc).
+    const isCodigoDireto = regra.dae.startsWith('dae_');
+    const codigo = isCodigoDireto
+      ? regra.dae
+      : (regra.dae === 'alteracao' ? 'dae_alteracao' : 'dae_principal');
+
+    // Categoria na charge: 'dae_adicional' para alteração/baixa (servem como
+    // DAE secundária/adicional), 'dae_principal' pros demais.
+    const isAdicional =
+      regra.dae === 'alteracao'
+      || codigo === 'dae_alteracao'
+      || codigo === 'dae_alteracao_dados'
+      || codigo === 'dae_baixa'
+      || codigo === 'dae_baixa_impedimento';
+    const categoria: FinanceChargeCategoria = isAdicional ? 'dae_adicional' : 'dae_principal';
+
+    // Busca valor e descrição diretamente da price_table
+    const { data: priceRow } = await supabase
+      .from('price_table')
+      .select('valor, descricao')
+      .eq('codigo', codigo)
+      .eq('ativo', true)
+      .maybeSingle();
+
+    const valor = priceRow?.valor != null ? Number(priceRow.valor) : await getPriceByCodigo(codigo);
+    const descricao = priceRow?.descricao
+      || (regra.dae === 'alteracao' ? 'DAE Alteração' : 'DAE Principal');
+
     inserts.push({
       os_id: osId,
       descricao,

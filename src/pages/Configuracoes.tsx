@@ -15,8 +15,30 @@ import { EmpresaEditModal } from '../components/EmpresaEditModal';
 import { useToast } from '../components/Toast';
 
 // ── Label helpers ─────────────────────────────────────────────────────────────
-const daeLabel = (v: string | null) =>
-  ({ principal: 'Principal', alteracao: 'Alteração' }[v ?? ''] ?? '—');
+const DAE_LABELS: Record<string, string> = {
+  principal: 'Principal',
+  alteracao: 'Alteração',
+  dae_transferencia: 'Transferência',
+  dae_primeiro_emplacamento: '1º Emplacamento',
+  dae_segunda_via: '2ª Via CRV',
+  dae_alteracao_dados: 'Alteração de Dados',
+  dae_mudanca_caracteristica: 'Mudança de Característica',
+  dae_mudanca_categoria: 'Mudança de Categoria',
+  dae_baixa: 'Baixa',
+  dae_baixa_impedimento: 'Baixa de Impedimento',
+  dae_vistoria_lacrada: 'Vistoria Lacrada',
+};
+
+const daeLabel = (v: string | null) => {
+  if (!v) return '—';
+  if (DAE_LABELS[v]) return DAE_LABELS[v];
+  // Fallback: humaniza códigos desconhecidos (ex.: dae_novo_servico → "Novo Servico")
+  if (v.startsWith('dae_')) {
+    const nome = v.replace(/^dae_/, '').replace(/_/g, ' ');
+    return nome.charAt(0).toUpperCase() + nome.slice(1);
+  }
+  return v;
+};
 
 const opcaoLabel = (v: string) =>
   ({ sempre: 'Sempre', se_troca: 'Se troca', nunca: 'Nunca' }[v] ?? v);
