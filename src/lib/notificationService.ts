@@ -43,24 +43,73 @@ function daysBetween(isoDate: string): number {
 }
 
 // ── E-mails não lidos ─────────────────────────────────────────────────────────
+//
+// Mesma regra da tela /emails (src/pages/Emails.tsx): só considera pastas
+// vinculadas a uma empresa parceira (via pastaOutlook ou nome) + as
+// system folders (placas/placa — destino dos comprovantes de emplacamento).
+// Pula Inbox, Drafts, Sent Items, etc.
 
-export async function fetchUnreadEmails(limit = 10): Promise<AppNotification[]> {
+const SYSTEM_FOLDERS = ['placas', 'placa'];
+const MAX_EMAILS_PER_FOLDER = 5;
+const MAX_EMAIL_NOTIFICATIONS = 12;
+
+export async function fetchUnreadEmails(): Promise<AppNotification[]> {
   try {
-    // Reutiliza a edge function existente usada em Emails.tsx
-    const { data, error } = await supabase.functions.invoke('get-outlook-emails', {
-      body: { limit: 25, direction: 'in' },
+    const [foldersRes, empresasRes] = await Promise.all([
+      supabase.functions.invoke('get-outlook-folders'),
+      supabase.from('empresas_parceiras').select('nome, pasta_outlook').limit(200),
+    ]);
+
+    if (foldersRes.error) throw foldersRes.error;
+    const allFolders: any[] = foldersRes.data?.folders ?? [];
+    const empresaPastaNames = new Set<string>();
+    for (const e of (empresasRes.data ?? []) as any[]) {
+      const pasta = ((e.pasta_outlook as string) || (e.nome as string) || '').trim().toLowerCase();
+      if (pasta) empresaPastaNames.add(pasta);
+    }
+
+    // Só pastas permitidas e com algum unread
+    const foldersRelevantes = allFolders.filter(f => {
+      const name = (f.displayName || '').trim().toLowerCase();
+      const isAllowed = SYSTEM_FOLDERS.includes(name) || empresaPastaNames.has(name);
+      return isAllowed && (Number(f.unreadItemCount) || 0) > 0;
     });
-    if (error) throw error;
-    const emails: any[] = Array.isArray(data) ? data : (data?.emails ?? []);
-    const unread = emails.filter(e => e.isRead === false);
-    return unread.slice(0, limit).map(e => ({
-      id: `email_${e.id}`,
-      kind: 'email' as const,
-      title: e.subject || '(sem assunto)',
-      subtitle: e.from?.emailAddress?.name || e.from?.emailAddress?.address || '',
-      link: '/emails',
-      timestamp: e.receivedDateTime || new Date().toISOString(),
-    }));
+
+    if (foldersRelevantes.length === 0) return [];
+
+    // Pra cada pasta relevante, busca os últimos e-mails e filtra unread.
+    // Requests em paralelo (tipicamente só 1-3 pastas ativas por vez).
+    const perFolderPromises = foldersRelevantes.map(async folder => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-outlook-emails', {
+          body: { folderName: folder.displayName, limit: MAX_EMAILS_PER_FOLDER },
+        });
+        if (error) throw error;
+        const emails: any[] = Array.isArray(data) ? data : (data?.emails ?? []);
+        return emails
+          .filter(e => e.isRead === false)
+          .map(e => ({
+            id: `email_${e.id}`,
+            kind: 'email' as const,
+            title: e.subject || '(sem assunto)',
+            subtitle: [
+              e.from?.emailAddress?.name || e.from?.emailAddress?.address || '',
+              folder.displayName,
+            ].filter(Boolean).join(' · '),
+            link: '/emails',
+            timestamp: e.receivedDateTime || new Date().toISOString(),
+          }));
+      } catch (err) {
+        console.warn(`[notifications] falha ao buscar pasta ${folder.displayName}:`, err);
+        return [];
+      }
+    });
+
+    const results = await Promise.all(perFolderPromises);
+    const all = results.flat();
+    // Ordena mais recente primeiro e limita o total
+    all.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+    return all.slice(0, MAX_EMAIL_NOTIFICATIONS);
   } catch (err) {
     console.warn('[notifications] falha ao buscar emails não lidos:', err);
     return [];
