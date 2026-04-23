@@ -68,11 +68,23 @@ const navGroups: NavGroup[] = [
         title: 'Financeiro',
         defaultOpen: true,
         items: [
-            { to: '/financeiro', icon: DollarSign, label: 'Financeiro', permissao: 'financeiro' },
-            { to: '/controle-pagamentos', icon: ClipboardCheck, label: 'Controle de Pagamentos', permissao: 'controle_pagamentos' },
-            { to: '/controle-diario', icon: Calendar, label: 'Controle Diário', permissao: 'controle_pagamentos' },
+            { to: '/financeiro', icon: DollarSign, label: 'Financeiro', permissao: 'controle_pagamentos' },
+        ],
+    },
+    {
+        key: 'parceiros',
+        title: 'Parceiros & Logística',
+        defaultOpen: true,
+        items: [
             { to: '/painel-empresas', icon: Building2, label: 'Empresas Parceiras' },
             { to: '/controle-placas', icon: CreditCard, label: 'Controle de Placas' },
+        ],
+    },
+    {
+        key: 'comunicacao',
+        title: 'Comunicação',
+        defaultOpen: true,
+        items: [
             { to: '/emails', icon: MessageSquare, label: 'E-mails', permissao: 'emails' },
         ],
     },

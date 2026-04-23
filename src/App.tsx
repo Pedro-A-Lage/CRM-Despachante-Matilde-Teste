@@ -12,10 +12,8 @@ import Emails from './pages/Emails';
 import Backup from './pages/Backup';
 import ServicosDetran from './pages/ServicosDetran';
 import VistoriaCalendar from './pages/VistoriaCalendar';
-import Financeiro from './pages/Financeiro';
+import FinanceiroHub from './pages/FinanceiroHub';
 import UsuariosList from './pages/UsuariosList';
-import ControlePagamentos from './pages/ControlePagamentos';
-import ControleDiario from './pages/ControleDiario';
 import Configuracoes from './pages/Configuracoes';
 import PainelEmpresas from './pages/PainelEmpresas';
 import ControlePlacas from './pages/ControlePlacas';
@@ -1663,9 +1661,11 @@ function AppInner() {
                                         {/* Sistema */}
                                         <Route path="/painel-empresas" element={<PainelEmpresas />} />
                                         <Route path="/controle-placas" element={<ControlePlacas />} />
-                                        <Route path="/controle-pagamentos" element={<PermissionRoute permissao="controle_pagamentos"><ControlePagamentos /></PermissionRoute>} />
-                                        <Route path="/controle-diario" element={<PermissionRoute permissao="controle_pagamentos"><ControleDiario /></PermissionRoute>} />
-                                        <Route path="/financeiro" element={<PermissionRoute permissao="financeiro"><Financeiro /></PermissionRoute>} />
+                                        {/* Hub unificado do Financeiro — abas via ?tab= */}
+                                        <Route path="/financeiro" element={<PermissionRoute permissao="controle_pagamentos"><FinanceiroHub /></PermissionRoute>} />
+                                        {/* Redirects de URLs antigas (mantidos para não quebrar bookmarks) */}
+                                        <Route path="/controle-pagamentos" element={<Navigate to="/financeiro?tab=pagamentos" replace />} />
+                                        <Route path="/controle-diario" element={<Navigate to="/financeiro?tab=diario" replace />} />
                                         <Route path="/configuracoes" element={<PermissionRoute permissao="configuracoes"><Configuracoes /></PermissionRoute>} />
                                         <Route path="/usuarios" element={<PermissionRoute permissao="usuarios"><UsuariosList /></PermissionRoute>} />
                                         <Route path="/backup" element={<PermissionRoute permissao="backup"><Backup /></PermissionRoute>} />
