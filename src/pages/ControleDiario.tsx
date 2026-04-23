@@ -97,6 +97,25 @@ export default function ControleDiario() {
   const [empresas, setEmpresas] = useState<EmpresaParceira[]>([]);
   const [empresaFilter, setEmpresaFilter] = useState<string>(''); // '' = todas | 'particular' | empresa.id
   const [activeTab, setActiveTab] = useState<'os' | 'recebimentos' | 'taxas'>('os');
+
+  type SortDir = 'asc' | 'desc';
+  const [sortOs, setSortOs] = useState<{ by: string; dir: SortDir }>({ by: 'numero', dir: 'desc' });
+  const [sortRec, setSortRec] = useState<{ by: string; dir: SortDir }>({ by: 'data', dir: 'desc' });
+  const [sortTax, setSortTax] = useState<{ by: string; dir: SortDir }>({ by: 'data', dir: 'desc' });
+
+  const toggleSort = (current: { by: string; dir: SortDir }, field: string): { by: string; dir: SortDir } => {
+    if (current.by === field) return { by: field, dir: current.dir === 'asc' ? 'desc' : 'asc' };
+    return { by: field, dir: 'asc' };
+  };
+  const cmp = (a: any, b: any, dir: SortDir): number => {
+    if (a == null && b == null) return 0;
+    if (a == null) return dir === 'asc' ? -1 : 1;
+    if (b == null) return dir === 'asc' ? 1 : -1;
+    if (typeof a === 'number' && typeof b === 'number') return dir === 'asc' ? a - b : b - a;
+    const as = String(a).toLowerCase();
+    const bs = String(b).toLowerCase();
+    return dir === 'asc' ? as.localeCompare(bs) : bs.localeCompare(as);
+  };
   const { showToast } = useToast();
 
   // Route guard
@@ -161,6 +180,19 @@ export default function ControleDiario() {
       const msg = e instanceof Error ? e.message : String(e);
       console.error('[ControleDiario] updatePayment falhou:', msg);
       showToast(`Erro ao salvar recebedor: ${msg}`, 'error');
+    }
+  }, [showToast]);
+
+  const handleSetDataPagamento = useCallback(async (paymentId: string, data: string) => {
+    if (!data) return;
+    try {
+      await updatePayment(paymentId, { data_pagamento: data });
+      setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, data_pagamento: data } : p));
+      showToast('Data atualizada', 'success');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error('[ControleDiario] updatePayment data falhou:', msg);
+      showToast(`Erro ao salvar data: ${msg}`, 'error');
     }
   }, [showToast]);
 
@@ -915,28 +947,44 @@ export default function ControleDiario() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>OS</th>
-                  <th>Cliente</th>
-                  <th>Placa</th>
-                  <th>Serviço</th>
-                  <th>Valor</th>
-                  <th>Recebido</th>
-                  <th>Pagamento</th>
+                  <SortTh label="OS"        field="numero"  sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
+                  <SortTh label="Cliente"   field="cliente" sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
+                  <SortTh label="Placa"     field="placa"   sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
+                  <SortTh label="Serviço"   field="servico" sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
+                  <SortTh label="Valor"     field="valor"   sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
+                  <SortTh label="Recebido"  field="recebido" sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
+                  <SortTh label="Pagamento" field="status"  sort={sortOs} onSort={(f) => setSortOs(s => toggleSort(s, f))} />
                 </tr>
               </thead>
               <tbody>
-                {ordensDoPeriodo.map(os => {
-                  const cli = clienteMap.get(os.clienteId);
-                  const v = veiculoMap.get(os.veiculoId);
-                  const osPayments = payments.filter(p => p.os_id === os.id);
-                  const recebido = osPayments.reduce((s, p) => s + (p.valor || 0), 0);
-                  const total = Number(os.valorServico) || 0;
-                  const desconto = Number(os.desconto) || 0;
-                  const efetivo = Math.max(0, total - desconto);
-                  const falta = Math.max(0, efetivo - recebido);
-                  const statusPg = falta <= 0.009 && efetivo > 0 ? 'pago' : recebido > 0 ? 'parcial' : 'pendente';
-                  const metodosDistintos = Array.from(new Set(osPayments.map(p => p.metodo)));
-                  return (
+                {ordensDoPeriodo
+                  .slice()
+                  .map(os => {
+                    const cli = clienteMap.get(os.clienteId);
+                    const v = veiculoMap.get(os.veiculoId);
+                    const osPayments = payments.filter(p => p.os_id === os.id);
+                    const recebido = osPayments.reduce((s, p) => s + (p.valor || 0), 0);
+                    const total = Number(os.valorServico) || 0;
+                    const desconto = Number(os.desconto) || 0;
+                    const efetivo = Math.max(0, total - desconto);
+                    const statusPg = Math.max(0, efetivo - recebido) <= 0.009 && efetivo > 0 ? 'pago' : recebido > 0 ? 'parcial' : 'pendente';
+                    return { os, cli, v, recebido, efetivo, statusPg };
+                  })
+                  .sort((a, b) => {
+                    const f = sortOs.by, d = sortOs.dir;
+                    if (f === 'numero')   return cmp(a.os.numero, b.os.numero, d);
+                    if (f === 'cliente')  return cmp(a.cli?.nome, b.cli?.nome, d);
+                    if (f === 'placa')    return cmp(a.v?.placa, b.v?.placa, d);
+                    if (f === 'servico')  return cmp(getServicoLabel(serviceLabels, a.os.tipoServico), getServicoLabel(serviceLabels, b.os.tipoServico), d);
+                    if (f === 'valor')    return cmp(a.efetivo, b.efetivo, d);
+                    if (f === 'recebido') return cmp(a.recebido, b.recebido, d);
+                    if (f === 'status')   return cmp(a.statusPg, b.statusPg, d);
+                    return 0;
+                  })
+                  .map(({ os, cli, v, recebido, efetivo, statusPg }) => {
+                    const osPayments = payments.filter(p => p.os_id === os.id);
+                    const metodosDistintos = Array.from(new Set(osPayments.map(p => p.metodo)));
+                    return (
                     <tr
                       key={os.id}
                       className="clickable"
@@ -984,18 +1032,30 @@ export default function ControleDiario() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Data</th>
-                  <th>OS</th>
-                  <th>Cliente</th>
-                  <th>Método</th>
-                  <th>Valor</th>
-                  <th>Recebido por</th>
+                  <SortTh label="Data"         field="data"     sort={sortRec} onSort={(f) => setSortRec(s => toggleSort(s, f))} />
+                  <SortTh label="OS"           field="numero"   sort={sortRec} onSort={(f) => setSortRec(s => toggleSort(s, f))} />
+                  <SortTh label="Cliente"      field="cliente"  sort={sortRec} onSort={(f) => setSortRec(s => toggleSort(s, f))} />
+                  <SortTh label="Método"       field="metodo"   sort={sortRec} onSort={(f) => setSortRec(s => toggleSort(s, f))} />
+                  <SortTh label="Valor"        field="valor"    sort={sortRec} onSort={(f) => setSortRec(s => toggleSort(s, f))} />
+                  <SortTh label="Recebido por" field="recebido" sort={sortRec} onSort={(f) => setSortRec(s => toggleSort(s, f))} />
                 </tr>
               </thead>
               <tbody>
                 {recebimentosDoPeriodo
                   .slice()
-                  .sort((a, b) => (b.data_pagamento || '').localeCompare(a.data_pagamento || ''))
+                  .sort((a, b) => {
+                    const f = sortRec.by, d = sortRec.dir;
+                    const osA = ordemMap.get(a.os_id), osB = ordemMap.get(b.os_id);
+                    const cliA = osA ? clienteMap.get(osA.clienteId) : null;
+                    const cliB = osB ? clienteMap.get(osB.clienteId) : null;
+                    if (f === 'data')     return cmp(a.data_pagamento, b.data_pagamento, d);
+                    if (f === 'numero')   return cmp(osA?.numero, osB?.numero, d);
+                    if (f === 'cliente')  return cmp(cliA?.nome, cliB?.nome, d);
+                    if (f === 'metodo')   return cmp(PAYMENT_METODO_LABELS[a.metodo], PAYMENT_METODO_LABELS[b.metodo], d);
+                    if (f === 'valor')    return cmp(a.valor || 0, b.valor || 0, d);
+                    if (f === 'recebido') return cmp(a.recebido_por, b.recebido_por, d);
+                    return 0;
+                  })
                   .map(p => {
                     const os = ordemMap.get(p.os_id);
                     const cli = os ? clienteMap.get(os.clienteId) : null;
@@ -1007,7 +1067,25 @@ export default function ControleDiario() {
                         onClick={() => os && navigate(`/ordens/${os.id}`)}
                         style={{ cursor: os ? 'pointer' : 'default' }}
                       >
-                        <td>{new Date((p.data_pagamento || '') + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                        <td onClick={e => e.stopPropagation()} style={{ cursor: 'default' }}>
+                          <input
+                            type="date"
+                            value={ymd(p.data_pagamento) || ''}
+                            onChange={e => handleSetDataPagamento(p.id, e.target.value)}
+                            style={{
+                              height: 26,
+                              fontSize: 12,
+                              padding: '0 6px',
+                              border: '1px solid var(--notion-border)',
+                              borderRadius: 6,
+                              background: 'var(--notion-surface)',
+                              color: 'var(--notion-text)',
+                              outline: 'none',
+                              cursor: 'pointer',
+                              fontFamily: 'var(--font-mono)',
+                            }}
+                          />
+                        </td>
                         <td>{os ? <span className="font-mono">#{os.numero}</span> : '—'}</td>
                         <td>{cli?.nome || '—'}</td>
                         <td>
@@ -1052,19 +1130,31 @@ export default function ControleDiario() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Data</th>
-                  <th>OS</th>
-                  <th>Cliente</th>
-                  <th>Categoria</th>
-                  <th>Valor</th>
-                  <th>Pago por</th>
-                  <th>Conf. por</th>
+                  <SortTh label="Data"      field="data"     sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
+                  <SortTh label="OS"        field="numero"   sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
+                  <SortTh label="Cliente"   field="cliente"  sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
+                  <SortTh label="Categoria" field="categoria" sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
+                  <SortTh label="Valor"     field="valor"    sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
+                  <SortTh label="Pago por"  field="pago"     sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
+                  <SortTh label="Conf. por" field="conf"     sort={sortTax} onSort={(f) => setSortTax(s => toggleSort(s, f))} />
                 </tr>
               </thead>
               <tbody>
                 {taxasPagasDoPeriodo
                   .slice()
-                  .sort((a, b) => (b.confirmado_em || '').localeCompare(a.confirmado_em || ''))
+                  .sort((a, b) => {
+                    const f = sortTax.by, d = sortTax.dir;
+                    const catA = (a.categoria === 'dae_principal' && a.tipo_servico === 'transferencia') ? 'DAE Transferência' : (FINANCE_CATEGORIA_LABELS[a.categoria] ?? a.categoria);
+                    const catB = (b.categoria === 'dae_principal' && b.tipo_servico === 'transferencia') ? 'DAE Transferência' : (FINANCE_CATEGORIA_LABELS[b.categoria] ?? b.categoria);
+                    if (f === 'data')      return cmp(a.confirmado_em, b.confirmado_em, d);
+                    if (f === 'numero')    return cmp(a.os_numero, b.os_numero, d);
+                    if (f === 'cliente')   return cmp(a.cliente_nome, b.cliente_nome, d);
+                    if (f === 'categoria') return cmp(catA, catB, d);
+                    if (f === 'valor')     return cmp(a.valor_pago || 0, b.valor_pago || 0, d);
+                    if (f === 'pago')      return cmp(a.pago_por, b.pago_por, d);
+                    if (f === 'conf')      return cmp(a.confirmado_por, b.confirmado_por, d);
+                    return 0;
+                  })
                   .map(c => {
                     const destaque = c.categoria === 'placa' || c.categoria === 'vistoria' || (c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia');
                     const isTransf = c.categoria === 'dae_principal' && c.tipo_servico === 'transferencia';
@@ -1124,6 +1214,33 @@ export default function ControleDiario() {
 }
 
 // ── Small components ─────────────────────────────────────────────────────────
+
+function SortTh({
+  label, field, sort, onSort, align,
+}: {
+  label: string;
+  field: string;
+  sort: { by: string; dir: 'asc' | 'desc' };
+  onSort: (f: string) => void;
+  align?: 'left' | 'right' | 'center';
+}) {
+  const active = sort.by === field;
+  const arrow = active ? (sort.dir === 'asc' ? '↑' : '↓') : '↕';
+  return (
+    <th
+      onClick={() => onSort(field)}
+      style={{
+        cursor: 'pointer',
+        userSelect: 'none',
+        textAlign: align ?? 'left',
+        color: active ? 'var(--notion-blue)' : undefined,
+      }}
+      title={`Ordenar por ${label}`}
+    >
+      {label} <span style={{ opacity: active ? 1 : 0.3, marginLeft: 2, fontSize: 10 }}>{arrow}</span>
+    </th>
+  );
+}
 
 function SummaryLine({
   icon, label, value, hint, accent,

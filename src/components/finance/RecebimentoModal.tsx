@@ -80,10 +80,14 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
   const [observacao, setObservacao] = useState(
     isEdit ? (editPayment.observacao ?? '') : ''
   );
+  const [recebidoPor, setRecebidoPor] = useState<string>(
+    isEdit ? (editPayment.recebido_por ?? '') : (usuario?.nome ?? '')
+  );
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   const nomeUsuario = usuario?.nome ?? '';
+  const RECEBEDORES = ['Pedro', 'Geraldinho'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +100,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
           valor: unmaskMoney(valor),
           metodo,
           observacao: observacao || undefined,
+          recebido_por: recebidoPor || undefined,
         });
       } else {
         const payment = await addPayment(
@@ -105,7 +110,7 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
           metodo,
           undefined,
           observacao || undefined,
-          nomeUsuario || undefined,
+          recebidoPor || nomeUsuario || undefined,
         );
         if (!payment) throw new Error('Falha ao salvar pagamento');
       }
@@ -217,23 +222,56 @@ export default function RecebimentoModal({ osId, saldoRestante, onClose, onSaved
             </div>
           </div>
 
-          {/* Recebido por — automático, somente leitura */}
-          {!isEdit && nomeUsuario && (
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Recebido por</label>
-              <div style={{
-                padding: '10px 14px',
-                borderRadius: 10,
-                background: 'rgba(128,128,128,0.06)',
-                border: '1.5px solid var(--notion-border)',
-                fontSize: 15,
-                color: 'var(--notion-text)',
-                fontWeight: 500,
-              }}>
-                {nomeUsuario}
-              </div>
+          {/* Recebido por — selecionável (Pedro/Geraldinho) */}
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Recebido por *</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {RECEBEDORES.map(nome => {
+                const ativo = recebidoPor === nome;
+                return (
+                  <button
+                    key={nome}
+                    type="button"
+                    onClick={() => setRecebidoPor(nome)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 10,
+                      border: ativo ? '2px solid var(--notion-blue)' : '1.5px solid var(--notion-border)',
+                      background: ativo ? 'rgba(0,117,222,0.08)' : 'var(--bg-surface)',
+                      color: ativo ? 'var(--notion-blue)' : 'var(--notion-text-secondary)',
+                      cursor: 'pointer',
+                      fontSize: 13,
+                      fontWeight: ativo ? 700 : 500,
+                      fontFamily: 'inherit',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {nome}
+                  </button>
+                );
+              })}
+              {/* Compatibilidade: se já houver um nome antigo (ex.: usuário logado), mostra também */}
+              {recebidoPor && !RECEBEDORES.includes(recebidoPor) && (
+                <button
+                  type="button"
+                  disabled
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: 10,
+                    border: '2px solid var(--notion-blue)',
+                    background: 'rgba(0,117,222,0.08)',
+                    color: 'var(--notion-blue)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    fontFamily: 'inherit',
+                    cursor: 'default',
+                  }}
+                >
+                  {recebidoPor} (antigo)
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Método de pagamento - botões visuais */}
           <div style={{ marginBottom: 16 }}>
