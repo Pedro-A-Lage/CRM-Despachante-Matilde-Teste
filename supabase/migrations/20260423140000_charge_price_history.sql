@@ -17,7 +17,7 @@
 
 CREATE TABLE IF NOT EXISTS charge_price_history (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  charge_id       UUID NOT NULL REFERENCES finance_charges(id) ON DELETE CASCADE,
+  charge_id       TEXT NOT NULL REFERENCES finance_charges(id) ON DELETE CASCADE,
   valor_antigo    NUMERIC(10,2) NOT NULL,
   valor_novo      NUMERIC(10,2) NOT NULL,
   motivo          TEXT NOT NULL,
