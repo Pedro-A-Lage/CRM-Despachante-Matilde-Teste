@@ -30,7 +30,7 @@ export interface NotificationSummary {
   };
 }
 
-const OS_PARADA_LIMITE_DIAS = 7;
+const OS_PARADA_LIMITE_DIAS = 5;
 
 // OS nestes status não geram notificação (pra evitar ruído após resolvidas)
 const OS_STATUS_RESOLVIDOS = ['doc_pronto', 'entregue', 'cancelada'];
