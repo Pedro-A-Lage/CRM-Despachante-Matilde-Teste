@@ -15,6 +15,7 @@ import {
   Plus,
   X,
   Trash2,
+  Filter,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../components/ConfirmProvider';
@@ -516,72 +517,135 @@ interface OSCardProps {
 function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConfirm, pagadores, onCreatePagador }: OSCardProps) {
   const navigate = useNavigate();
   const serviceLabels = useServiceLabels();
-  const hasPending = group.charges.some(c => c.status === 'a_pagar');
-  const allPaid = group.charges.every(c => c.status === 'pago');
+  const pendingCount = group.charges.filter(c => c.status === 'a_pagar').length;
+  const hasPending = pendingCount > 0;
+  const allPaid = !hasPending && group.charges.length > 0;
   const tipoLabel = getServicoLabel(serviceLabels, group.tipoServico);
+  const [expandQuitado, setExpandQuitado] = useState(false);
 
+  // ── OS QUITADA: 1 linha compacta ───────────────────────────────────────────
+  if (allPaid && !expandQuitado) {
+    // último pagador da OS (última charge confirmada)
+    const ultima = group.charges
+      .slice()
+      .sort((a, b) => (b.confirmado_em || '').localeCompare(a.confirmado_em || ''))[0];
+    const quitadoEm = ultima?.confirmado_em
+      ? new Date(ultima.confirmado_em).toLocaleDateString('pt-BR')
+      : '';
+    const porQuem = ultima?.pago_por || ultima?.confirmado_por || '';
+
+    return (
+      <div
+        style={{
+          background: 'var(--notion-surface)',
+          border: '1px solid var(--notion-border)',
+          borderLeft: '3px solid var(--status-success)',
+          borderRadius: 8,
+          marginBottom: 8,
+          padding: '10px 14px',
+          display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+          cursor: 'pointer',
+        }}
+        onClick={() => setExpandQuitado(true)}
+        title="Clique pra ver detalhes das taxas"
+      >
+        <CheckCircle size={14} style={{ color: 'var(--status-success)', flexShrink: 0 }} />
+        <span className="font-mono" style={{ fontWeight: 700, color: 'var(--notion-blue)' }}>
+          #{group.osNumero}
+        </span>
+        <span style={{ fontWeight: 600, color: 'var(--notion-text)' }}>{group.clienteNome}</span>
+        <span className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>
+          {group.placa} · {tipoLabel}
+        </span>
+        <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span className="badge badge-success" style={{ fontSize: 10 }}>
+            Quitado{quitadoEm && ` em ${quitadoEm}`}{porQuem && ` por ${porQuem}`}
+          </span>
+          <span className="font-mono" style={{ fontSize: 13, fontWeight: 700, color: 'var(--status-success)' }}>
+            {fmt(group.totalPago)}
+          </span>
+        </span>
+      </div>
+    );
+  }
+
+  // ── OS COM PENDENTES (ou quitada expandida) ────────────────────────────────
   return (
     <div
       style={{
         background: 'var(--notion-surface)',
         border: '1px solid var(--notion-border)',
-        borderLeft: `4px solid ${allPaid ? 'var(--notion-green)' : 'var(--notion-orange)'}`,
+        borderLeft: `4px solid ${allPaid ? 'var(--status-success)' : 'var(--notion-orange)'}`,
         borderRadius: 10,
         overflow: 'visible',
-        marginBottom: 12,
+        marginBottom: 10,
       }}
     >
-      {/* Header */}
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 14px',
-          flexWrap: 'wrap',
-          gap: 8,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '12px 14px', flexWrap: 'wrap', gap: 10,
         }}
       >
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--notion-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span
-              style={{ cursor: 'pointer', textDecoration: 'none', borderBottom: '1px dashed var(--notion-blue)', color: 'var(--notion-blue)' }}
-              onClick={(e) => { e.stopPropagation(); navigate(`/ordens/${group.osId}`); }}
+              className="font-mono"
+              style={{
+                cursor: 'pointer',
+                fontWeight: 700,
+                color: 'var(--notion-blue)',
+                borderBottom: '1px dashed var(--notion-blue)',
+              }}
+              onClick={e => { e.stopPropagation(); navigate(`/ordens/${group.osId}`); }}
               title="Abrir Ordem de Serviço"
             >
-              OS #{group.osNumero}
+              #{group.osNumero}
             </span>
-            <span style={{ color: 'var(--notion-text)' }}>&middot; {group.clienteNome}</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--notion-text)' }}>
+              {group.clienteNome}
+            </span>
           </div>
-          <div style={{ fontSize: 13, color: 'var(--notion-text-secondary)', marginTop: 2 }}>
-            {group.placa} &middot; {group.modelo} &middot; {tipoLabel}
+          <div style={{ fontSize: 12, color: 'var(--notion-text-muted)', marginTop: 2 }}>
+            <span className="font-mono">{group.placa}</span>
+            {group.modelo && <> · {group.modelo}</>}
+            <> · {tipoLabel}</>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {group.totalPago > 0 && (
-            <span style={{ fontSize: 13, color: 'var(--notion-green)', fontWeight: 500 }}>
-              Pago: {fmt(group.totalPago)}
-            </span>
-          )}
-          {group.totalPendente > 0 && (
-            <span style={{ fontSize: 13, color: 'var(--notion-orange)', fontWeight: 500 }}>
-              Pendente: {fmt(group.totalPendente)}
-            </span>
-          )}
-          {hasPending && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {hasPending ? (
+            <>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--notion-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Pendente
+                </div>
+                <div className="font-mono" style={{ fontSize: 16, fontWeight: 700, color: 'var(--status-warn)' }}>
+                  {fmt(group.totalPendente)}
+                </div>
+              </div>
+              <button
+                onClick={() => onConfirmAll(group.osId)}
+                className="btn btn-primary btn-sm"
+                title="Confirmar todas as taxas pendentes desta OS"
+              >
+                <CheckCircle size={14} />
+                Confirmar todas ({pendingCount})
+              </button>
+            </>
+          ) : (
             <button
-              onClick={() => onConfirmAll(group.osId)}
-              className="btn btn-success btn-sm"
+              onClick={() => setExpandQuitado(false)}
+              className="btn btn-ghost btn-sm"
+              title="Colapsar"
             >
-              <CheckCircle size={14} />
-              Confirmar Todos
+              <CheckCircle size={13} style={{ color: 'var(--status-success)' }} />
+              Recolher
             </button>
           )}
         </div>
       </div>
 
-      {/* Charges */}
       {group.charges.map(charge => (
         <ChargeRow
           key={charge.id}
@@ -598,7 +662,37 @@ function OSCard({ group, isAdmin, onConfirm, onRevert, onConfirmAll, loadingConf
   );
 }
 
-// ── Summary Card ──────────────────────────────────────────────────────────────
+// ── KPI Cell (faixa compacta no topo) ────────────────────────────────────────
+
+interface KpiCellProps {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  accent: 'warn' | 'success' | 'info' | 'danger';
+}
+
+function KpiCell({ icon, label, value, accent }: KpiCellProps) {
+  const color =
+    accent === 'success' ? 'var(--status-success)'
+    : accent === 'warn' ? 'var(--status-warn)'
+    : accent === 'danger' ? 'var(--status-danger)'
+    : 'var(--status-info)';
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--notion-text-secondary)' }}>
+        <span style={{ color }}>{icon}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          {label}
+        </span>
+      </div>
+      <div className="font-mono" style={{ fontSize: 18, fontWeight: 700, color, lineHeight: 1.1 }}>
+        {fmt(value)}
+      </div>
+    </div>
+  );
+}
+
+// ── Summary Card (legado — mantido por compatibilidade, não usado na UI nova) ─
 
 interface SummaryCardProps {
   label: string;
@@ -673,6 +767,7 @@ export default function ControlePagamentos() {
   const [pagadores, setPagadores] = useState<Pagador[]>([]);
   const [pagadorFilter, setPagadorFilter] = useState<string>('todos'); // 'todos' | 'sem' | nome
   const [gerenciarOpen, setGerenciarOpen] = useState(false);
+  const [maisFiltrosOpen, setMaisFiltrosOpen] = useState(false);
 
   // Route guard
   useEffect(() => {
@@ -965,29 +1060,23 @@ export default function ControlePagamentos() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          {groups.some(g => g.charges.some(c => c.status === 'a_pagar')) && (
-            <button
-              onClick={handleConfirmarTodosGlobal}
-              disabled={loading}
-              style={{
-                background: 'var(--notion-green)',
-                border: 'none',
-                borderRadius: 8,
-                padding: '8px 16px',
-                fontSize: 13,
-                fontWeight: 600,
-                color: 'var(--notion-text)',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontFamily: 'inherit',
-              }}
-            >
-              <CheckCircle size={14} />
-              Confirmar Todos
-            </button>
-          )}
+          {(() => {
+            const totalPendingCharges = groups.reduce(
+              (s, g) => s + g.charges.filter(c => c.status === 'a_pagar').length, 0
+            );
+            if (totalPendingCharges === 0) return null;
+            return (
+              <button
+                onClick={handleConfirmarTodosGlobal}
+                disabled={loading}
+                className="btn btn-primary btn-sm"
+                title="Confirmar TODAS as taxas pendentes visíveis"
+              >
+                <CheckCircle size={14} />
+                Confirmar lote ({totalPendingCharges})
+              </button>
+            );
+          })()}
           <button
             onClick={carregar}
             disabled={loading}
@@ -1011,178 +1100,250 @@ export default function ControlePagamentos() {
         </div>
       </div>
 
-      {/* Summary cards */}
+      {/* KPI strip — faixa compacta no lugar dos 4 cards grandes */}
       {resumo && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
-          <SummaryCard
-            label="Total Pendente"
-            value={resumo.totalPendente}
-            icon={<Clock size={20} color="var(--notion-text)" />}
-            color="var(--notion-orange)"
-          />
-          <SummaryCard
-            label="Pago Hoje"
-            value={resumo.pagoHoje}
-            icon={<CheckCircle size={20} color="var(--notion-text)" />}
-            color="var(--notion-green)"
-          />
-          <SummaryCard
-            label="Pago na Semana"
-            value={resumo.pagoSemana}
-            icon={<TrendingUp size={20} color="var(--notion-text)" />}
-            color="var(--notion-blue)"
-          />
-          <SummaryCard
-            label="Pago no Mes"
-            value={resumo.pagoMes}
-            icon={<DollarSign size={20} color="var(--notion-text)" />}
-            color="var(--notion-green)"
-          />
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 12,
+            padding: '10px 14px',
+            background: 'var(--notion-surface)',
+            border: '1px solid var(--notion-border)',
+            borderRadius: 10,
+            marginBottom: 16,
+          }}
+          className="cp-kpi-strip"
+        >
+          <KpiCell icon={<Clock size={13} />} label="Pendente" value={resumo.totalPendente} accent="warn" />
+          <KpiCell icon={<CheckCircle size={13} />} label="Pago hoje" value={resumo.pagoHoje} accent="success" />
+          <KpiCell icon={<TrendingUp size={13} />} label="Semana" value={resumo.pagoSemana} accent="info" />
+          <KpiCell icon={<DollarSign size={13} />} label="Mês" value={resumo.pagoMes} accent="success" />
         </div>
       )}
 
-      {/* Filter bar */}
-      <div
-        style={{
-          background: 'var(--notion-surface)',
-          border: '1px solid var(--notion-border)',
-          borderRadius: 10,
-          padding: '14px 16px',
-          marginBottom: 20,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 12,
-          alignItems: 'center',
-        }}
-      >
-        {/* Search */}
-        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
-          <Search
-            size={15}
+      {/* Filter bar — 2 níveis: linha 1 essencial, "Mais filtros" para secundários */}
+      {(() => {
+        const filtrosSecundariosAtivos =
+          (categoriaFilter !== 'todos' ? 1 : 0) +
+          (pagadorFilter !== 'todos' ? 1 : 0) +
+          ((dataInicio !== oneWeekAgo() || dataFim !== todayStr()) ? 1 : 0);
+        const chips: { label: string; onClear: () => void }[] = [];
+        if (categoriaFilter !== 'todos') {
+          const lbl = CATEGORIA_LABELS[categoriaFilter] ?? categoriaFilter;
+          chips.push({ label: `Categoria: ${lbl}`, onClear: () => setCategoriaFilter('todos') });
+        }
+        if (pagadorFilter !== 'todos') {
+          chips.push({ label: `Pago por: ${pagadorFilter === 'sem' ? 'sem pagador' : pagadorFilter}`, onClear: () => setPagadorFilter('todos') });
+        }
+        if (dataInicio !== oneWeekAgo() || dataFim !== todayStr()) {
+          const f = (d: string) => new Date(d + 'T12:00:00').toLocaleDateString('pt-BR');
+          chips.push({ label: `${f(dataInicio)} → ${f(dataFim)}`, onClear: () => { setDataInicio(oneWeekAgo()); setDataFim(todayStr()); } });
+        }
+        return (
+          <div
             style={{
-              position: 'absolute',
-              left: 10,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--notion-text-secondary)',
-              pointerEvents: 'none',
-            }}
-          />
-          <input
-            type="text"
-            placeholder="Cliente, placa ou OS..."
-            value={busca}
-            onChange={e => setBusca(e.target.value)}
-            style={{ ...inputStyle, paddingLeft: 32, width: '100%', boxSizing: 'border-box' }}
-          />
-        </div>
-
-        {/* Status toggles */}
-        <div style={{ display: 'flex', gap: 4 }}>
-          {(['pendente', 'pago', 'todos'] as StatusFilter[]).map(s => (
-            <button key={s} style={toggleBtnStyle(statusFilter === s)} onClick={() => setStatusFilter(s)}>
-              {s === 'pendente' ? 'Pendente' : s === 'pago' ? 'Pago' : 'Todos'}
-            </button>
-          ))}
-        </div>
-
-        {/* Category dropdown */}
-        <select
-          value={categoriaFilter}
-          onChange={e => setCategoriaFilter(e.target.value)}
-          style={{ ...inputStyle, minWidth: 150 }}
-        >
-          <option value="todos">Todas as categorias</option>
-          <option value="dae_principal">DAE Principal</option>
-          <option value="dae_adicional">DAE Adicional</option>
-          <option value="vistoria">Vistoria</option>
-          <option value="placa">Placa</option>
-          <option value="outro">Outro</option>
-        </select>
-
-        {/* Pagador dropdown + gerenciar */}
-        <div style={{ display: 'flex', gap: 4 }}>
-          <select
-            value={pagadorFilter}
-            onChange={e => setPagadorFilter(e.target.value)}
-            style={{ ...inputStyle, minWidth: 150 }}
-            title="Filtrar por quem pagou a taxa"
-          >
-            <option value="todos">Pago por: Todos</option>
-            <option value="sem">Sem pagador</option>
-            {pagadores.filter(p => p.ativo).map(p => (
-              <option key={p.id} value={p.nome}>{p.nome}</option>
-            ))}
-          </select>
-          <button
-            type="button"
-            onClick={() => setGerenciarOpen(true)}
-            title="Gerenciar lista de pagadores"
-            aria-label="Gerenciar lista de pagadores"
-            style={{
-              ...inputStyle,
-              padding: '0 10px',
-              cursor: 'pointer',
+              background: 'var(--notion-surface)',
+              border: '1px solid var(--notion-border)',
+              borderRadius: 10,
+              padding: '12px 14px',
+              marginBottom: 16,
               display: 'flex',
-              alignItems: 'center',
-              gap: 4,
+              flexDirection: 'column',
+              gap: 10,
             }}
           >
-            <Users size={14} />
-          </button>
-        </div>
-
-        {/* Date range */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Calendar size={14} style={{ color: 'var(--notion-text-secondary)', flexShrink: 0 }} />
-          <input
-            type="date"
-            value={dataInicio}
-            onChange={e => setDataInicio(e.target.value)}
-            style={{ ...inputStyle, width: 140 }}
-          />
-          <span style={{ color: 'var(--notion-text-secondary)', fontSize: 13 }}>ate</span>
-          <input
-            type="date"
-            value={dataFim}
-            onChange={e => setDataFim(e.target.value)}
-            style={{ ...inputStyle, width: 140 }}
-          />
-        </div>
-
-        {/* Empresa filter */}
-        {empresas.length > 0 && (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center', width: '100%' }}>
-            <button
-              onClick={() => setEmpresaFilter('')}
-              style={toggleBtnStyle(empresaFilter === '')}
-            >
-              Todas
-            </button>
-            {empresas.map(emp => (
+            {/* Linha 1: busca + status + mais filtros */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ position: 'relative', flex: '1 1 220px', minWidth: 180 }}>
+                <Search
+                  size={15}
+                  style={{
+                    position: 'absolute', left: 10, top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--notion-text-secondary)', pointerEvents: 'none',
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Buscar cliente, placa ou nº OS…"
+                  value={busca}
+                  onChange={e => setBusca(e.target.value)}
+                  style={{ ...inputStyle, paddingLeft: 32, width: '100%', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {(['pendente', 'pago', 'todos'] as StatusFilter[]).map(s => (
+                  <button key={s} style={toggleBtnStyle(statusFilter === s)} onClick={() => setStatusFilter(s)}>
+                    {s === 'pendente' ? 'Pendente' : s === 'pago' ? 'Pago' : 'Todos'}
+                  </button>
+                ))}
+              </div>
               <button
-                key={emp.id}
-                onClick={() => setEmpresaFilter(emp.id)}
+                type="button"
+                onClick={() => setMaisFiltrosOpen(o => !o)}
                 style={{
-                  ...toggleBtnStyle(empresaFilter === emp.id),
-                  ...(empresaFilter === emp.id ? { background: emp.cor, border: 'none' } : {}),
+                  ...toggleBtnStyle(maisFiltrosOpen || filtrosSecundariosAtivos > 0),
+                  display: 'flex', alignItems: 'center', gap: 5,
                 }}
               >
-                {emp.nome}
+                <Filter size={13} />
+                Mais filtros
+                {filtrosSecundariosAtivos > 0 && (
+                  <span style={{
+                    background: 'var(--notion-blue)', color: '#fff',
+                    fontSize: 10, fontWeight: 700,
+                    padding: '1px 6px', borderRadius: 99, marginLeft: 2,
+                  }}>
+                    {filtrosSecundariosAtivos}
+                  </span>
+                )}
               </button>
-            ))}
-            <button
-              onClick={() => setEmpresaFilter('particular')}
-              style={{
-                ...toggleBtnStyle(empresaFilter === 'particular'),
-                ...(empresaFilter === 'particular' ? { background: '#374151', border: 'none' } : {}),
-              }}
-            >
-              Particulares
-            </button>
+            </div>
+
+            {/* Linha 2: Empresa (toggle-group único) */}
+            {empresas.length > 0 && (
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span className="info-item-label" style={{ color: 'var(--notion-text-muted)', marginRight: 4 }}>
+                  Empresa:
+                </span>
+                <button onClick={() => setEmpresaFilter('')} style={toggleBtnStyle(empresaFilter === '')}>
+                  Todas
+                </button>
+                {empresas.map(emp => {
+                  const ativo = empresaFilter === emp.id;
+                  return (
+                    <button
+                      key={emp.id}
+                      onClick={() => setEmpresaFilter(emp.id)}
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: 12, fontWeight: ativo ? 700 : 500,
+                        borderRadius: 6,
+                        border: `1.5px solid ${ativo ? emp.cor : 'var(--notion-border)'}`,
+                        background: ativo ? emp.cor : 'transparent',
+                        color: ativo ? '#fff' : 'var(--notion-text-secondary)',
+                        cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: ativo ? '#fff' : emp.cor }} />
+                      {emp.nome}
+                    </button>
+                  );
+                })}
+                <button onClick={() => setEmpresaFilter('particular')} style={toggleBtnStyle(empresaFilter === 'particular')}>
+                  Particulares
+                </button>
+              </div>
+            )}
+
+            {/* Linha 3: chips de filtros ativos */}
+            {chips.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                {chips.map((c, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      padding: '3px 4px 3px 10px', fontSize: 11, fontWeight: 600,
+                      background: 'rgba(0,117,222,0.08)', color: 'var(--notion-blue)',
+                      border: '1px solid rgba(0,117,222,0.25)', borderRadius: 99,
+                    }}
+                  >
+                    {c.label}
+                    <button
+                      onClick={c.onClear}
+                      title="Remover filtro"
+                      aria-label={`Remover filtro ${c.label}`}
+                      style={{
+                        background: 'transparent', border: 'none', cursor: 'pointer',
+                        color: 'var(--notion-blue)', display: 'flex', alignItems: 'center',
+                        padding: 2, borderRadius: 99,
+                      }}
+                    >
+                      <X size={11} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Drawer inline: filtros secundários */}
+            {maisFiltrosOpen && (
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                gap: 10,
+                padding: 12,
+                background: 'var(--notion-bg-alt)',
+                border: '1px solid var(--notion-border)',
+                borderRadius: 8,
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)' }}>Categoria</span>
+                  <select
+                    value={categoriaFilter}
+                    onChange={e => setCategoriaFilter(e.target.value)}
+                    style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+                  >
+                    <option value="todos">Todas as categorias</option>
+                    <option value="dae_principal">DAE Principal</option>
+                    <option value="dae_adicional">DAE Adicional</option>
+                    <option value="vistoria">Vistoria</option>
+                    <option value="placa">Placa</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)' }}>Pago por</span>
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    <select
+                      value={pagadorFilter}
+                      onChange={e => setPagadorFilter(e.target.value)}
+                      style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                    >
+                      <option value="todos">Todos</option>
+                      <option value="sem">Sem pagador</option>
+                      {pagadores.filter(p => p.ativo).map(p => (
+                        <option key={p.id} value={p.nome}>{p.nome}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setGerenciarOpen(true)}
+                      title="Gerenciar lista de pagadores"
+                      aria-label="Gerenciar lista de pagadores"
+                      style={{ ...inputStyle, padding: '0 10px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                      <Users size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)' }}>De</span>
+                  <input
+                    type="date"
+                    value={dataInicio}
+                    onChange={e => setDataInicio(e.target.value)}
+                    style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <span className="info-item-label" style={{ color: 'var(--notion-text-secondary)' }}>Até</span>
+                  <input
+                    type="date"
+                    value={dataFim}
+                    onChange={e => setDataFim(e.target.value)}
+                    style={{ ...inputStyle, width: '100%', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        );
+      })()}
 
       {/* States */}
       {loading && groups.length === 0 && (
@@ -1289,7 +1450,12 @@ export default function ControlePagamentos() {
       )}
 
       {/* Spin keyframe */}
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media (max-width: 680px) {
+          .cp-kpi-strip { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+      `}</style>
     </div>
   );
 }
