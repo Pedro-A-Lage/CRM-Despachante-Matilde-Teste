@@ -556,6 +556,7 @@ export default function OSDetail() {
     const [empresa, setEmpresa] = useState<EmpresaParceira | null>(null);
     const [empresasAtivas, setEmpresasAtivas] = useState<EmpresaParceira[]>([]);
     const [totalCustosAtivos, setTotalCustosAtivos] = useState<number>(0);
+    const [placaChargeValor, setPlacaChargeValor] = useState<number | null>(null);
     const [reciboModalOpen, setReciboModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabId>('checklist');
@@ -642,6 +643,9 @@ export default function OSDetail() {
                 .filter((c: any) => c.status !== 'cancelado')
                 .reduce((sum: number, c: any) => sum + Number(c.valor_previsto || 0), 0);
             setTotalCustosAtivos(custosAtivos);
+            // Valor atual gravado na charge de placa (pra detectar divergência com empresa/tabela)
+            const placaAtiva = chargesOs.find((c: any) => c.categoria === 'placa' && c.status === 'a_pagar');
+            setPlacaChargeValor(placaAtiva ? Number(placaAtiva.valor_previsto) : null);
             setCliente(c);
             setVeiculo(v);
             // Bloqueio baseado em recebimentos do cliente (não custos)
@@ -1602,6 +1606,7 @@ export default function OSDetail() {
                                         `Placa atualizada: R$ ${recalcResult.valorAntigo?.toFixed(2)} → R$ ${recalcResult.valorNovo?.toFixed(2)}`,
                                         'success',
                                     );
+                                    setPlacaChargeValor(recalcResult.valorNovo ?? null);
                                 }
 
                                 setOs({
@@ -1634,7 +1639,15 @@ export default function OSDetail() {
                             const honorarioEmpresa = empresa.valorServico ?? 0;
                             const honorarioGravado = Math.round(((Number(os.valorServico) || 0) - totalCustosAtivos) * 100) / 100;
                             const diffHonorario = Math.round((honorarioEmpresa - honorarioGravado) * 100) / 100;
-                            const mismatch = Math.abs(diffHonorario) >= 0.01;
+                            const mismatchHonorario = Math.abs(diffHonorario) >= 0.01;
+
+                            // Divergência da placa: só faz sentido se a OS tem placa cobrada
+                            // e a empresa definiu valor_placa
+                            const placaEsperada = empresa.valorPlaca != null ? Number(empresa.valorPlaca) : null;
+                            const mismatchPlaca = placaChargeValor != null
+                                && placaEsperada != null
+                                && Math.abs(placaChargeValor - placaEsperada) >= 0.01;
+                            const mismatch = mismatchHonorario || mismatchPlaca;
                             return (
                                 <div style={{ marginTop: 8 }}>
                                     {usuario?.role === 'admin' && (
@@ -1645,7 +1658,7 @@ export default function OSDetail() {
                                             )}
                                         </div>
                                     )}
-                                    {mismatch && (
+                                    {mismatchHonorario && (
                                         <div style={{
                                             display: 'flex', alignItems: 'flex-start', gap: 6,
                                             fontSize: 10, fontWeight: 600,
@@ -1658,6 +1671,22 @@ export default function OSDetail() {
                                             <span style={{ lineHeight: 1.35 }}>
                                                 Honorário desta OS (R$ {honorarioGravado.toFixed(2)}) não bate com o valor atual da empresa
                                                 (R$ {honorarioEmpresa.toFixed(2)}). Clique abaixo para sincronizar.
+                                            </span>
+                                        </div>
+                                    )}
+                                    {mismatchPlaca && placaEsperada != null && placaChargeValor != null && (
+                                        <div style={{
+                                            display: 'flex', alignItems: 'flex-start', gap: 6,
+                                            fontSize: 10, fontWeight: 600,
+                                            color: 'var(--status-warn)',
+                                            background: 'var(--status-warn-soft)',
+                                            border: '1px solid var(--status-warn)',
+                                            borderRadius: 6, padding: '6px 8px', marginBottom: 6,
+                                        }}>
+                                            <AlertTriangle size={11} style={{ flexShrink: 0, marginTop: 1 }} />
+                                            <span style={{ lineHeight: 1.35 }}>
+                                                Placa desta OS (R$ {placaChargeValor.toFixed(2)}) não bate com o valor atual da empresa
+                                                (R$ {placaEsperada.toFixed(2)}). Clique abaixo para sincronizar.
                                             </span>
                                         </div>
                                     )}
@@ -1679,6 +1708,8 @@ export default function OSDetail() {
                                                 await updateOrdem(os.id, { valorServico: novoValor });
                                                 setOs({ ...os, valorServico: novoValor });
                                                 setTotalCustosAtivos(totalCustos);
+                                                const placaAtivaApos = updatedCharges.find(c => c.categoria === 'placa' && c.status === 'a_pagar');
+                                                setPlacaChargeValor(placaAtivaApos ? Number(placaAtivaApos.valor_previsto) : null);
                                                 refresh();
                                             } catch (err) {
                                                 console.error('[Empresa] Erro ao aplicar valores:', err);
