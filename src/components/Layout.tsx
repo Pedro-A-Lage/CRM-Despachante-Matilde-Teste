@@ -26,6 +26,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { temPermissao } from '../lib/permissions';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemeToggle } from './ThemeToggle';
+import { NotificationBell } from './NotificationBell';
 
 interface NavItem {
     to: string;
@@ -374,8 +375,11 @@ export default function Layout({ children }: LayoutProps) {
                         <h1>{getPageTitle()}</h1>
                     </div>
 
-                    {/* Right side: Theme toggle + User profile */}
+                    {/* Right side: Notifications + Theme toggle + User profile */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {/* Notification bell */}
+                        {usuario && <NotificationBell />}
+
                         {/* Theme toggle */}
                         <ThemeToggle />
 
