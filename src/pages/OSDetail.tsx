@@ -1585,13 +1585,24 @@ export default function OSDetail() {
                                     console.warn('Erro ao atualizar valores:', err);
                                 }
 
-                                await updateOrdem(os.id, {
+                                // updateOrdemWithRecalc atualiza a OS E recalcula a
+                                // charge de placa ativa pra refletir a empresa atual
+                                // (vínculo/desvínculo/troca), gravando em charge_price_history.
+                                const { updateOrdemWithRecalc } = await import('../lib/osService');
+                                const recalcResult = await updateOrdemWithRecalc(os.id, {
                                     empresaParceiraId: newId || undefined,
                                     enviosStatus: envios || undefined,
                                     empresaValoresOverride: undefined,
                                     empresaFinanceiro: newId ? os.empresaFinanceiro : undefined,
                                     valorServico: novoValorServico,
-                                });
+                                }, { usuario: usuario?.nome ?? null });
+
+                                if (recalcResult.placaRecalculada) {
+                                    showToast(
+                                        `Placa atualizada: R$ ${recalcResult.valorAntigo?.toFixed(2)} → R$ ${recalcResult.valorNovo?.toFixed(2)}`,
+                                        'success',
+                                    );
+                                }
 
                                 setOs({
                                     ...os,
