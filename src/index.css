@@ -1776,12 +1776,30 @@ select option {
 }
 .finance-popover {
   position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 300px;
+  max-width: calc(100vw - 24px);
   background: var(--notion-surface);
   border: 1px solid var(--notion-border);
   border-radius: 12px;
   box-shadow: var(--shadow-deep);
-  padding: 16px;
+  padding: 0;
   z-index: 100;
+  overflow: hidden;
+}
+@media (max-width: 540px) {
+  .finance-popover {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+    box-shadow: var(--shadow-deep);
+  }
 }
 
 /* --- Profile --- */

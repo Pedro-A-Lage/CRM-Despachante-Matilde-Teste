@@ -144,92 +144,246 @@ function ConfirmPopover({ charge, onClose, onConfirm, pagadores, onCreatePagador
     setAdicionando(false);
   }
 
+  const pagadoresAtivos = pagadores.filter(p => p.ativo);
+
   return (
-    <div ref={ref} className="finance-popover">
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div className="text-sm font-semibold" style={{ color: 'var(--notion-text)', marginBottom: 2 }}>
-          Confirmar Pagamento
+    <div ref={ref} className="finance-popover" onClick={e => e.stopPropagation()}>
+      <form onSubmit={handleSubmit}>
+        {/* Header com contexto da taxa */}
+        <div style={{
+          padding: '14px 16px 10px',
+          borderBottom: '1px solid var(--notion-border)',
+          background: 'var(--notion-bg-alt)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--notion-text)' }}>
+              Confirmar Pagamento
+            </span>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Fechar"
+              style={{
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: 'var(--notion-text-muted)', padding: 2, borderRadius: 4,
+                display: 'flex', alignItems: 'center',
+              }}
+            >
+              <X size={14} />
+            </button>
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--notion-text-secondary)', lineHeight: 1.3 }}>
+            <span className="font-mono">#{charge.os_numero}</span>
+            {' · '}{CATEGORIA_LABELS[charge.categoria] ?? charge.categoria}
+            {charge.descricao && charge.descricao !== CATEGORIA_LABELS[charge.categoria] ? (
+              <span style={{ color: 'var(--notion-text-muted)' }}> ({charge.descricao})</span>
+            ) : null}
+          </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label className="label">Valor (R$)</label>
-          <input
-            type="text"
-            value={valor}
-            onChange={e => setValor(maskMoney(e.target.value))}
-            className="input"
-            style={{ textAlign: 'right' }}
-          />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label className="label">Data</label>
-          <input
-            type="date"
-            value={data}
-            onChange={e => setData(e.target.value)}
-            className="input"
-          />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label className="label">Pago por</label>
-          {adicionando ? (
-            <div style={{ display: 'flex', gap: 4 }}>
+
+        {/* Corpo */}
+        <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Valor em destaque */}
+          <div>
+            <label style={labelStyle}>Valor pago</label>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              border: '1.5px solid var(--notion-border)', borderRadius: 8,
+              padding: '8px 12px',
+              background: 'var(--notion-bg)',
+            }}>
+              <span style={{ fontSize: 13, color: 'var(--notion-text-muted)', fontWeight: 600 }}>R$</span>
               <input
                 type="text"
-                autoFocus
-                placeholder="Nome do pagador"
-                value={novoNome}
-                onChange={e => setNovoNome(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddPagador(); } }}
-                className="input"
-                style={{ flex: 1 }}
+                value={valor}
+                onChange={e => setValor(maskMoney(e.target.value))}
+                style={{
+                  flex: 1, border: 'none', background: 'transparent', outline: 'none',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 18, fontWeight: 700, color: 'var(--notion-text)',
+                  textAlign: 'right', padding: 0,
+                }}
               />
-              <button type="button" onClick={handleAddPagador} className="btn btn-primary btn-sm">
-                <Plus size={12} />
-              </button>
-              <button type="button" onClick={() => { setAdicionando(false); setNovoNome(''); }} className="btn btn-ghost btn-sm" aria-label="Cancelar">
-                <X size={12} />
-              </button>
             </div>
-          ) : (
-            <div style={{ display: 'flex', gap: 4 }}>
-              <select
-                value={pagoPor}
-                onChange={e => setPagoPor(e.target.value)}
-                className="input"
-                style={{ flex: 1 }}
-              >
-                <option value="">— selecionar —</option>
-                {pagadores.filter(p => p.ativo).map(p => (
-                  <option key={p.id} value={p.nome}>{p.nome}</option>
-                ))}
-                {pagoPor && !pagadores.some(p => p.nome === pagoPor) && (
-                  <option value={pagoPor}>{pagoPor} (antigo)</option>
+          </div>
+
+          {/* Data */}
+          <div>
+            <label style={labelStyle}>Data do pagamento</label>
+            <input
+              type="date"
+              value={data}
+              onChange={e => setData(e.target.value)}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                border: '1.5px solid var(--notion-border)', borderRadius: 8,
+                padding: '8px 12px', background: 'var(--notion-bg)',
+                fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--notion-text)',
+                outline: 'none',
+              }}
+            />
+          </div>
+
+          {/* Pago por — botões grandes Pedro / Geraldinho */}
+          <div>
+            <label style={labelStyle}>Pago por</label>
+            {adicionando ? (
+              <div style={{ display: 'flex', gap: 6 }}>
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Nome do pagador…"
+                  value={novoNome}
+                  onChange={e => setNovoNome(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') { e.preventDefault(); handleAddPagador(); }
+                    if (e.key === 'Escape') { setAdicionando(false); setNovoNome(''); }
+                  }}
+                  style={{
+                    flex: 1, border: '1.5px solid var(--notion-blue)', borderRadius: 8,
+                    padding: '8px 10px', background: 'var(--notion-bg)',
+                    fontSize: 13, color: 'var(--notion-text)', outline: 'none',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddPagador}
+                  aria-label="Adicionar"
+                  style={{
+                    border: 'none', cursor: 'pointer', padding: '0 10px',
+                    borderRadius: 8, background: 'var(--status-success-soft)',
+                    color: 'var(--status-success)',
+                    display: 'flex', alignItems: 'center',
+                  }}
+                >
+                  <Plus size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAdicionando(false); setNovoNome(''); }}
+                  aria-label="Cancelar"
+                  style={{
+                    border: '1.5px solid var(--notion-border)', cursor: 'pointer',
+                    padding: '0 10px', borderRadius: 8, background: 'transparent',
+                    color: 'var(--notion-text-muted)',
+                    display: 'flex', alignItems: 'center',
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {pagadoresAtivos.map(p => {
+                  const ativo = pagoPor === p.nome;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setPagoPor(p.nome)}
+                      style={{
+                        flex: '1 1 0',
+                        minWidth: 0,
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        border: `1.5px solid ${ativo ? 'var(--notion-blue)' : 'var(--notion-border)'}`,
+                        background: ativo ? 'rgba(0,117,222,0.08)' : 'var(--notion-bg)',
+                        color: ativo ? 'var(--notion-blue)' : 'var(--notion-text)',
+                        fontSize: 13, fontWeight: ativo ? 700 : 600,
+                        cursor: 'pointer', fontFamily: 'inherit',
+                        transition: 'all 0.15s',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {p.nome}
+                    </button>
+                  );
+                })}
+                {pagoPor && !pagadoresAtivos.some(p => p.nome === pagoPor) && (
+                  <button
+                    type="button"
+                    disabled
+                    style={{
+                      padding: '10px 12px', borderRadius: 8,
+                      border: '1.5px solid var(--notion-blue)',
+                      background: 'rgba(0,117,222,0.08)', color: 'var(--notion-blue)',
+                      fontSize: 13, fontWeight: 700, cursor: 'default', fontFamily: 'inherit',
+                    }}
+                    title="Nome antigo — não está na lista de pagadores ativos"
+                  >
+                    {pagoPor} *
+                  </button>
                 )}
-              </select>
-              <button
-                type="button"
-                onClick={() => setAdicionando(true)}
-                className="btn btn-ghost btn-sm"
-                title="Adicionar novo pagador"
-                aria-label="Adicionar novo pagador"
-              >
-                <Plus size={12} />
-              </button>
-            </div>
-          )}
+                <button
+                  type="button"
+                  onClick={() => setAdicionando(true)}
+                  title="Adicionar novo pagador"
+                  aria-label="Adicionar novo pagador"
+                  style={{
+                    padding: '10px 12px', borderRadius: 8,
+                    border: '1.5px dashed var(--notion-border)',
+                    background: 'transparent', color: 'var(--notion-text-muted)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn btn-success btn-sm"
-          style={{ marginTop: 4 }}
-        >
-          {loading ? 'Salvando...' : 'Confirmar Pagamento'}
-        </button>
+
+        {/* Footer: ação primária */}
+        <div style={{
+          padding: '12px 16px',
+          borderTop: '1px solid var(--notion-border)',
+          background: 'var(--notion-bg-alt)',
+          display: 'flex', gap: 8,
+        }}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-ghost btn-sm"
+            style={{ flexShrink: 0 }}
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary"
+            style={{ flex: 1, fontWeight: 700 }}
+          >
+            {loading ? (
+              <>
+                <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                Salvando…
+              </>
+            ) : (
+              <>
+                <CheckCircle size={14} />
+                Confirmar pagamento
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
 }
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 11,
+  fontWeight: 700,
+  color: 'var(--notion-text-secondary)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  marginBottom: 6,
+};
 
 // ── Gerenciador de Pagadores ─────────────────────────────────────────────────
 
