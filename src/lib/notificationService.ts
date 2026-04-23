@@ -32,6 +32,31 @@ export interface NotificationSummary {
 
 const OS_PARADA_LIMITE_DIAS = 7;
 
+// OS nestes status não geram notificação (pra evitar ruído após resolvidas)
+const OS_STATUS_RESOLVIDOS = ['doc_pronto', 'entregue', 'cancelada'];
+
+async function getOsStatusById(osIds: string[]): Promise<Map<string, string>> {
+  if (osIds.length === 0) return new Map();
+  const map = new Map<string, string>();
+  // Batch em chunks pra evitar URL longa
+  const CHUNK = 100;
+  for (let i = 0; i < osIds.length; i += CHUNK) {
+    const chunk = osIds.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('ordens_de_servico')
+      .select('id, status')
+      .in('id', chunk);
+    if (error) {
+      console.warn('[notifications] falha ao buscar status das OS:', error);
+      continue;
+    }
+    for (const row of (data ?? []) as any[]) {
+      map.set(row.id, row.status);
+    }
+  }
+  return map;
+}
+
 function todayStr(): string {
   return new Date().toISOString().split('T')[0]!;
 }
@@ -126,12 +151,22 @@ export async function fetchOverdueCharges(): Promise<AppNotification[]> {
     .eq('status', 'a_pagar')
     .lt('due_date', today)
     .order('due_date', { ascending: true })
-    .limit(30);
+    .limit(60);
   if (error) {
     console.warn('[notifications] falha ao buscar taxas vencidas:', error);
     return [];
   }
-  return (data ?? []).map((c: any) => {
+  const charges = (data ?? []) as any[];
+
+  // Filtra charges cujo OS está em status resolvido
+  const osIds = Array.from(new Set(charges.map(c => c.os_id).filter(Boolean)));
+  const statusById = await getOsStatusById(osIds);
+  const ativos = charges.filter(c => {
+    const s = statusById.get(c.os_id);
+    return !s || !OS_STATUS_RESOLVIDOS.includes(s);
+  });
+
+  return ativos.slice(0, 30).map((c: any) => {
     const dias = c.due_date ? daysBetween(c.due_date) : 0;
     const valor = Number(c.valor_previsto || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     return {
@@ -152,8 +187,9 @@ export async function fetchOverdueVistorias(): Promise<AppNotification[]> {
   const today = todayStr();
   const { data, error } = await supabase
     .from('ordens_de_servico')
-    .select('id, numero, cliente_id, vistoria')
+    .select('id, numero, status, cliente_id, vistoria')
     .not('vistoria', 'is', null)
+    .not('status', 'in', `(${OS_STATUS_RESOLVIDOS.join(',')})`)
     .limit(200);
   if (error) {
     console.warn('[notifications] falha ao buscar vistorias atrasadas:', error);
@@ -189,8 +225,7 @@ export async function fetchOSParadas(limiteDias = OS_PARADA_LIMITE_DIAS): Promis
   const { data, error } = await supabase
     .from('ordens_de_servico')
     .select('id, numero, status, atualizado_em, cliente_id')
-    .neq('status', 'entregue')
-    .neq('status', 'cancelada')
+    .not('status', 'in', `(${OS_STATUS_RESOLVIDOS.join(',')})`)
     .lt('atualizado_em', limiteIso)
     .order('atualizado_em', { ascending: true })
     .limit(30);
