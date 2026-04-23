@@ -35,23 +35,39 @@ const OS_PARADA_LIMITE_DIAS = 7;
 // OS nestes status não geram notificação (pra evitar ruído após resolvidas)
 const OS_STATUS_RESOLVIDOS = ['doc_pronto', 'entregue', 'cancelada'];
 
-async function getOsStatusById(osIds: string[]): Promise<Map<string, string>> {
+interface OsMeta {
+  status: string;
+  troca_placa: boolean;
+  sifap: any;
+}
+
+// Considera OS "resolvida" (não notificar) se:
+// 1. Status está entre os resolvidos (doc_pronto, entregue, cancelada)
+// 2. OU: é troca de placa E a nova placa já foi atribuída via SIFAP
+//    (sifap.novaPlaca preenchido)
+function isOsResolvida(meta: OsMeta | undefined): boolean {
+  if (!meta) return false;
+  if (OS_STATUS_RESOLVIDOS.includes(meta.status)) return true;
+  if (meta.troca_placa && meta.sifap && typeof meta.sifap === 'object' && meta.sifap.novaPlaca) return true;
+  return false;
+}
+
+async function getOsMetaById(osIds: string[]): Promise<Map<string, OsMeta>> {
   if (osIds.length === 0) return new Map();
-  const map = new Map<string, string>();
-  // Batch em chunks pra evitar URL longa
+  const map = new Map<string, OsMeta>();
   const CHUNK = 100;
   for (let i = 0; i < osIds.length; i += CHUNK) {
     const chunk = osIds.slice(i, i + CHUNK);
     const { data, error } = await supabase
       .from('ordens_de_servico')
-      .select('id, status')
+      .select('id, status, troca_placa, sifap')
       .in('id', chunk);
     if (error) {
-      console.warn('[notifications] falha ao buscar status das OS:', error);
+      console.warn('[notifications] falha ao buscar metadados das OS:', error);
       continue;
     }
     for (const row of (data ?? []) as any[]) {
-      map.set(row.id, row.status);
+      map.set(row.id, { status: row.status, troca_placa: row.troca_placa, sifap: row.sifap });
     }
   }
   return map;
@@ -158,13 +174,11 @@ export async function fetchOverdueCharges(): Promise<AppNotification[]> {
   }
   const charges = (data ?? []) as any[];
 
-  // Filtra charges cujo OS está em status resolvido
+  // Filtra charges cujo OS está resolvida (status doc_pronto/entregue/
+  // cancelada OU troca de placa já feita)
   const osIds = Array.from(new Set(charges.map(c => c.os_id).filter(Boolean)));
-  const statusById = await getOsStatusById(osIds);
-  const ativos = charges.filter(c => {
-    const s = statusById.get(c.os_id);
-    return !s || !OS_STATUS_RESOLVIDOS.includes(s);
-  });
+  const metaById = await getOsMetaById(osIds);
+  const ativos = charges.filter(c => !isOsResolvida(metaById.get(c.os_id)));
 
   return ativos.slice(0, 30).map((c: any) => {
     const dias = c.due_date ? daysBetween(c.due_date) : 0;
@@ -187,7 +201,7 @@ export async function fetchOverdueVistorias(): Promise<AppNotification[]> {
   const today = todayStr();
   const { data, error } = await supabase
     .from('ordens_de_servico')
-    .select('id, numero, status, cliente_id, vistoria')
+    .select('id, numero, status, cliente_id, vistoria, troca_placa, sifap')
     .not('vistoria', 'is', null)
     .not('status', 'in', `(${OS_STATUS_RESOLVIDOS.join(',')})`)
     .limit(200);
@@ -199,6 +213,8 @@ export async function fetchOverdueVistorias(): Promise<AppNotification[]> {
   for (const row of (data ?? []) as any[]) {
     const v = row.vistoria;
     if (!v) continue;
+    // Pula OS cuja troca de placa já foi realizada
+    if (isOsResolvida({ status: row.status, troca_placa: row.troca_placa, sifap: row.sifap })) continue;
     const agendada = v.dataAgendamento as string | undefined;
     const status = v.status as string | undefined;
     if (!agendada) continue;
@@ -224,16 +240,22 @@ export async function fetchOSParadas(limiteDias = OS_PARADA_LIMITE_DIAS): Promis
   const limiteIso = new Date(Date.now() - limiteDias * 86_400_000).toISOString();
   const { data, error } = await supabase
     .from('ordens_de_servico')
-    .select('id, numero, status, atualizado_em, cliente_id')
+    .select('id, numero, status, atualizado_em, cliente_id, troca_placa, sifap')
     .not('status', 'in', `(${OS_STATUS_RESOLVIDOS.join(',')})`)
     .lt('atualizado_em', limiteIso)
     .order('atualizado_em', { ascending: true })
-    .limit(30);
+    .limit(60);
   if (error) {
     console.warn('[notifications] falha ao buscar OS paradas:', error);
     return [];
   }
-  return (data ?? []).map((o: any) => {
+  // Filtro extra: OS com troca de placa já realizada (sifap.novaPlaca
+  // preenchido) não deve notificar, mesmo que o status ainda não tenha
+  // avançado pra doc_pronto.
+  const ativos = (data ?? []).filter((o: any) =>
+    !isOsResolvida({ status: o.status, troca_placa: o.troca_placa, sifap: o.sifap })
+  );
+  return ativos.slice(0, 30).map((o: any) => {
     const dias = daysBetween(o.atualizado_em);
     return {
       id: `os_parada_${o.id}`,
