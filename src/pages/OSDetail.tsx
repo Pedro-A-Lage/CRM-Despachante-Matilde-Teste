@@ -1193,7 +1193,7 @@ export default function OSDetail() {
                             <VistoriaTab os={os} onRefresh={refresh} daePaga={checklistComplete} veiculo={veiculo} cliente={cliente} onDirtyChange={setPageDirty} onOpenViewer={openDocumentViewer} />
                         )}
                         {activeTab === 'delegacia' && (
-                            <DelegaciaTab os={os} veiculo={veiculo} onAdd={addEntradaDelegacia} onEdit={editEntradaDelegacia} onRemove={removeEntradaDelegacia} needsSifap={needsSifap} onRefresh={refresh} />
+                            <DelegaciaTab os={os} veiculo={veiculo} cliente={cliente} onAdd={addEntradaDelegacia} onEdit={editEntradaDelegacia} onRemove={removeEntradaDelegacia} needsSifap={needsSifap} onRefresh={refresh} />
                         )}
                         {activeTab === 'doc_pronto' && (
                             <DocProntoTab os={os} onRefresh={refresh} onOpenViewer={openDocumentViewer} bloqueadoPorDebito={temDebitosPendentes} valorPendente={valorPendente} />
@@ -3544,9 +3544,10 @@ const LBL: React.CSSProperties = { display: 'block', fontSize: '0.6rem', fontWei
 
 
 // ===== DELEGACIA TAB (with SIFAP integrated) =====
-function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefresh }: {
+function DelegaciaTab({ os, veiculo, cliente, onAdd, onEdit, onRemove, needsSifap, onRefresh }: {
     os: OrdemDeServico;
     veiculo?: Veiculo | null;
+    cliente?: Cliente | null;
     onAdd: (e: EntradaDelegacia) => void;
     onEdit: (id: string, updated: Partial<EntradaDelegacia>) => void;
     onRemove: (id: string) => void;
@@ -3559,6 +3560,8 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
     const [tipo, setTipo] = useState<TipoEntradaDelegacia>('entrada');
     const [data, setData] = useState(new Date().toISOString().split('T')[0]!);
     const [motivoDevolucao, setMotivoDevolucao] = useState('');
+    const [motivoRequerimento, setMotivoRequerimento] = useState('');
+    const [gerandoReq, setGerandoReq] = useState(false);
     const [observacao, setObservacao] = useState('');
 
     // Estado de edição inline
@@ -3596,6 +3599,15 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
             showToast('Informe o motivo da devolução', 'error');
             return;
         }
+        if (tipo === 'requerimento' && !motivoRequerimento.trim()) {
+            showToast('Informe o motivo do requerimento', 'error');
+            return;
+        }
+
+        // Para requerimento, o motivo digitado vai na observação pra ficar no histórico
+        const obsFinal = tipo === 'requerimento'
+            ? (motivoRequerimento.trim() + (observacao.trim() ? ` — ${observacao.trim()}` : ''))
+            : (observacao.trim() || undefined);
 
         onAdd({
             id: generateId(),
@@ -3604,13 +3616,41 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
             responsavel: responsavelLogado,
             conferido: true,
             motivoDevolucao: tipo === 'reentrada' ? motivoDevolucao.trim() : undefined,
-            observacao: observacao.trim() || undefined,
+            observacao: obsFinal || undefined,
             registradoEm: new Date().toISOString(),
         });
 
         setShowForm(false);
         setMotivoDevolucao('');
+        setMotivoRequerimento('');
         setObservacao('');
+    };
+
+    const handleGerarRequerimentoDoc = async () => {
+        const motivo = motivoRequerimento.trim();
+        if (!motivo) {
+            showToast('Digite o motivo do requerimento antes de gerar', 'error');
+            return;
+        }
+        if (!cliente) {
+            showToast('Cliente não carregado — recarregue a página', 'error');
+            return;
+        }
+        if (!veiculo) {
+            showToast('Veículo não carregado', 'error');
+            return;
+        }
+        setGerandoReq(true);
+        try {
+            const { gerarRequerimentoDelegacia } = await import('../lib/gerarDocumentos2Via');
+            await gerarRequerimentoDelegacia(cliente, veiculo, motivo);
+            showToast('Requerimento gerado — salve e imprima', 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Erro ao gerar requerimento: ' + (err instanceof Error ? err.message : String(err)), 'error');
+        } finally {
+            setGerandoReq(false);
+        }
     };
 
     const handleSaveSifap = async () => {
@@ -3733,6 +3773,48 @@ function DelegaciaTab({ os, veiculo, onAdd, onEdit, onRemove, needsSifap, onRefr
                             <textarea className="form-textarea" value={motivoDevolucao} onChange={(e) => setMotivoDevolucao(e.target.value)}
                                 placeholder="Descreva o motivo..."
                                 style={{ minHeight: 40, fontSize: 12, resize: 'vertical', padding: '5px 8px' }} />
+                        </div>
+                    )}
+                    {tipo === 'requerimento' && (
+                        <div>
+                            <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#8b5cf6', marginBottom: 3 }}>
+                                <FileText size={10} style={{ verticalAlign: -1, marginRight: 3 }} />
+                                Motivo do Requerimento *
+                            </label>
+                            <textarea
+                                className="form-textarea"
+                                value={motivoRequerimento}
+                                onChange={(e) => setMotivoRequerimento(e.target.value)}
+                                placeholder="Ex.: autorização para retirada do veículo retido / liberação de documento..."
+                                style={{ minHeight: 50, fontSize: 12, resize: 'vertical', padding: '5px 8px' }}
+                            />
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6, gap: 8, flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: 11, color: 'var(--notion-text-muted)', flex: 1 }}>
+                                    Os dados do cliente e veículo já vêm preenchidos automaticamente.
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleGerarRequerimentoDoc}
+                                    disabled={gerandoReq || !motivoRequerimento.trim() || !cliente || !veiculo}
+                                    title="Gera o documento .docx do requerimento pra imprimir/levar à delegacia"
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: 5, height: 28,
+                                        padding: '0 12px', borderRadius: 6,
+                                        border: '1px solid #8b5cf6',
+                                        background: gerandoReq || !motivoRequerimento.trim() || !cliente || !veiculo
+                                            ? 'transparent'
+                                            : 'rgba(139,92,246,0.12)',
+                                        color: '#8b5cf6',
+                                        fontWeight: 600, fontSize: 11,
+                                        fontFamily: 'var(--font-family)',
+                                        cursor: gerandoReq || !motivoRequerimento.trim() || !cliente || !veiculo ? 'not-allowed' : 'pointer',
+                                        opacity: gerandoReq || !motivoRequerimento.trim() || !cliente || !veiculo ? 0.6 : 1,
+                                    }}
+                                >
+                                    <FileText size={11} />
+                                    {gerandoReq ? 'Gerando...' : 'Gerar Requerimento .docx'}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

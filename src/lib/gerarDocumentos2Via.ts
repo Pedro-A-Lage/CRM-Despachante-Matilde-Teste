@@ -132,3 +132,75 @@ export async function gerarRequerimento2Via(
     `Requerimento_2Via_CRV_${veiculo.placa ?? 'veiculo'}.docx`,
   );
 }
+
+/**
+ * Gera um requerimento genérico pra ser apresentado na delegacia,
+ * com o MOTIVO digitado pelo usuário (em vez do texto fixo de 2ª via).
+ *
+ * Usado na tab Delegacia → Nova Entrada tipo "Req." — o usuário escreve
+ * o que está requerendo (ex.: "autorização para retirada do veículo
+ * retido", "liberação após SIFAP", etc).
+ */
+export async function gerarRequerimentoDelegacia(
+  cliente: Cliente,
+  veiculo: Veiculo,
+  motivo: string,
+): Promise<void> {
+  const dataStr = formatarDataExtenso();
+  const marcaModelo = veiculo.marcaModelo ?? '';
+
+  const p = (
+    text: string,
+    opts: { bold?: boolean; align?: (typeof AlignmentType)[keyof typeof AlignmentType] } = {},
+  ) =>
+    new Paragraph({
+      alignment: opts.align,
+      spacing: { after: 240 },
+      children: [new TextRun({ text, bold: opts.bold, size: 24 })],
+    });
+
+  const linhaEmBranco = () => new Paragraph({ children: [new TextRun('')] });
+
+  const doc = new Document({
+    sections: [
+      {
+        properties: {},
+        children: [
+          p(`Itabira, ${dataStr}.`, { align: AlignmentType.RIGHT }),
+          linhaEmBranco(),
+          linhaEmBranco(),
+          p(`O infra ${cliente.nome ?? ''},`),
+          p(
+            `Residente, ${cliente.endereco ?? ''}, nº ${cliente.numero ?? ''}, Bairro ${cliente.bairro ?? ''},`,
+          ),
+          p(`Proprietário do veículo ${marcaModelo} de placa ${veiculo.placa ?? ''},`),
+          p(`Chassi: ${veiculo.chassi ?? ''},`),
+          p(
+            `Cor ${veiculo.cor ?? ''}, vem muito respeitosamente requerer que`,
+          ),
+          p(motivo, { bold: true }),
+          linhaEmBranco(),
+          linhaEmBranco(),
+          linhaEmBranco(),
+          p('Termo em que pede deferimento.'),
+          linhaEmBranco(),
+          linhaEmBranco(),
+          p('_________________________________________', {
+            align: AlignmentType.CENTER,
+          }),
+          p('Assinatura do requerente', { align: AlignmentType.CENTER }),
+          linhaEmBranco(),
+          linhaEmBranco(),
+          p('Despacho da autoridade', { bold: true }),
+          p('( ) deferido        ( ) indeferido'),
+        ],
+      },
+    ],
+  });
+
+  const blob = await Packer.toBlob(doc);
+  abrirBlobEmNovaAba(
+    blob,
+    `Requerimento_${veiculo.placa ?? 'veiculo'}.docx`,
+  );
+}
