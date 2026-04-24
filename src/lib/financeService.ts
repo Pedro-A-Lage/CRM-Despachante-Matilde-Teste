@@ -290,18 +290,19 @@ export async function gerarCobrancasIniciais(
     // legacy. Valores novos já vêm como código da price_table (ex.:
     // 'dae_transferencia', 'dae_primeiro_emplacamento', etc).
     const isCodigoDireto = regra.dae.startsWith('dae_');
-    const codigo = isCodigoDireto
+    const codigo: string = isCodigoDireto
       ? regra.dae
       : (regra.dae === 'alteracao' ? 'dae_alteracao' : 'dae_principal');
 
     // Categoria na charge: 'dae_adicional' para alteração/baixa (servem como
     // DAE secundária/adicional), 'dae_principal' pros demais.
-    const isAdicional =
-      regra.dae === 'alteracao'
-      || codigo === 'dae_alteracao'
-      || codigo === 'dae_alteracao_dados'
-      || codigo === 'dae_baixa'
-      || codigo === 'dae_baixa_impedimento';
+    const codigosAdicionais = new Set([
+      'dae_alteracao',
+      'dae_alteracao_dados',
+      'dae_baixa',
+      'dae_baixa_impedimento',
+    ]);
+    const isAdicional = regra.dae === 'alteracao' || codigosAdicionais.has(codigo);
     const categoria: FinanceChargeCategoria = isAdicional ? 'dae_adicional' : 'dae_principal';
 
     // Busca valor e descrição diretamente da price_table
