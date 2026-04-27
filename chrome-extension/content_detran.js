@@ -859,8 +859,6 @@ function capturarDadosPag3() {
     };
 }
 
-let _formInterceptorAdded = false;
-
 async function tentarCapturarPrimeirEmplacamentoPag3() {
     const ctx = await new Promise(resolve =>
         chrome.storage.local.get(['matilde_servico_ativo'], resolve)
@@ -868,91 +866,12 @@ async function tentarCapturarPrimeirEmplacamentoPag3() {
     if (ctx.matilde_servico_ativo !== 'primeiro_emplacamento') return;
     if (!window.location.href.includes('confirmar-dados')) return;
 
-    // SEMPRE tenta registrar o interceptor do botão OK, independente de _primeiroEmplacamentoCapturado
-    // (o modal pode abrir DEPOIS de _primeiroEmplacamentoCapturado ser true)
-    if (!_formInterceptorAdded) {
-        const btnOk = document.querySelector('.btn-ok-modal-2');
-        // Busca o form na página inteira (o botão está num modal Bootstrap, fora do <form>)
-        const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae') ||
-                     document.querySelector('form[method="post"]') ||
-                     document.querySelector('form');
-        if (btnOk) {
-            _formInterceptorAdded = true;
-            console.log('[Matilde][Content] Pág 3: registrando interceptor no botão OK. form:', form?.action || '(nenhum)');
-            btnOk.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                console.log('[Matilde][Content] Pág 3: clique OK interceptado, capturando PDF...');
-                _mostrarToastPag4('carregando');
-
-                try {
-                    if (!form) throw new Error('Form não encontrado na página');
-                    const formData = new FormData(form);
-                    const response = await fetch(form.action || window.location.href, {
-                        method: 'POST',
-                        body: new URLSearchParams(formData),
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        credentials: 'include',
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    const contentType = response.headers.get('content-type') || '';
-                    if (!contentType.includes('pdf') && !contentType.includes('octet-stream')) {
-                        console.warn('[Matilde][Content] Resposta não é PDF:', contentType, '— submetendo normalmente.');
-                        _mostrarToastPag4('erro', 'Resposta não é PDF');
-                        HTMLFormElement.prototype.submit.call(form);
-                        return;
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    const uint8 = new Uint8Array(arrayBuffer);
-                    let binary = '';
-                    const CHUNK = 8192;
-                    for (let i = 0; i < uint8.length; i += CHUNK) {
-                        binary += String.fromCharCode(...uint8.subarray(i, i + CHUNK));
-                    }
-                    const fileBase64 = 'data:application/pdf;base64,' + btoa(binary);
-
-                    console.log('[Matilde][Content] Pág 3: PDF capturado com sucesso!');
-                    _mostrarToastPag4('sucesso');
-
-                    const ctxOs = await new Promise(resolve =>
-                        chrome.storage.local.get(['matilde_osId'], resolve)
-                    );
-
-                    const dadosAtual = capturarDadosPag3();
-                    chrome.runtime.sendMessage({
-                        action: 'CAPTURE_DAE_PDF',
-                        payload: {
-                            base64: fileBase64,
-                            placa: '',
-                            chassi: dadosAtual.chassi || '',
-                            servicoAtivo: 'primeiro_emplacamento',
-                            osId: ctxOs.matilde_osId || null,
-                            fileName: 'ficha_cadastro_dae.pdf',
-                        },
-                    }, (resp) => {
-                        if (chrome.runtime.lastError) {
-                            console.error('[Matilde][Content] Erro ao enviar PDF:', chrome.runtime.lastError.message);
-                        } else {
-                            console.log('[Matilde][Content] PDF enviado ao CRM.', resp);
-                        }
-                    });
-
-                    chrome.storage.local.remove(['matilde_servico_ativo']);
-                    HTMLFormElement.prototype.submit.call(form);
-
-                } catch (err) {
-                    console.error('[Matilde][Content] Falha ao capturar PDF pág 3:', err.message);
-                    _mostrarToastPag4('erro', err.message);
-                    if (form) HTMLFormElement.prototype.submit.call(form);
-                }
-            }, { capture: true });
-            console.log('[Matilde][Content] Pág 3: interceptor registrado.');
-        }
-    }
+    // O interceptor do botão OK que reescrevia o submit como fetch foi removido.
+    // Causava 400 Bad Request no POST de emitir-ficha-de-cadastro-e-dae porque
+    // forçava Content-Type application/x-www-form-urlencoded e convertia o FormData
+    // via URLSearchParams (perdendo enctype original e gerando POST duplo no catch).
+    // O PDF resultante é capturado pelo listener de downloads em background.js usando
+    // o contexto (matilde_osId/placa/chassi) já gravado em chrome.storage.local.
 
     // Captura e envia dados (apenas uma vez)
     if (_primeiroEmplacamentoCapturado) return;
@@ -989,102 +908,11 @@ async function tentarCapturarPrimeirEmplacamentoPag3() {
 
 }
 
-let _pag4Capturada = false;
-
 async function tentarCapturarPrimeirEmplacamentoPag4() {
-    console.log('[Matilde][Diagnóstico] URL atual:', window.location.href);
-    const ctx = await new Promise(resolve =>
-        chrome.storage.local.get(['matilde_servico_ativo', 'matilde_osId', 'matilde_placa'], resolve)
-    );
-    if (ctx.matilde_servico_ativo !== 'primeiro_emplacamento') return;
-
-    const url = window.location.href.toLowerCase();
-    if (!url.includes('emitir-ficha') && !url.includes('dae') && !url.includes('emplacamento')) {
-        console.log('[Matilde] URL não reconhecida para captura:', url);
-        return;
-    }
-    if (_pag4Capturada) return;
-
-    console.log('[Matilde][Content] Pág 4 detectada — interceptando form para capturar PDF.');
-
-    const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae')
-        || document.querySelector('form[action*="emitir"]')
-        || document.querySelector('form[method="post"]')
-        || document.querySelector('form');
-    if (!form) {
-        console.warn('[Matilde][Content] Pág 4: formulário não encontrado.');
-        return;
-    }
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (_pag4Capturada) return;
-        _pag4Capturada = true;
-        _mostrarToastPag4('carregando');
-
-        console.log('[Matilde][Content] Pág 4: submit interceptado, capturando PDF...');
-
-        try {
-            const formData = new FormData(form);
-
-            const response = await fetch(form.action || window.location.href, {
-                method: 'POST',
-                body: new URLSearchParams(formData),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const contentType = response.headers.get('content-type') || '';
-            if (!contentType.includes('pdf') && !contentType.includes('octet-stream')) {
-                throw new Error(`Resposta não é PDF: ${contentType}`);
-            }
-
-            const arrayBuffer = await response.arrayBuffer();
-            const uint8 = new Uint8Array(arrayBuffer);
-            let binary = '';
-            const CHUNK = 8192;
-            for (let i = 0; i < uint8.length; i += CHUNK) {
-                binary += String.fromCharCode(...uint8.subarray(i, i + CHUNK));
-            }
-            const fileBase64 = 'data:application/pdf;base64,' + btoa(binary);
-
-            console.log('[Matilde][Content] Pág 4: PDF capturado com sucesso!');
-            _mostrarToastPag4('sucesso');
-
-            chrome.runtime.sendMessage({
-                action: 'CAPTURE_DAE_PDF',
-                payload: {
-                    base64: fileBase64,
-                    placa: ctx.matilde_placa || '',
-                    chassi: '',
-                    servicoAtivo: ctx.matilde_servico_ativo,
-                    osId: ctx.matilde_osId || null,
-                    fileName: 'ficha_cadastro_dae.pdf',
-                },
-            }, (resp) => {
-                if (chrome.runtime.lastError) {
-                    console.error('[Matilde][Content] Pág 4: erro ao enviar PDF:', chrome.runtime.lastError.message);
-                } else {
-                    console.log('[Matilde][Content] Pág 4: PDF enviado ao CRM.', resp);
-                    chrome.storage.local.remove(['matilde_servico_ativo']);
-                }
-            });
-
-        } catch (err) {
-            console.error('[Matilde][Content] Pág 4: falha ao capturar PDF:', err.message);
-            _mostrarToastPag4('erro', err.message);
-            _pag4Capturada = false;
-            form.submit();
-        }
-    }, { once: false });
-
-    console.log('[Matilde][Content] Pág 4: listener de submit registrado.');
+    // Função mantida apenas como ponto de entrada para compatibilidade com o
+    // observer. O listener de submit que reescrevia o POST como fetch foi
+    // removido — quebrava o envio (HTTP 400) e disparava POST duplo no catch.
+    // O PDF é capturado pelo listener chrome.downloads em background.js.
 }
 
 function _mostrarToastPag4(estado, detalhe) {
@@ -1123,7 +951,6 @@ function _mostrarToastPag4(estado, detalhe) {
 // ════════════════════════════════════════════════════════════
 
 let _segundaViaCapturada = false;
-let _segundaViaFormInterceptorAdded = false;
 
 function capturarDadosSegundaViaPag2() {
     // Campos editáveis
@@ -1165,81 +992,11 @@ async function tentarCapturarSegundaViaPag2() {
     const url = window.location.href.toLowerCase();
     if (!url.includes('emitir-a-2-via-do-crv/completar-dados') && !url.includes('2-via-do-crv/completar-dados')) return;
 
-    // SEMPRE tenta registrar o interceptor (ANTES do flag de dados)
-    if (!_segundaViaFormInterceptorAdded) {
-        const btnOk = document.querySelector('.btn-ok-modal-2');
-        if (btnOk) {
-            _segundaViaFormInterceptorAdded = true;
-            btnOk.addEventListener('click', async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                const form = document.querySelector('#form-emitir-ficha-de-cadastro-e-dae') ||
-                             document.querySelector('form[method="post"]') ||
-                             document.querySelector('form');
-                console.log('[Matilde][Content] 2ª Via: clique OK interceptado, capturando PDF...');
-                _mostrarToastPag4('carregando');
-
-                try {
-                    const formData = new FormData(form);
-                    const response = await fetch(form.action || window.location.href, {
-                        method: 'POST',
-                        body: new URLSearchParams(formData),
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        credentials: 'include',
-                    });
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    const contentType = response.headers.get('content-type') || '';
-                    if (!contentType.includes('pdf') && !contentType.includes('octet-stream')) {
-                        console.warn('[Matilde][Content] 2ª Via: resposta não é PDF:', contentType);
-                        _mostrarToastPag4('erro', 'Resposta não é PDF');
-                        form.submit();
-                        return;
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    const uint8 = new Uint8Array(arrayBuffer);
-                    let binary = '';
-                    const CHUNK = 8192;
-                    for (let i = 0; i < uint8.length; i += CHUNK) {
-                        binary += String.fromCharCode(...uint8.subarray(i, i + CHUNK));
-                    }
-                    const fileBase64 = 'data:application/pdf;base64,' + btoa(binary);
-
-                    console.log('[Matilde][Content] 2ª Via: PDF capturado com sucesso!');
-                    _mostrarToastPag4('sucesso');
-
-                    // Recaptura dados do form (usuário pode ter editado)
-                    const dadosAtualizados = capturarDadosSegundaViaPag2();
-
-                    chrome.runtime.sendMessage({
-                        action: 'CAPTURE_SEGUNDA_VIA',
-                        payload: {
-                            dados: dadosAtualizados,
-                            fileBase64,
-                            fileName: `ficha_cadastro_2via_${dadosAtualizados.placa || Date.now()}.pdf`,
-                        },
-                    }, (resp) => {
-                        if (chrome.runtime.lastError) {
-                            console.error('[Matilde][Content] 2ª Via: erro ao enviar:', chrome.runtime.lastError.message);
-                        } else {
-                            console.log('[Matilde][Content] 2ª Via: dados + PDF enviados ao CRM.', resp);
-                        }
-                    });
-
-                    chrome.storage.local.remove(['matilde_servico_ativo']);
-                    HTMLFormElement.prototype.submit.call(form);
-                } catch (err) {
-                    console.error('[Matilde][Content] 2ª Via: falha ao capturar PDF:', err.message);
-                    _mostrarToastPag4('erro', err.message);
-                    HTMLFormElement.prototype.submit.call(form);
-                }
-            }, { capture: true });
-            console.log('[Matilde][Content] 2ª Via: listener OK registrado.');
-        }
-    }
+    // Interceptor do botão OK removido. Reescrevia o submit do form como fetch
+    // urlencoded e gerava 400 Bad Request em /emitir-ficha-de-cadastro-e-dae,
+    // além de POST duplo no catch. A captura do PDF agora depende exclusivamente
+    // do listener chrome.downloads em background.js, que correlaciona o download
+    // com o contexto salvo (matilde_osId, matilde_placa) pelo crm_bridge.
 
     // Captura dados apenas uma vez
     if (_segundaViaCapturada) return;
