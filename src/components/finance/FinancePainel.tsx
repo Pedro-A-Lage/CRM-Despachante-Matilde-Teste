@@ -10,6 +10,7 @@ import {
   deleteCharge,
   addCharge,
   desmarcarCustoPago,
+  updateCustoDataPagamento,
   getPriceByCodigo,
   getServicePrice,
   getDescontoOS,
@@ -190,6 +191,8 @@ export default function FinancePainel({
   const [editandoCusto, setEditandoCusto] = useState<string | null>(null);
   const [custoDescTemp, setCustoDescTemp] = useState('');
   const [custoValorTemp, setCustoValorTemp] = useState('');
+  const [editandoDataCusto, setEditandoDataCusto] = useState<string | null>(null);
+  const [dataCustoTemp, setDataCustoTemp] = useState('');
   const [editandoPagamento, setEditandoPagamento] = useState<Payment | null>(null);
   const syncingPlaca = useRef(false);
 
@@ -368,6 +371,25 @@ export default function FinancePainel({
     } catch (err) {
       console.error(err);
       setMensagem({ tipo: 'erro', texto: 'Nao foi possivel atualizar o custo.' });
+    }
+  };
+
+  const iniciarEdicaoDataCusto = (c: FinanceCharge) => {
+    setEditandoDataCusto(c.id);
+    const atual = c.confirmado_em ? c.confirmado_em.slice(0, 10) : new Date().toISOString().slice(0, 10);
+    setDataCustoTemp(atual);
+  };
+
+  const salvarEdicaoDataCusto = async () => {
+    if (!editandoDataCusto || !dataCustoTemp) return;
+    try {
+      await updateCustoDataPagamento(editandoDataCusto, new Date(dataCustoTemp + 'T12:00:00').toISOString());
+      setEditandoDataCusto(null);
+      await carregar(true);
+      setMensagem({ tipo: 'sucesso', texto: 'Data do pagamento atualizada.' });
+    } catch (err) {
+      console.error(err);
+      setMensagem({ tipo: 'erro', texto: 'Nao foi possivel atualizar a data do pagamento.' });
     }
   };
 
@@ -840,6 +862,21 @@ export default function FinancePainel({
                       <Btn variant="success" small onClick={salvarEdicaoCusto}><IconSave /></Btn>
                       <Btn variant="ghost" small onClick={() => setEditandoCusto(null)}>&times;</Btn>
                     </div>
+                  ) : editandoDataCusto === c.id ? (
+                    <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ flex: 1, fontSize: 12.5, fontWeight: 600, color: 'var(--notion-text)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {c.descricao}
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--notion-text-secondary)' }}>Pago em</span>
+                      <input
+                        type="date"
+                        value={dataCustoTemp}
+                        onChange={e => setDataCustoTemp(e.target.value)}
+                        style={{ ...inputStyle, width: 150, fontSize: 12, padding: '4px 8px' }}
+                      />
+                      <Btn variant="success" small onClick={salvarEdicaoDataCusto}><IconSave /></Btn>
+                      <Btn variant="ghost" small onClick={() => setEditandoDataCusto(null)}>&times;</Btn>
+                    </div>
                   ) : (
                     <div
                       style={{
@@ -901,19 +938,34 @@ export default function FinancePainel({
                             </button>
                           )}
                           {c.status === 'pago' && (
-                            <button
-                              onClick={() => handleDesfazerPagoCusto(c.id)} title="Desfazer pagamento"
-                              style={{
-                                width: 28, height: 28, borderRadius: 6,
-                                background: 'transparent', border: 'none', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: 'var(--notion-orange)', transition: 'background 0.15s',
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
-                              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                            >
-                              <IconUndo />
-                            </button>
+                            <>
+                              <button
+                                onClick={() => iniciarEdicaoDataCusto(c)} title="Editar data do pagamento"
+                                style={{
+                                  width: 28, height: 28, borderRadius: 6,
+                                  background: 'transparent', border: 'none', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  color: 'var(--notion-blue)', transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(59,130,246,0.1)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <IconCalendar />
+                              </button>
+                              <button
+                                onClick={() => handleDesfazerPagoCusto(c.id)} title="Desfazer pagamento"
+                                style={{
+                                  width: 28, height: 28, borderRadius: 6,
+                                  background: 'transparent', border: 'none', cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  color: 'var(--notion-orange)', transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.1)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                              >
+                                <IconUndo />
+                              </button>
+                            </>
                           )}
                           <button
                             onClick={() => iniciarEdicaoCusto(c)} title="Editar custo"

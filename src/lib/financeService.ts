@@ -526,6 +526,20 @@ export async function desmarcarCustoPago(chargeId: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function updateCustoDataPagamento(
+  chargeId: string,
+  dataPagamentoIso: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('finance_charges')
+    .update({
+      confirmado_em: dataPagamentoIso,
+      atualizado_em: new Date().toISOString(),
+    })
+    .eq('id', chargeId);
+  if (error) throw error;
+}
+
 // ── RESUMO ────────────────────────────────────────────────────
 
 export function calcularResumo(
