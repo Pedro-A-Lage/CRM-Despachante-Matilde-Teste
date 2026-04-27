@@ -6,6 +6,7 @@ import { getPaymentsTotalByOSIds } from '../lib/financeService';
 import { getEmpresas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { STATUS_OS_LABELS, type StatusOS, type TipoServico } from '../types';
+import { STATUS_COLORS } from '../lib/statusColors';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import OSKanban from '../components/OSKanban';
@@ -26,29 +27,29 @@ function getStatusBadge(status: string) {
 
 // Barra de progresso por status: largura e cor
 const STATUS_PROGRESS: Record<string, { pct: number; color: string }> = {
-    aguardando_documentacao: { pct: 20, color: 'var(--notion-orange)' },
-    vistoria:                { pct: 40, color: 'var(--notion-blue)' },
-    delegacia:               { pct: 60, color: 'var(--notion-purple, #9065B0)' },
-    doc_pronto:              { pct: 80, color: 'var(--notion-green)' },
-    entregue:                { pct: 100, color: 'var(--notion-green)' },
+    aguardando_documentacao: { pct: 20, color: STATUS_COLORS.aguardando_documentacao.color },
+    vistoria:                { pct: 40, color: STATUS_COLORS.vistoria.color },
+    delegacia:               { pct: 60, color: STATUS_COLORS.delegacia.color },
+    doc_pronto:              { pct: 80, color: STATUS_COLORS.doc_pronto.color },
+    entregue:                { pct: 100, color: STATUS_COLORS.doc_pronto.color },
 };
 
 // Cor de fundo dos chips de filtro rápido
 const STATUS_CHIP_COLOR: Record<string, string> = {
-    aguardando_documentacao: 'var(--notion-orange)',
-    vistoria:                'var(--notion-blue)',
-    delegacia:               'var(--notion-purple, #9065B0)',
-    doc_pronto:              'var(--notion-green)',
-    entregue:                'var(--notion-text-secondary)',
+    aguardando_documentacao: STATUS_COLORS.aguardando_documentacao.color,
+    vistoria:                STATUS_COLORS.vistoria.color,
+    delegacia:               STATUS_COLORS.delegacia.color,
+    doc_pronto:              STATUS_COLORS.doc_pronto.color,
+    entregue:                STATUS_COLORS.entregue.color,
 };
 
 // Left border colors for table rows by status
 const STATUS_BORDER_COLOR: Record<string, string> = {
-    aguardando_documentacao: '#C88010',
-    vistoria:                '#3D70C0',
-    delegacia:               '#8B5CF6',
-    doc_pronto:              '#28A06A',
-    entregue:                '#6B7280',
+    aguardando_documentacao: STATUS_COLORS.aguardando_documentacao.color,
+    vistoria:                STATUS_COLORS.vistoria.color,
+    delegacia:               STATUS_COLORS.delegacia.color,
+    doc_pronto:              STATUS_COLORS.doc_pronto.color,
+    entregue:                STATUS_COLORS.entregue.color,
 };
 
 // Persistência de filtros no localStorage (com expiração automática)
@@ -421,11 +422,11 @@ export default function OSList() {
     // --- Status card data for the top summary ---
     const statusCards = [
         { key: 'pendentes', label: 'Pendentes', icon: AlertTriangle, color: '#EF4444', bgColor: 'rgba(239,68,68,0.08)', borderColor: 'rgba(239,68,68,0.25)' },
-        { key: 'aguardando_documentacao', label: 'Aguard. Doc', icon: FileText, color: '#C88010', bgColor: 'rgba(200,128,16,0.08)', borderColor: 'rgba(200,128,16,0.25)' },
-        { key: 'vistoria', label: 'Vistoria', icon: Eye, color: '#3D70C0', bgColor: 'rgba(61,112,192,0.08)', borderColor: 'rgba(61,112,192,0.25)' },
-        { key: 'delegacia', label: 'Delegacia', icon: Building2, color: '#8B5CF6', bgColor: 'rgba(139,92,246,0.08)', borderColor: 'rgba(139,92,246,0.25)' },
-        { key: 'doc_pronto', label: 'Doc. Pronto', icon: CheckCircle, color: '#28A06A', bgColor: 'rgba(40,160,106,0.08)', borderColor: 'rgba(40,160,106,0.25)' },
-        { key: 'entregue', label: 'Entregues', icon: CheckCircle, color: '#6B7280', bgColor: 'rgba(107,114,128,0.08)', borderColor: 'rgba(107,114,128,0.25)' },
+        { key: 'aguardando_documentacao', label: 'Aguard. Doc', icon: FileText, color: STATUS_COLORS.aguardando_documentacao.color, bgColor: STATUS_COLORS.aguardando_documentacao.bg, borderColor: STATUS_COLORS.aguardando_documentacao.border },
+        { key: 'vistoria', label: 'Vistoria', icon: Eye, color: STATUS_COLORS.vistoria.color, bgColor: STATUS_COLORS.vistoria.bg, borderColor: STATUS_COLORS.vistoria.border },
+        { key: 'delegacia', label: 'Delegacia', icon: Building2, color: STATUS_COLORS.delegacia.color, bgColor: STATUS_COLORS.delegacia.bg, borderColor: STATUS_COLORS.delegacia.border },
+        { key: 'doc_pronto', label: 'Doc. Pronto', icon: CheckCircle, color: STATUS_COLORS.doc_pronto.color, bgColor: STATUS_COLORS.doc_pronto.bg, borderColor: STATUS_COLORS.doc_pronto.border },
+        { key: 'entregue', label: 'Entregues', icon: CheckCircle, color: STATUS_COLORS.entregue.color, bgColor: STATUS_COLORS.entregue.bg, borderColor: STATUS_COLORS.entregue.border },
     ];
 
     return (

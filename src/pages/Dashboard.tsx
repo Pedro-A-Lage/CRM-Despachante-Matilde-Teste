@@ -37,6 +37,7 @@ import {
 import { getClientes, getVeiculos, getOrdens } from '../lib/database';
 import { useAuth } from '../contexts/AuthContext';
 import { STATUS_OS_LABELS } from '../types';
+import { STATUS_COLORS } from '../lib/statusColors';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { Cliente, Veiculo, OrdemDeServico } from '../types';
 
@@ -56,11 +57,11 @@ function loadAlertsConfig(): AlertsConfig {
 }
 
 const STATUS_CONFIG: Record<string, { color: string; bg: string }> = {
-    aguardando_documentacao: { color: 'var(--notion-orange)', bg: 'rgba(221,91,0,0.1)' },
-    vistoria: { color: 'var(--notion-blue)', bg: 'rgba(55,114,255,0.1)' },
-    delegacia: { color: 'var(--notion-purple, #9065B0)', bg: 'rgba(139,92,246,0.1)' },
-    doc_pronto: { color: 'var(--notion-green)', bg: 'rgba(5,150,105,0.1)' },
-    entregue: { color: 'var(--notion-text-secondary)', bg: 'rgba(107,114,128,0.1)' },
+    aguardando_documentacao: { color: STATUS_COLORS.aguardando_documentacao.color, bg: STATUS_COLORS.aguardando_documentacao.bg },
+    vistoria:                { color: STATUS_COLORS.vistoria.color,                bg: STATUS_COLORS.vistoria.bg },
+    delegacia:               { color: STATUS_COLORS.delegacia.color,               bg: STATUS_COLORS.delegacia.bg },
+    doc_pronto:              { color: STATUS_COLORS.doc_pronto.color,              bg: STATUS_COLORS.doc_pronto.bg },
+    entregue:                { color: STATUS_COLORS.entregue.color,                bg: STATUS_COLORS.entregue.bg },
 };
 
 export default function Dashboard() {
@@ -198,11 +199,11 @@ export default function Dashboard() {
 
     // ── Pie Chart: OS por Status ─────────────────────────────────
     const PIE_COLORS: Record<string, string> = {
-        aguardando_documentacao: 'var(--notion-blue)',
-        vistoria: '#06b6d4',
-        delegacia: '#6366f1',
-        doc_pronto: '#22c55e',
-        entregue: '#6b7280',
+        aguardando_documentacao: STATUS_COLORS.aguardando_documentacao.color,
+        vistoria:                STATUS_COLORS.vistoria.color,
+        delegacia:               STATUS_COLORS.delegacia.color,
+        doc_pronto:              STATUS_COLORS.doc_pronto.color,
+        entregue:                STATUS_COLORS.entregue.color,
     };
     const pieData = Object.entries(statusCounts)
         .filter(([, v]) => v > 0)

@@ -70,6 +70,7 @@ import {
     CANAIS_COMUNICACAO,
     MENSAGENS_PADRAO,
 } from '../types';
+import { STATUS_COLORS } from '../lib/statusColors';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type {
     ChecklistItem,
@@ -1086,7 +1087,9 @@ export default function OSDetail() {
                             style={{
                                 width: 170, maxWidth: '100%', fontSize: 11, padding: '6px 10px', borderRadius: 8,
                                 fontWeight: 750, fontFamily: 'var(--font-family)', textTransform: 'uppercase',
-                                background: 'var(--notion-bg)', border: '1px solid var(--notion-border)',
+                                background: STATUS_COLORS[os.status]?.bg ?? 'var(--notion-bg)',
+                                border: `1px solid ${STATUS_COLORS[os.status]?.border ?? 'var(--notion-border)'}`,
+                                color: STATUS_COLORS[os.status]?.color ?? 'var(--notion-text)',
                                 appearance: 'none', cursor: 'pointer', transition: 'all 0.2s',
                             }}
                             value={os.status}
@@ -1097,7 +1100,7 @@ export default function OSDetail() {
                                 <option key={k} value={k}>{v}</option>
                             ))}
                         </select>
-                        <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--notion-text-secondary)' }} />
+                        <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: STATUS_COLORS[os.status]?.color ?? 'var(--notion-text-secondary)' }} />
                     </div>
 
                     <div style={{ height: 20, width: 1, background: 'var(--notion-border)', margin: '0 2px' }} />

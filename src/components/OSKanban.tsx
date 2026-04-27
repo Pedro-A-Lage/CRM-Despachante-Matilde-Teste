@@ -9,6 +9,7 @@ import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import { getEmpresas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { isValidStatusTransition } from '../lib/database';
+import { STATUS_COLORS } from '../lib/statusColors';
 
 interface OSKanbanProps {
     ordens: OrdemDeServico[];
@@ -18,11 +19,11 @@ interface OSKanbanProps {
 }
 
 const KANBAN_COLUMNS: { id: StatusOS; label: string; color: string }[] = [
-    { id: 'aguardando_documentacao', label: 'Aguard. Documentação', color: 'var(--notion-orange)' },
-    { id: 'vistoria', label: 'Vistoria', color: 'var(--notion-blue)' },
-    { id: 'delegacia', label: 'Delegacia', color: 'var(--notion-blue)' },
-    { id: 'doc_pronto', label: 'Doc. Pronto', color: 'var(--notion-green)' },
-    { id: 'entregue', label: 'Entregue', color: 'var(--notion-text-secondary)' },
+    { id: 'aguardando_documentacao', label: 'Aguard. Documentação', color: STATUS_COLORS.aguardando_documentacao.color },
+    { id: 'vistoria', label: 'Vistoria', color: STATUS_COLORS.vistoria.color },
+    { id: 'delegacia', label: 'Delegacia', color: STATUS_COLORS.delegacia.color },
+    { id: 'doc_pronto', label: 'Doc. Pronto', color: STATUS_COLORS.doc_pronto.color },
+    { id: 'entregue', label: 'Entregue', color: STATUS_COLORS.entregue.color },
 ];
 
 const PRIORIDADE_CONFIG = {
