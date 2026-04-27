@@ -27,10 +27,17 @@ export function useServiceLabels(): Record<string, string> {
   return labels;
 }
 
+// Tipos hardcoded fora do service_config (ex.: protocolo avulso) — preserva a
+// caixa correta de acrônimos quando não existe registro no banco.
+const HARDCODED_LABELS: Record<string, string> = {
+  sip: 'SIP',
+  requerimento: 'Requerimento',
+};
+
 /**
  * Traduz tipo_servico para nome de exibição.
- * Fallback: retorna o próprio tipo_servico formatado.
+ * Fallback: usa HARDCODED_LABELS se conhecido, senão formata o próprio tipo_servico.
  */
 export function getServicoLabel(labels: Record<string, string>, tipo: string): string {
-  return labels[tipo] ?? tipo.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return labels[tipo] ?? HARDCODED_LABELS[tipo] ?? tipo.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
