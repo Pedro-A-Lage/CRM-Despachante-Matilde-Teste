@@ -7,6 +7,7 @@ import {
     STATUS_VISTORIA_LABELS,
 } from '../types';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
+import { statusBadgeStyle } from '../lib/statusColors';
 import type { StatusOS, TipoServico, OrdemDeServico } from '../types';
 
 function getStatusBadge(status: string) {
@@ -258,7 +259,7 @@ export default function ConsultaProcessos() {
                                         }}>
                                             OS #{os.numero}
                                         </span>
-                                        <span className={`badge ${getStatusBadge(os.status)}`}>
+                                        <span style={statusBadgeStyle(os.status as StatusOS)}>
                                             {STATUS_OS_LABELS[os.status]}
                                         </span>
                                         <span className="text-sm">{getEtapaAtual(os)}</span>

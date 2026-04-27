@@ -6,7 +6,7 @@ import { getPaymentsTotalByOSIds } from '../lib/financeService';
 import { getEmpresas } from '../lib/empresaService';
 import type { EmpresaParceira } from '../types/empresa';
 import { STATUS_OS_LABELS, type StatusOS, type TipoServico } from '../types';
-import { STATUS_COLORS } from '../lib/statusColors';
+import { STATUS_COLORS, statusBadgeStyle } from '../lib/statusColors';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { OrdemDeServico, Cliente, Veiculo } from '../types';
 import OSKanban from '../components/OSKanban';
@@ -1064,13 +1064,7 @@ export default function OSList() {
                                         </td>
                                         <td data-label="Status" style={{ padding: '14px 16px' }}>
                                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                                                <span className={`badge ${getStatusBadge(os.status)}`} style={{
-                                                    fontSize: '0.72rem',
-                                                    fontWeight: 700,
-                                                    padding: '4px 10px',
-                                                    borderRadius: 8,
-                                                    whiteSpace: 'nowrap',
-                                                }}>
+                                                <span style={statusBadgeStyle(os.status)}>
                                                     {STATUS_OS_LABELS[os.status]}
                                                 </span>
                                                 {/* Mostra data de entrada/reentrada/sifap apenas na delegacia */}

@@ -3,6 +3,7 @@
 // Não usar tokens --notion-* aqui: nesse projeto o "--notion-blue" é
 // na verdade o accent laranja, então status que precisam de azul/roxo
 // real ficam apagados. Hex direto evita o conflito.
+import type React from 'react';
 import type { StatusOS } from '../types';
 
 export interface StatusColor {
@@ -44,4 +45,21 @@ export const STATUS_COLORS: Record<StatusOS, StatusColor> = {
 
 export function getStatusColor(status: StatusOS): StatusColor {
   return STATUS_COLORS[status] ?? STATUS_COLORS.entregue;
+}
+
+/** Estilo inline pra "pílula" de status (substitui as classes badge-* legadas). */
+export function statusBadgeStyle(status: StatusOS): React.CSSProperties {
+  const c = getStatusColor(status);
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    padding: '4px 10px',
+    borderRadius: 8,
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    whiteSpace: 'nowrap',
+    color: c.color,
+    background: c.bg,
+    border: `1px solid ${c.border}`,
+  };
 }

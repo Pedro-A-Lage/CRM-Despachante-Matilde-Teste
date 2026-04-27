@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import { getCliente, getVeiculosByCliente, getOrdensByCliente, updateCliente, generateId } from '../lib/database';
 import { uploadFileToSupabase } from '../lib/fileStorage';
-import { STATUS_OS_LABELS } from '../types';
+import { STATUS_OS_LABELS, type StatusOS } from '../types';
+import { statusBadgeStyle } from '../lib/statusColors';
 import { useServiceLabels, getServicoLabel } from '../hooks/useServiceLabels';
 import type { DocumentoCliente } from '../types';
 import { LoadingSpinner } from '../components/LoadingSpinner';
@@ -347,7 +348,7 @@ export default function ClienteDetail() {
                                                             <span className="text-sm font-mono" style={{ fontWeight: 600 }}>OS #{os.numero}</span>
                                                             <span className="text-xs" style={{ color: 'var(--notion-text-muted)' }}>— {getServicoLabel(serviceLabels, os.tipoServico)}</span>
                                                         </div>
-                                                        <span className={`badge ${getStatusBadge(os.status)}`}>
+                                                        <span style={statusBadgeStyle(os.status as StatusOS)}>
                                                             {STATUS_OS_LABELS[os.status]}
                                                         </span>
                                                     </div>
@@ -401,7 +402,7 @@ export default function ClienteDetail() {
                                         <td><span className="font-mono" style={{ fontWeight: 600 }}>#{os.numero}</span></td>
                                         <td>{getServicoLabel(serviceLabels, os.tipoServico)}</td>
                                         <td>
-                                            <span className={`badge ${getStatusBadge(os.status)}`}>
+                                            <span style={statusBadgeStyle(os.status as StatusOS)}>
                                                 {STATUS_OS_LABELS[os.status]}
                                             </span>
                                         </td>
