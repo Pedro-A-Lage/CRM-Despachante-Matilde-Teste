@@ -292,7 +292,7 @@ export interface OrdemDeServico {
     criadoPor?: string;
     responsavel?: string;
     // Empresa parceira
-    empresaParceiraId?: string;
+    empresaParceiraId?: string | null;
     empresaValoresOverride?: import('./types/empresa').EmpresaValoresOverride;
     enviosStatus?: import('./types/empresa').EtapaEnvioStatus[];
     empresaFinanceiro?: import('./types/empresa').EmpresaFinanceiro;

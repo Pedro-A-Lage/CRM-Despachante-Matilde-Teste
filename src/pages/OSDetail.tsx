@@ -1555,6 +1555,38 @@ export default function OSDetail() {
                             onChange={async (e) => {
                                 const newId = e.target.value || null;
                                 const emp = newId ? empresasAtivas.find((e) => e.id === newId) : null;
+
+                                // Confirmação antes de aplicar (vincular / desvincular / trocar).
+                                // Se cancelar, o <select> volta sozinho pro valor de os.empresaParceiraId.
+                                const nomeAtual = empresa?.nome;
+                                const nomeNovo = emp?.nome;
+                                let confirmTitle = '';
+                                let confirmMessage = '';
+                                let confirmText = 'Confirmar';
+                                let danger = false;
+                                if (!newId && nomeAtual) {
+                                    confirmTitle = 'Desvincular empresa parceira?';
+                                    confirmMessage = `A OS deixa de ser de "${nomeAtual}" e passa a ser particular. Os custos e o valor do serviço serão recalculados pela tabela padrão.`;
+                                    confirmText = 'Desvincular';
+                                    danger = true;
+                                } else if (newId && !nomeAtual) {
+                                    confirmTitle = 'Vincular empresa parceira?';
+                                    confirmMessage = `Vincular esta OS a "${nomeNovo}". O valor do serviço passa a ser custos + honorário da empresa, e a placa será cobrada pelo valor da empresa.`;
+                                } else if (newId && nomeAtual && newId !== os.empresaParceiraId) {
+                                    confirmTitle = 'Trocar empresa parceira?';
+                                    confirmMessage = `Trocar de "${nomeAtual}" para "${nomeNovo}". Os custos e o honorário serão recalculados.`;
+                                    danger = true;
+                                } else {
+                                    return; // sem mudança
+                                }
+                                const ok = await confirm({
+                                    title: confirmTitle,
+                                    message: confirmMessage,
+                                    confirmText,
+                                    cancelText: 'Cancelar',
+                                    danger,
+                                });
+                                if (!ok) return;
                                 const envios = emp ? criarEnviosStatusFromEtapas(emp.etapasEnvio, os.trocaPlaca ?? false) : null;
 
                                 // Atualizar valor da placa nas cobranças + calcular valorServico
@@ -1595,9 +1627,11 @@ export default function OSDetail() {
                                 // updateOrdemWithRecalc atualiza a OS E recalcula a
                                 // charge de placa ativa pra refletir a empresa atual
                                 // (vínculo/desvínculo/troca), gravando em charge_price_history.
+                                // IMPORTANTE: passar `null` ao desvincular — `undefined` é
+                                // ignorado pelo mapper e o campo não seria limpo.
                                 const { updateOrdemWithRecalc } = await import('../lib/osService');
                                 const recalcResult = await updateOrdemWithRecalc(os.id, {
-                                    empresaParceiraId: newId || undefined,
+                                    empresaParceiraId: newId,
                                     enviosStatus: envios || undefined,
                                     empresaValoresOverride: undefined,
                                     empresaFinanceiro: newId ? os.empresaFinanceiro : undefined,
@@ -1614,13 +1648,19 @@ export default function OSDetail() {
 
                                 setOs({
                                     ...os,
-                                    empresaParceiraId: newId || undefined,
+                                    empresaParceiraId: newId,
                                     enviosStatus: envios || undefined,
                                     empresaValoresOverride: undefined,
                                     empresaFinanceiro: newId ? os.empresaFinanceiro : undefined,
                                     valorServico: novoValorServico,
                                 });
                                 setEmpresa(emp || null);
+                                showToast(
+                                    newId
+                                        ? `Vinculada a "${nomeNovo}"`
+                                        : 'Empresa parceira desvinculada',
+                                    'success',
+                                );
                             }}
                             style={{
                                 width: '100%',
