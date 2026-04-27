@@ -30,7 +30,7 @@ export function useServiceLabels(): Record<string, string> {
 // Tipos hardcoded fora do service_config (ex.: protocolo avulso) — preserva a
 // caixa correta de acrônimos quando não existe registro no banco.
 const HARDCODED_LABELS: Record<string, string> = {
-  sip: 'SIP',
+  sifap: 'SIFAP',
   requerimento: 'Requerimento',
 };
 

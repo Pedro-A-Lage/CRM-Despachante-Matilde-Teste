@@ -1016,7 +1016,7 @@ export default function ProtocoloDiario() {
                                         <option key={k} value={k}>{v}</option>
                                     ))}
                                     <option value="requerimento">Requerimento</option>
-                                    <option value="sip">SIP</option>
+                                    <option value="sifap">SIFAP</option>
                                 </select>
                             </div>
                             <div>
@@ -1492,7 +1492,7 @@ export default function ProtocoloDiario() {
                                             <option key={k} value={k}>{v}</option>
                                         ))}
                                         <option value="requerimento">Requerimento</option>
-                                        <option value="sip">SIP</option>
+                                        <option value="sifap">SIFAP</option>
                                     </select>
                                 </div>
                                 <div>
