@@ -3586,6 +3586,10 @@ function DelegaciaTab({ os, veiculo, cliente, onAdd, onEdit, onRemove, needsSifa
     const totalEntradas = entradas.filter(e => e.tipo === 'entrada').length;
     const totalReentradas = entradas.filter(e => e.tipo === 'reentrada').length;
 
+    // Só pode dar entrada com vistoria aprovada (ou aprovada c/ apontamento)
+    const vistoriaStatus = os.vistoria?.status;
+    const vistoriaAprovada = vistoriaStatus === 'aprovada' || vistoriaStatus === 'aprovada_apontamento';
+
     const formatDateLocal = (dateStr: string) => {
         if (!dateStr || !dateStr.includes('-')) return dateStr || '';
         const parts = dateStr.split('-');
@@ -3595,6 +3599,10 @@ function DelegaciaTab({ os, veiculo, cliente, onAdd, onEdit, onRemove, needsSifa
     };
 
     const handleAdd = () => {
+        if (tipo === 'entrada' && !vistoriaAprovada) {
+            showToast('Só é possível dar entrada com a vistoria aprovada (ou aprovada c/ apontamento).', 'error');
+            return;
+        }
         if (tipo === 'reentrada' && !motivoDevolucao.trim()) {
             showToast('Informe o motivo da devolução', 'error');
             return;
@@ -3757,16 +3765,32 @@ function DelegaciaTab({ os, veiculo, cliente, onAdd, onEdit, onRemove, needsSifa
                             <input type="text" className="form-input" value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Opcional..." style={{ fontSize: 12, padding: '5px 8px' }} />
                         </div>
                         <button type="button" onClick={handleAdd}
+                            disabled={tipo === 'entrada' && !vistoriaAprovada}
+                            title={tipo === 'entrada' && !vistoriaAprovada ? 'Vistoria precisa estar aprovada (ou aprovada c/ apontamento) para dar entrada' : undefined}
                             style={{
                                 display: 'flex', alignItems: 'center', gap: 5, height: 32,
-                                padding: '0 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                                padding: '0 14px', borderRadius: 6, border: 'none',
+                                cursor: tipo === 'entrada' && !vistoriaAprovada ? 'not-allowed' : 'pointer',
                                 background: 'var(--notion-blue)', color: 'var(--notion-bg)', fontWeight: 700, fontSize: 11,
                                 fontFamily: 'var(--font-family)', whiteSpace: 'nowrap',
+                                opacity: tipo === 'entrada' && !vistoriaAprovada ? 0.5 : 1,
                             }}
                         >
                             <Save size={11} /> Confirmar
                         </button>
                     </div>
+                    {tipo === 'entrada' && !vistoriaAprovada && (
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '6px 10px', borderRadius: 6,
+                            background: 'rgba(239,68,68,0.08)',
+                            border: '1px solid rgba(239,68,68,0.2)',
+                            color: 'var(--notion-orange)', fontSize: 11, fontWeight: 600,
+                        }}>
+                            <AlertTriangle size={12} />
+                            Só é possível dar entrada com a vistoria aprovada (ou aprovada c/ apontamento).
+                        </div>
+                    )}
                     {tipo === 'reentrada' && (
                         <div>
                             <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--notion-blue)', marginBottom: 3 }}><AlertTriangle size={10} style={{ verticalAlign: -1, marginRight: 3 }} />Motivo da Devolução *</label>
