@@ -232,17 +232,18 @@ export async function gerarCobrancasIniciais(
   forceRegenerate = false,
   empresaValorPlaca?: number,
 ): Promise<void> {
-  let regra: { dae: 'principal' | 'alteracao' | false; vistoria: boolean | 'se_troca'; placa: 'sempre' | 'se_troca' | 'nunca' } | undefined;
+  let regra: { dae: string | false; vistoria: boolean | 'se_troca'; placa: 'sempre' | 'se_troca' | 'nunca' } | undefined;
 
   const config = await getServiceConfig(tipoServico);
   if (!config || !config.ativo) {
     throw new Error(`Serviço não configurado ou inativo para geração de cobranças: ${tipoServico}`);
   }
 
-  const dae: 'principal' | 'alteracao' | false =
-    config.dae_tipo === 'principal' ? 'principal' :
-    config.dae_tipo === 'alteracao' ? 'alteracao' :
-    false;
+  // dae_tipo pode ser:
+  //   - null/'' → sem DAE
+  //   - 'principal' / 'alteracao' (legacy) → mapeia para dae_principal/dae_alteracao
+  //   - 'dae_*' (novo formato, migration 20260423130000) → código direto na price_table
+  const dae: string | false = config.dae_tipo ? config.dae_tipo : false;
 
   const vistoria: boolean | 'se_troca' =
     config.gera_vistoria === 'sempre' ? true :
